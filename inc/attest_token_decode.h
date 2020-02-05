@@ -1,0 +1,417 @@
+/*
+ * attest_token_decode.h
+ *
+ * Copyright (c) 2019, Laurence Lundblade.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ *
+ * See BSD-3-Clause license in README.md
+ */
+#ifndef __ATTEST_TOKEN_DECODE_H__
+#define __ATTEST_TOKEN_DECODE_H__
+
+#include "q_useful_buf.h"
+#include <stdbool.h>
+#include "attest_token.h"
+#include "t_cose_sign1_verify.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/**
+ * \file attest_token_decode.h
+ *
+ * \brief Attestation Token Decoding Interface
+ *
+ * The context and functions here are used to decode an attestation
+ * token as follows:
+ *
+ * -# Create a \ref attest_token_decode_context, most likely as a
+ *    stack variable.
+ *
+ * -# Initialize it by calling attest_token_decode_init()
+ *
+ * -# Tell it which public key to use for verification using
+ *    attest_token_decode_set_cose_pub_key() or
+ *    attest_token_decode_set_pub_key_select().
+ *
+ * -# Pass the token in and validate it by calling
+ *    attest_token_decode_validate_token().
+ *
+ * -# Call the various \c attest_token_get_xxx() methods in any
+ * order. The strings returned by the these functions will point into
+ * the token passed to attest_token_decode_validate_token(). A copy is
+ * NOT made.
+ *
+ * The entire token is validated and decoded in place.  No copies are
+ * made internally. The data returned by the \c attest_token_get_xxx()
+ * methods is not a copy so the lifetime of the \c struct \c
+ * q_useful_buf_c containing the token must be maintained.
+ *
+ * Aside from the cryptographic functions, this allocates no
+ * memory. It works entirely off the stack. It makes use of t_cose to
+ * validate the signature and QCBOR for CBOR decoding.
+ *
+ * This decoder only works with labels (keys) that are integers even
+ * though labels can be any data type in CBOR. The presumption is that
+ * this is for small embedded use cases where space is a premium and
+ * only integer labels will be used.
+ *
+ * All claims are optional in tokens. This decoder will ignore all
+ * CBOR encoded data that it doesn't understand without error.
+ *
+ * This interface is primarily for the claims defined by Arm for
+ * TF-M. It includes only some of the claims from the EAT IETF draft,
+ * https://tools.ietf.org/html/draft-mandyam-eat-01.
+ *
+ * The claims are not described in detail here. That is left to the
+ * definition documents and eventually an IETF standard.
+ *
+ * If a method to get the claim you are interested in doesn't exist,
+ * there are several methods where you can give the label (the key)
+ * for the claim and have it returned. This only works for simple
+ * claims (strings and integers).
+ *
+ * The entire payload can be retrieved unparsed. Then you can use a
+ * separate CBOR parser to decode the claims out of it.  Future work may
+ * include more general facilities for handling claims with complex
+ * structures made up of maps and arrays.
+ *
+ * This should not yet be considered a real commercial
+ * implementation of token decoding. It is
+ * close, but not there yet. It's purpose is to test
+ * token encoding. The main thing this needs to become
+ * a real commercial implementation is code that
+ * tests this. It is a parser / decoder, so a
+ * proper test involves a lot of hostile input.
+ */
+
+
+/**
+ * The context for decoding an attestation token. The caller of must
+ * create one of these and pass it to the functions here. It is small
+ * enough that it can go on the stack. It is most of the memory needed
+ * to create a token except the output buffer and any memory
+ * requirements for the cryptographic operations.
+ *
+ * The structure is opaque for the caller.
+ *
+ */
+struct attest_token_decode_context {
+    /* PRIVATE DATA STRUCTURE. USE ACCESSOR FUNCTIONS. */
+    struct t_cose_sign1_verify_ctx verify_context;
+    struct q_useful_buf_c          payload;
+    uint32_t                       options;
+    enum attest_token_err_t        last_error;
+};
+
+
+/**
+ * \brief Initialize token decoder.
+ *
+ * \param[in] me      The token decoder context to be initialized.
+ * \param[in] options Decoding options.
+ *
+ * Must be called on a \ref attest_token_decode_context before
+ * use. An instance of \ref attest_token_decode_context can
+ * be used again by calling this on it again.
+ **/
+void attest_token_decode_init(struct attest_token_decode_context *me,
+                              uint32_t t_cose_options,
+                              uint32_t token_options);
+
+
+
+/**
+ * \brief Set specific public key to use for verification.
+ *
+ * \param[in] me           The token decoder context to configure.
+ * \param[in] cose_pub_key A CBOR-encoded \c COSE_Key containing
+ *                         the public key to use for signature
+ *                         verification.
+ *
+ * \return An error from \ref attest_token_err_t.
+ *
+ * (This has not been implemented yet)
+ *
+ * The key type must work with the signing algorithm in the token
+ * being verified.
+ *
+ * The \c kid in the \c COSE_Key must match the one in the token.
+ *
+ * If there is no kid in the \c COSE_Key it will be used no matter
+ * what kid is indicated in the token.
+ *
+ * Once set, a key can be used for multiple verifications.
+ *
+ * Calling this again will replace the previous key that was
+ * configured. It will also replace the key set by
+ * attest_token_decode_set_pub_key_select().
+ */
+static void
+attest_token_decode_set_verification_key(struct attest_token_decode_context *me,
+                                         struct t_cose_key verification_key);
+
+
+enum attest_token_err_t
+attest_token_decode_get_kid(struct attest_token_decode_context *me,
+                            struct q_useful_buf_c token,
+                            struct q_useful_buf_c *kid);
+
+/**
+ * \brief Set the token to work on and validate its signature.
+ *
+ * \param[in] me     The token decoder context to validate with.
+ * \param[in] token  The CBOR-encoded token to validate and decode.
+ *
+ * \return An error from \ref attest_token_err_t.
+ *
+ * The signature on the token is validated. If it is successful the
+ * token and its payload is remembered in the \ref
+ * attest_token_decode_context \c me so the \c
+ * attest_token_decode_get_xxx() functions can be called to get the
+ * various claims out of it.
+ *
+ * Generally, a public key has to be configured for this to work. It
+ * can however validate short-circuit signatures even if one is not
+ * set.
+ *
+ * The code for any error that occurs during validation is remembered
+ * in decode context. The \c attest_token_decode_get_xxx() functions
+ * can be called and they will just return this error. The \c
+ * attest_token_decode_get_xxx() functions will generally return 0 or
+ * \c NULL if the token is in error.
+ *
+ * It is thus possible to call attest_token_decode_validate_token()
+ * and all the \c attest_token_decode_get_xxx() functions to parse the
+ * token and ignore the error codes as long as
+ * attest_token_decode_get_error() is called before any of the claim
+ * data returned is used.
+ */
+enum attest_token_err_t
+attest_token_decode_validate_token(struct attest_token_decode_context *me,
+                                   struct q_useful_buf_c token);
+
+
+/**
+ * \brief Get the last decode error.
+ *
+ * \param[in] me The token decoder context.
+ *
+ * \return An error from \ref attest_token_err_t.
+ */
+static enum attest_token_err_t
+attest_token_decode_get_error(struct attest_token_decode_context *me);
+
+
+/**
+ * \brief Get undecoded CBOR payload from the token.
+ *
+ * \param[in]  me      The token decoder context.
+ * \param[out] payload The returned, verified token payload.
+ *
+ * \return An error from \ref attest_token_err_t.
+ *
+ * This will return an error if the signature over the payload did not
+ * validate.
+ *
+ * This allows the caller to parse the verified payload with any CBOR decoder
+ * they wish to use. It also an "escape hatch" to get to claims in the
+ * token not supported by decoding in this implementation, for example
+ * claims that have non-integer labels.
+ */
+enum attest_token_err_t
+attest_token_decode_get_payload(struct attest_token_decode_context *me,
+                                struct q_useful_buf_c *payload);
+
+
+
+/**
+ *
+ * \brief Get a top-level claim, by integer label that is a byte
+ * string.
+ *
+ * \param[in]  me    The token decoder context.
+ * \param[in]  label The integer label identifying the claim.
+ * \param[out] claim The byte string or \c NULL_Q_USEFUL_BUF_C.
+ *
+ * \return An error from \ref attest_token_err_t.
+ *
+ * \retval ATTEST_TOKEN_ERR_CBOR_STRUCTURE
+ *         General structure of the token is incorrect, for example
+ *         the top level is not a map or some map wasn't closed.
+ *
+ * \retval ATTEST_TOKEN_ERR_CBOR_NOT_WELL_FORMED
+ *         CBOR syntax is wrong and it is not decodable.
+ *
+ * \retval ATTETST_TOKEN_ERR_CBOR_TYPE
+ *         Returned if the claim is not a byte string.
+ *
+ * \retval ATTEST_TOKEN_ERR_NOT_FOUND
+ *         Data item for \c label was not found in token.
+ *
+ * If an error occurs, the claim will be set to \c NULL_Q_USEFUL_BUF_C
+ * and the error state inside \c attest_token_decode_context will
+ * be set.
+ */
+enum attest_token_err_t
+attest_token_decode_get_bstr(struct attest_token_decode_context *me,
+                             int32_t label,
+                             struct q_useful_buf_c *claim);
+
+
+/**
+ * \brief Get a top-level claim, by integer label that is a text
+ * string.
+ *
+ * \param[in] me     The token decoder context.
+ * \param[in] label  The integer label identifying the claim.
+ * \param[out] claim The byte string or \c NULL_Q_USEFUL_BUF_C.
+ *
+ * \return An error from \ref attest_token_err_t.
+ *
+ * \retval ATTEST_TOKEN_ERR_CBOR_STRUCTURE
+ *         General structure of the token is incorrect, for example
+ *         the top level is not a map or some map wasn't closed.
+ *
+ * \retval ATTEST_TOKEN_ERR_CBOR_NOT_WELL_FORMED
+ *         CBOR syntax is wrong and it is not decodable.
+ *
+ * \retval ATTETST_TOKEN_ERR_CBOR_TYPE
+ *         Returned if the claim is not a byte string.
+ *
+ * \retval ATTEST_TOKEN_ERR_NOT_FOUND
+ *         Data item for \c label was not found in token.
+ *
+ * Even though this is a text string, it is not NULL-terminated.
+ *
+ * If an error occurs, the claim will be set to \c NULL_Q_USEFUL_BUF_C
+ * and the error state inside \c attest_token_decode_context will
+ * be set.
+ */
+enum attest_token_err_t
+attest_token_decode_get_tstr(struct attest_token_decode_context *me,
+                             int32_t label,
+                             struct q_useful_buf_c *claim);
+
+
+
+/**
+ * \brief Get a top-level claim by integer label who's value is a
+ * signed integer
+ *
+ * \param[in]  me    The token decoder context.
+ * \param[in]  label The integer label identifying the claim.
+ * \param[out] claim The signed integer or 0.
+ *
+ * \return An error from \ref attest_token_err_t.
+ *
+ * \retval ATTEST_TOKEN_ERR_CBOR_STRUCTURE
+ *         General structure of the token is incorrect, for example
+ *         the top level is not a map or some map wasn't closed.
+ *
+ * \retval ATTEST_TOKEN_ERR_CBOR_NOT_WELL_FORMED
+ *         CBOR syntax is wrong and it is not decodable.
+ *
+ * \retval ATTETST_TOKEN_ERR_CBOR_TYPE
+ *         Returned if the claim is not a byte string.
+ *
+ * \retval ATTEST_TOKEN_ERR_NOT_FOUND
+ *         Data item for \c label was not found in token.
+ *
+ * \retval ATTEST_TOKEN_ERR_INTEGER_VALUE
+ *         Returned if the integer value is larger
+ *         than \c INT64_MAX.
+ *
+ * This will succeed if the CBOR type of the claim is either a
+ * positive or negative integer as long as the value is between \c
+ * INT64_MIN and \c INT64_MAX.
+ *
+ * See also attest_token_decode_get_uint().
+ *
+ * If an error occurs the value 0 will be returned and the error
+ * inside the \c attest_token_decode_context will be set.
+ */
+enum attest_token_err_t
+attest_token_decode_get_int(struct attest_token_decode_context *me,
+                            int32_t label,
+                            int64_t *claim);
+
+
+/**
+ * \brief Get a top-level claim by integer label who's value is an
+ * unsigned integer
+ *
+ * \param[in]  me    The token decoder context.
+ * \param[in]  label The integer label identifying the claim.
+ * \param[out] claim The unsigned integer or 0.
+ *
+ * \return An error from \ref attest_token_err_t.
+ *
+ * \retval ATTEST_TOKEN_ERR_CBOR_STRUCTURE
+ *         General structure of the token is incorrect, for example
+ *         the top level is not a map or some map wasn't closed.
+ *
+ * \retval ATTEST_TOKEN_ERR_CBOR_NOT_WELL_FORMED
+ *         CBOR syntax is wrong and it is not decodable.
+ *
+ * \retval ATTETST_TOKEN_ERR_CBOR_TYPE
+ *         Returned if the claim is not a byte string.
+ *
+ * \retval ATTEST_TOKEN_ERR_NOT_FOUND
+ *         Data item for \c label was not found in token.
+ *
+ * \retval ATTEST_TOKEN_ERR_INTEGER_VALUE
+ *         Returned if the integer value is negative.
+ *
+ * This will succeed if the CBOR type of the claim is either a
+ * positive or negative integer as long as the value is between 0 and
+ * \c MAX_UINT64.
+ *
+ * See also attest_token_decode_get_int().
+ *
+ *  If an error occurs the value 0 will be returned and the error
+ *  inside the \c attest_token_decode_context will be set.
+ */
+enum attest_token_err_t
+attest_token_decode_get_uint(struct attest_token_decode_context *me,
+                             int32_t label,
+                             uint64_t *claim);
+
+
+
+
+/* ====================================================================
+ *   Inline Implementations
+ *   Typically, these are small and called only once.
+ * ==================================================================== */
+    
+/*
+ * Public function. See attest_token_decode.h
+ */
+static void
+attest_token_decode_set_pub_key(struct attest_token_decode_context *me,
+                                struct t_cose_key verification_key) {
+
+    t_cose_sign1_set_verification_key(&(me->verify_context), verification_key);
+}
+
+
+static inline enum attest_token_err_t
+attest_token_decode_get_error(struct attest_token_decode_context *me)
+{
+    return me->last_error;
+}
+
+
+
+
+
+
+#ifdef __cplusplus
+}
+#endif
+
+
+#endif /* __ATTEST_TOKEN_DECODE_H__ */
