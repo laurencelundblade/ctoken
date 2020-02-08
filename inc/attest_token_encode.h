@@ -60,18 +60,15 @@ struct attest_token_encode_ctx {
  * \brief Initialize a token creation context.
  *
  * \param[in] me          The token creation context to be initialized.
- * \param[in] opt_flags   Flags to select different custom options,
+ * \param[in] token_opt_flags   Flags to select different custom options,
  *                        for example \ref TOKEN_OPT_OMIT_CLAIMS.
- * \param[in] key_select  Selects which attestation key to sign with.
+ * \param[in] t_cose_opt_flags  Option flags passed on to t_cose.
  * \param[in] cose_alg_id The algorithm to sign with. The IDs are
  *                        defined in [COSE (RFC 8152)]
  *                        (https://tools.ietf.org/html/rfc8152) or
  *                        in the [IANA COSE Registry]
  *                        (https://www.iana.org/assignments/cose/cose.xhtml).
- * \param[out] out_buffer The output buffer to write the encoded token into.
- *
- * \return one of the \ref attest_token_err_t errors.
- *
+ * *
  * The size of the buffer in \c out_buffer->len
  * determines the size of the token that can be created. It must be
  * able to hold the final encoded and signed token. The data encoding
@@ -191,7 +188,7 @@ attest_token_encode_finish(struct attest_token_encode_ctx *me,
 
 
 
-static void
+static inline void
 attest_token_encode_set_key(struct attest_token_encode_ctx *me,
                             struct t_cose_key key,
                             struct q_useful_buf_c key_id)
@@ -200,7 +197,7 @@ attest_token_encode_set_key(struct attest_token_encode_ctx *me,
 }
 
 
-static void
+static inline void
 attest_token_encode_init(struct attest_token_encode_ctx *me,
                          uint32_t t_cose_opt_flags,
                          uint32_t token_opt_flags,
@@ -215,7 +212,7 @@ attest_token_encode_init(struct attest_token_encode_ctx *me,
 /*
  * Public function. See attest_token_decode.h
  */
-static QCBOREncodeContext *
+static inline QCBOREncodeContext *
 attest_token_encode_borrow_cbor_cntxt(struct attest_token_encode_ctx *me)
 {
     return &(me->cbor_enc_ctx);
@@ -225,7 +222,8 @@ attest_token_encode_borrow_cbor_cntxt(struct attest_token_encode_ctx *me)
 /*
  * Public function. See attest_token_decode.h
  */
-static void attest_token_encode_add_integer(struct attest_token_encode_ctx *me,
+static inline void
+attest_token_encode_add_integer(struct attest_token_encode_ctx *me,
                                      int32_t label,
                                      int64_t Value)
 {
@@ -236,7 +234,8 @@ static void attest_token_encode_add_integer(struct attest_token_encode_ctx *me,
 /*
  * Public function. See attest_token_decode.h
  */
-static void attest_token_encode_add_bstr(struct attest_token_encode_ctx *me,
+static inline void
+attest_token_encode_add_bstr(struct attest_token_encode_ctx *me,
                                          int32_t label,
                                          struct q_useful_buf_c bstr)
 {
@@ -249,7 +248,8 @@ static void attest_token_encode_add_bstr(struct attest_token_encode_ctx *me,
 /*
  * Public function. See attest_token_decode.h
  */
-static void attest_token_encode_add_tstr(struct attest_token_encode_ctx *me,
+static inline void
+attest_token_encode_add_tstr(struct attest_token_encode_ctx *me,
                                       int32_t label,
                                   struct q_useful_buf_c tstr)
 {
@@ -260,7 +260,8 @@ static void attest_token_encode_add_tstr(struct attest_token_encode_ctx *me,
 /*
  * Public function. See attest_token_decode.h
  */
-static void attest_token_encode_add_cbor(struct attest_token_encode_ctx *me,
+static inline void
+attest_token_encode_add_cbor(struct attest_token_encode_ctx *me,
                                   int32_t label,
                                   struct q_useful_buf_c encoded)
 {
@@ -271,7 +272,8 @@ static void attest_token_encode_add_cbor(struct attest_token_encode_ctx *me,
 /*
  * Public function. See attest_token_decode.h
  */
-static void attest_token_encode_open_array(struct attest_token_encode_ctx *me, int32_t label)
+static inline void
+attest_token_encode_open_array(struct attest_token_encode_ctx *me, int32_t label)
 {
     QCBOREncode_OpenArrayInMapN(&(me->cbor_enc_ctx), label);
 }
@@ -280,7 +282,8 @@ static void attest_token_encode_open_array(struct attest_token_encode_ctx *me, i
 /*
  * Public function. See attest_token_decode.h
  */
-static void attest_token_encode_close_array(struct attest_token_encode_ctx *me)
+static inline void
+attest_token_encode_close_array(struct attest_token_encode_ctx *me)
 {
     QCBOREncode_CloseArray(&(me->cbor_enc_ctx));
 }

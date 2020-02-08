@@ -7,6 +7,7 @@
 //
 
 #include "psa_ia_decode.h"
+#include "qcbor_util.h"
 
 
 /*

@@ -1,10 +1,15 @@
-//
-//  eat_decode.h
-//  CToken
-//
-//  Created by Laurence Lundblade on 2/1/20.
-//  Copyright © 2020 Laurence Lundblade. All rights reserved.
-//
+/*
+ * eat_decode.h
+ *
+ * Copyright (c) 2020 Laurence Lundblade.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ *
+ * See BSD-3-Clause license in README.md
+ *
+ * Created by Laurence Lundblade on 2/1/20.
+ */
+
 
 #ifndef eat_decode_h
 #define eat_decode_h
@@ -52,7 +57,7 @@ attest_token_decode_eat_origination(struct attest_token_decode_context *me,
 
 static inline enum attest_token_err_t
 attest_token_decode_eat_security_level(struct attest_token_decode_context *me,
-                                    enum eat_security_level *security_level)
+                                    enum eat_security_level_t *security_level)
 {
     return attest_token_decode_get_int(me,
                                         EAT_LABEL_SECURITY_LEVEL,

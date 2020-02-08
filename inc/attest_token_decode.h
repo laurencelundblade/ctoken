@@ -111,7 +111,8 @@ struct attest_token_decode_context {
  * \brief Initialize token decoder.
  *
  * \param[in] me      The token decoder context to be initialized.
- * \param[in] options Decoding options.
+ * \param[in] t_cose_options Options passed to t_cose verification.
+ * \param[in] token_options  Decoding options.
  *
  * Must be called on a \ref attest_token_decode_context before
  * use. An instance of \ref attest_token_decode_context can
@@ -127,11 +128,8 @@ void attest_token_decode_init(struct attest_token_decode_context *me,
  * \brief Set specific public key to use for verification.
  *
  * \param[in] me           The token decoder context to configure.
- * \param[in] cose_pub_key A CBOR-encoded \c COSE_Key containing
- *                         the public key to use for signature
- *                         verification.
+ * \param[in] verification_key  TODO: reference to t_cose.
  *
- * \return An error from \ref attest_token_err_t.
  *
  * (This has not been implemented yet)
  *
@@ -149,7 +147,7 @@ void attest_token_decode_init(struct attest_token_decode_context *me,
  * configured. It will also replace the key set by
  * attest_token_decode_set_pub_key_select().
  */
-static void
+static inline void
 attest_token_decode_set_verification_key(struct attest_token_decode_context *me,
                                          struct t_cose_key verification_key);
 
@@ -390,7 +388,7 @@ attest_token_decode_get_uint(struct attest_token_decode_context *me,
 /*
  * Public function. See attest_token_decode.h
  */
-static void
+static inline void
 attest_token_decode_set_pub_key(struct attest_token_decode_context *me,
                                 struct t_cose_key verification_key) {
 

@@ -1,16 +1,23 @@
-//
-//  psa_ia_decode.h
-//  CToken
-//
-//  Created by Laurence Lundblade on 1/31/20.
-//  Copyright © 2020 Laurence Lundblade. All rights reserved.
-//
+/*
+ * psa_ia_decode.h
+ *
+ * Copyright (c) 2020 Laurence Lundblade.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ *
+ * See BSD-3-Clause license in README.md
+ *
+ * Created by Laurence Lundblade on 1/31/20.
+ */
+
 
 #ifndef psa_ia_decode_h
 #define psa_ia_decode_h
 
 #include "attest_token_decode.h"
 #include "eat_decode.h"
+#include "psa_ia_labels.h"
+
 
 /** Label for bits in \c item_flags in \ref
  attest_token_iat_simple_t */
@@ -53,7 +60,13 @@ struct attest_token_iat_simple_t {
  * attest_token_iat_simple_t
  */
 #define IS_ITEM_FLAG_SET(item_index, item_flags) \
-(((0x01U << (item_index))) & (item_flags))
+    (((0x01U << (item_index))) & (item_flags))
+
+
+/**
+ * Compute the bit indicating a claim is present
+ */
+#define CLAIM_PRESENT_BIT(item_index) (0x01U << (item_index))
 
 
 /**
@@ -93,7 +106,7 @@ attest_token_decode_get_iat_simple(struct attest_token_decode_context *me,
  * The nonce is a byte string. The nonce is also known as the
  * challenge.
  */
-static enum attest_token_err_t
+static inline enum attest_token_err_t
 attest_token_decode_get_nonce(struct attest_token_decode_context *me,
                               struct q_useful_buf_c *nonce);
 
@@ -123,7 +136,7 @@ attest_token_decode_get_boot_seed(struct attest_token_decode_context *me,
  *
  * The UEID is a byte string.
  */
-static enum attest_token_err_t
+static inline enum attest_token_err_t
 attest_token_decode_get_ueid(struct attest_token_decode_context *me,
                              struct q_useful_buf_c *ueid);
 

@@ -1,10 +1,15 @@
-//
-//  eat_encode.h
-//  CToken
-//
-//  Created by Laurence Lundblade on 1/31/20.
-//  Copyright © 2020 Laurence Lundblade. All rights reserved.
-//
+/*
+ * eat_encode.h
+ *
+ * Copyright (c) 2020 Laurence Lundblade.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ *
+ * See BSD-3-Clause license in README.md
+ *
+ * Created by Laurence Lundblade on 1/31/20.
+ */
+
 
 #ifndef eat_encode_h
 #define eat_encode_h
@@ -14,7 +19,7 @@
 
 
 
-static void attest_token_encode_eat_nonce(struct attest_token_encode_ctx *me,
+static inline void attest_token_encode_eat_nonce(struct attest_token_encode_ctx *me,
                                           struct q_useful_buf_c nonce)
 {
     attest_token_encode_add_bstr(me, EAT_LABEL_NONCE, nonce);
@@ -22,34 +27,34 @@ static void attest_token_encode_eat_nonce(struct attest_token_encode_ctx *me,
 
 
 
-static void attest_token_encode_eat_ueid(struct attest_token_encode_ctx *me,
+static inline void attest_token_encode_eat_ueid(struct attest_token_encode_ctx *me,
                                          struct q_useful_buf_c ueid)
 {
     attest_token_encode_add_bstr(me, UEID_LABEL, ueid);
 }
 
 
-static void attest_token_encode_eat_oemid(struct attest_token_encode_ctx *me,
+static inline void attest_token_encode_eat_oemid(struct attest_token_encode_ctx *me,
                                          struct q_useful_buf_c oemid)
 {
     attest_token_encode_add_bstr(me, EAT_LABEL_OEMID, oemid);
 }
 
 
-static void attest_token_encode_eat_origination(struct attest_token_encode_ctx *me,
+static inline void attest_token_encode_eat_origination(struct attest_token_encode_ctx *me,
                                         struct q_useful_buf_c origination)
 {
     attest_token_encode_add_bstr(me, EAT_LABEL_ORIGINATION, origination);
 }
 
 
-static void attest_token_encode_eat_security_level(struct attest_token_encode_ctx *me,
+static inline void attest_token_encode_eat_security_level(struct attest_token_encode_ctx *me,
                                                    enum eat_security_level_t security_level)
 {
     attest_token_encode_add_integer(me, EAT_LABEL_SECURITY_LEVEL, (int64_t)security_level);
 }
 
-static void attest_token_encode_eat_boot_state(struct attest_token_encode_ctx *me,
+static inline void attest_token_encode_eat_boot_state(struct attest_token_encode_ctx *me,
                                                bool secure_boot_enabled,
                                                enum eat_debug_level_t debug_state)
 {

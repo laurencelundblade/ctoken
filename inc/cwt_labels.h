@@ -1,10 +1,14 @@
-//
-//  cwt_labels.h
-//  CToken
-//
-//  Created by Laurence Lundblade on 2/1/20.
-//  Copyright © 2020 Laurence Lundblade. All rights reserved.
-//
+/*
+ * cwt_labels.h
+ *
+ * Copyright (c) 2020 Laurence Lundblade.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ *
+ * See BSD-3-Clause license in README.md
+ *
+ * Created by Laurence Lundblade on 2/1/20.
+ */
 
 #ifndef cwt_labels_h
 #define cwt_labels_h
