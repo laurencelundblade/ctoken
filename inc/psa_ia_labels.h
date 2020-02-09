@@ -13,11 +13,11 @@
 #ifndef psa_ia_labels_h
 #define psa_ia_labels_h
 
-#include "eat_labels.h"
+#include "ctoken_eat_labels.h"
 
-#define EAT_CBOR_ARM_LABEL_CHALLENGE  EAT_LABEL_NONCE
+#define EAT_CBOR_ARM_LABEL_CHALLENGE  CTOKEN_EAT_LABEL_NONCE
 
-#define EAT_CBOR_ARM_LABEL_UEID  UEID_LABEL
+#define EAT_CBOR_ARM_LABEL_UEID  CTOKEN_EAT_UEID_LABEL
 
 #define EAT_CBOR_ARM_LABEL_BOOT_SEED 90000
 

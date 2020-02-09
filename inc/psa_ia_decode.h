@@ -14,8 +14,8 @@
 #ifndef psa_ia_decode_h
 #define psa_ia_decode_h
 
-#include "attest_token_decode.h"
-#include "eat_decode.h"
+#include "ctoken_decode.h"
+#include "ctoken_eat_decode.h"
 #include "psa_ia_labels.h"
 
 
@@ -75,9 +75,9 @@ struct attest_token_iat_simple_t {
  * \param[in]  me     The token decoder context.
  * \param[out] items  Structure into which all found items are placed.
  *
- * \return An error from \ref attest_token_err_t.
+ * \return An error from \ref CTOKEN_ERR_t.
  *
- * \retval ATTEST_TOKEN_ERR_SUCCESS
+ * \retval CTOKEN_ERR_SUCCESS
  *         Indicates that the token was successfully searched. It
  *         could mean that all the data item were found, only
  *         some were found, or even none were found.
@@ -90,8 +90,8 @@ struct attest_token_iat_simple_t {
  * attest_token_iat_simple_t to determine if the data item was found or
  * not and whether the corresponding member in the structure is valid.
  */
-enum attest_token_err_t
-attest_token_decode_get_iat_simple(struct attest_token_decode_context *me,
+enum ctoken_err_t
+attest_token_decode_get_iat_simple(struct ctoken_decode_context *me,
                                    struct attest_token_iat_simple_t *items);
 
 
@@ -101,13 +101,13 @@ attest_token_decode_get_iat_simple(struct attest_token_decode_context *me,
  * \param[in]  me     The token decoder context.
  * \param[out] nonce  Returned pointer and length of nonce.
  *
- * \return An error from \ref attest_token_err_t.
+ * \return An error from \ref CTOKEN_ERR_t.
  *
  * The nonce is a byte string. The nonce is also known as the
  * challenge.
  */
-static inline enum attest_token_err_t
-attest_token_decode_get_nonce(struct attest_token_decode_context *me,
+static inline enum ctoken_err_t
+attest_token_decode_get_nonce(struct ctoken_decode_context *me,
                               struct q_useful_buf_c *nonce);
 
 
@@ -117,12 +117,12 @@ attest_token_decode_get_nonce(struct attest_token_decode_context *me,
  * \param[in]  me         The token decoder context.
  * \param[out] boot_seed  Returned pointer and length of boot_seed.
  *
- * \return An error from \ref attest_token_err_t.
+ * \return An error from \ref CTOKEN_ERR_t.
  *
  * The boot seed is a byte string.
  */
-static enum attest_token_err_t
-attest_token_decode_get_boot_seed(struct attest_token_decode_context *me,
+static enum ctoken_err_t
+attest_token_decode_get_boot_seed(struct ctoken_decode_context *me,
                                   struct q_useful_buf_c *boot_seed);
 
 
@@ -132,12 +132,12 @@ attest_token_decode_get_boot_seed(struct attest_token_decode_context *me,
  * \param[in]  me    The token decoder context.
  * \param[out] ueid  Returned pointer and length of ueid.
  *
- * \return An error from \ref attest_token_err_t.
+ * \return An error from \ref CTOKEN_ERR_t.
  *
  * The UEID is a byte string.
  */
-static inline enum attest_token_err_t
-attest_token_decode_get_ueid(struct attest_token_decode_context *me,
+static inline enum ctoken_err_t
+attest_token_decode_get_ueid(struct ctoken_decode_context *me,
                              struct q_useful_buf_c *ueid);
 
 
@@ -149,15 +149,15 @@ attest_token_decode_get_ueid(struct attest_token_decode_context *me,
  * \param[out] hw_version  Returned pointer and length of
  *                         \c hw_version.
  *
- * \return An error from \ref attest_token_err_t.
+ * \return An error from \ref CTOKEN_ERR_t.
  *
  * This is also known as the HW ID.
  *
  * The HW Version is a UTF-8 text string. It is returned as a pointer
  * and length. It is NOT \c NULL terminated.
  */
-static enum attest_token_err_t
-attest_token_decode_get_hw_version(struct attest_token_decode_context *me,
+static enum ctoken_err_t
+attest_token_decode_get_hw_version(struct ctoken_decode_context *me,
                                    struct q_useful_buf_c *hw_version);
 
 
@@ -168,12 +168,12 @@ attest_token_decode_get_hw_version(struct attest_token_decode_context *me,
  * \param[out] implementation_id  Returned pointer and length of
  *                                implementation_id.
  *
- * \return An error from \ref attest_token_err_t.
+ * \return An error from \ref CTOKEN_ERR_t.
  *
  * The implementation ID is a byte string.
  */
-static enum attest_token_err_t
-attest_token_decode_get_implementation_id(struct attest_token_decode_context*me,
+static enum ctoken_err_t
+attest_token_decode_get_implementation_id(struct ctoken_decode_context*me,
                                           struct q_useful_buf_c *implementation_id);
 
 
@@ -183,15 +183,15 @@ attest_token_decode_get_implementation_id(struct attest_token_decode_context*me,
  * \param[in]  me           The token decoder context.
  * \param[out] origination  Returned pointer and length of origination.
  *
- * \return An error from \ref attest_token_err_t.
+ * \return An error from \ref CTOKEN_ERR_t.
  *
  * This is also known as the Verification Service Indicator.
  *
  * The \c origination is a UTF-8 text string. It is returned as a
  * pointer* and length. It is NOT \c NULL terminated.
  */
-static enum attest_token_err_t
-attest_token_decode_get_origination(struct attest_token_decode_context *me,
+static enum ctoken_err_t
+attest_token_decode_get_origination(struct ctoken_decode_context *me,
                                     struct q_useful_buf_c *origination);
 
 
@@ -202,14 +202,14 @@ attest_token_decode_get_origination(struct attest_token_decode_context *me,
  * \param[out] profile_definition  Returned pointer and length of
  *                                 profile_definition.
  *
- * \return An error from \ref attest_token_err_t.
+ * \return An error from \ref CTOKEN_ERR_t.
  *
  * The profile definition is a UTF-8 text string. It is returned as a
  * pointer and length. It is NOT \c NULL terminated.
  */
-static enum attest_token_err_t
+static enum ctoken_err_t
 attest_token_decode_get_profile_definition(
-                                           struct attest_token_decode_context *me,
+                                           struct ctoken_decode_context *me,
                                            struct q_useful_buf_c *profile_definition);
 
 
@@ -219,16 +219,16 @@ attest_token_decode_get_profile_definition(
  * \param[in]  me         The token decoder context.
  * \param[out] client_id  Returned pointer and length of client_id.
  *
- * \return An error from \ref attest_token_err_t.
+ * \return An error from \ref CTOKEN_ERR_t.
  *
- * \retval ATTEST_TOKEN_ERR_INTEGER_VALUE
+ * \retval CTOKEN_ERR_INTEGER_VALUE
  *         If integer is larger or smaller than will fit
  *         in an \c int32_t.
  *
  * Also called the caller ID.
  */
-static enum attest_token_err_t
-attest_token_decode_get_client_id(struct attest_token_decode_context *me,
+static enum ctoken_err_t
+attest_token_decode_get_client_id(struct ctoken_decode_context *me,
                                   int32_t *client_id);
 
 
@@ -238,15 +238,15 @@ attest_token_decode_get_client_id(struct attest_token_decode_context *me,
  * \param[in]  me         The token decoder context.
  * \param[out] lifecycle  Returned pointer and length of lifecycle.
  *
- * \return An error from \ref attest_token_err_t.
+ * \return An error from \ref CTOKEN_ERR_t.
  *
- * \retval ATTEST_TOKEN_ERR_INTEGER_VALUE
+ * \retval CTOKEN_ERR_INTEGER_VALUE
  *         If integer is larger
  *         or smaller than will fit in a \c uint32_t.
  */
-static enum attest_token_err_t
+static enum ctoken_err_t
 attest_token_decode_get_security_lifecycle(
-                                           struct attest_token_decode_context *me,
+                                           struct ctoken_decode_context *me,
                                            uint32_t *lifecycle);
 
 
@@ -294,7 +294,7 @@ struct attest_token_sw_component_t {
  * \param[out] num_sw_components The number of SW components in the
  *                               token.
  *
- * \return An error from \ref attest_token_err_t.
+ * \return An error from \ref CTOKEN_ERR_t.
  *
  * If there are explicitly no SW components, this will return successfully
  * and the \c num_sw_components will be zero.
@@ -306,8 +306,8 @@ struct attest_token_sw_component_t {
  * - The "no SW Components" integer claim is present, its value
  * is 1, and the SW Components array is absent.
  */
-enum attest_token_err_t
-attest_token_get_num_sw_components(struct attest_token_decode_context *me,
+enum ctoken_err_t
+attest_token_get_num_sw_components(struct ctoken_decode_context *me,
                                    uint32_t *num_sw_components);
 
 
@@ -320,24 +320,24 @@ attest_token_get_num_sw_components(struct attest_token_decode_context *me,
  * \param[out] sw_components  Place to return the details of the
  *                            SW component
  *
- * \retval ATTEST_TOKEN_ERR_NOT_FOUND
+ * \retval CTOKEN_ERR_NOT_FOUND
  *         There were not \c requested_index in the token.
  *
  * \retval ATTETST_TOKEN_ERR_CBOR_TYPE
  *         The claim labeled to contain SW components is not an array.
  */
-enum attest_token_err_t
-attest_token_get_sw_component(struct attest_token_decode_context *me,
+enum ctoken_err_t
+attest_token_get_sw_component(struct ctoken_decode_context *me,
                               uint32_t requested_index,
                               struct attest_token_sw_component_t *sw_components);
 
 
 
-static inline enum attest_token_err_t
-attest_token_decode_psa_ia_nonce(struct attest_token_decode_context *me,
+static inline enum ctoken_err_t
+attest_token_decode_psa_ia_nonce(struct ctoken_decode_context *me,
                               struct q_useful_buf_c *nonce)
 {
-    return attest_token_decode_eat_nonce(me, nonce);
+    return ctoken_decode_eat_nonce(me, nonce);
 }
 
 
@@ -345,52 +345,52 @@ attest_token_decode_psa_ia_nonce(struct attest_token_decode_context *me,
 
 
 
-static inline enum attest_token_err_t
-attest_token_decode_get_boot_seed(struct attest_token_decode_context *me,
+static inline enum ctoken_err_t
+attest_token_decode_get_boot_seed(struct ctoken_decode_context *me,
                                   struct q_useful_buf_c *boot_seed)
 {
-    return attest_token_decode_get_bstr(me,
+    return ctoken_decode_get_bstr(me,
                                         EAT_CBOR_ARM_LABEL_BOOT_SEED,
                                         boot_seed);
 }
 
 
-static inline enum attest_token_err_t
-attest_token_decode_get_hw_version(struct attest_token_decode_context *me,
+static inline enum ctoken_err_t
+attest_token_decode_get_hw_version(struct ctoken_decode_context *me,
                                    struct q_useful_buf_c *hw_version)
 {
-    return attest_token_decode_get_tstr(me,
+    return ctoken_decode_get_tstr(me,
                                         EAT_CBOR_ARM_LABEL_HW_VERSION,
                                         hw_version);
 }
 
 
-static inline enum attest_token_err_t
+static inline enum ctoken_err_t
 attest_token_decode_get_implementation_id(
-                                          struct attest_token_decode_context *me,
+                                          struct ctoken_decode_context *me,
                                           struct q_useful_buf_c*implementation_id)
 {
-    return attest_token_decode_get_bstr(me,
+    return ctoken_decode_get_bstr(me,
                                         EAT_CBOR_ARM_LABEL_IMPLEMENTATION_ID,
                                         implementation_id);
 }
 
 
-static inline enum attest_token_err_t
-attest_token_decode_get_client_id(struct attest_token_decode_context *me,
+static inline enum ctoken_err_t
+attest_token_decode_get_client_id(struct ctoken_decode_context *me,
                                   int32_t *caller_id)
 {
-    enum attest_token_err_t return_value;
+    enum ctoken_err_t return_value;
     int64_t caller_id_64;
 
-    return_value = attest_token_decode_get_int(me,
+    return_value = ctoken_decode_get_int(me,
                                                EAT_CBOR_ARM_LABEL_CLIENT_ID,
                                                &caller_id_64);
-    if(return_value != ATTEST_TOKEN_ERR_SUCCESS) {
+    if(return_value != CTOKEN_ERR_SUCCESS) {
         goto Done;
     }
     if(caller_id_64 > INT32_MAX || caller_id_64 < INT32_MIN) {
-        return_value = ATTEST_TOKEN_ERR_INTEGER_VALUE;
+        return_value = CTOKEN_ERR_INTEGER_VALUE;
         goto Done;
     }
     *caller_id = (int32_t)caller_id_64;
@@ -400,19 +400,19 @@ Done:
 }
 
 
-static inline enum attest_token_err_t
+static inline enum ctoken_err_t
 attest_token_decode_get_security_lifecycle(
-                                           struct attest_token_decode_context *me,
+                                           struct ctoken_decode_context *me,
                                            uint32_t *security_lifecycle)
 {
-    enum attest_token_err_t return_value;
+    enum ctoken_err_t return_value;
     uint64_t security_lifecycle_64;
 
-    return_value = attest_token_decode_get_uint(me,
+    return_value = ctoken_decode_get_uint(me,
                                                 EAT_CBOR_ARM_LABEL_SECURITY_LIFECYCLE,
                                                 &security_lifecycle_64);
     if(security_lifecycle_64 > UINT32_MAX) {
-        return_value = ATTEST_TOKEN_ERR_INTEGER_VALUE;
+        return_value = CTOKEN_ERR_INTEGER_VALUE;
         goto Done;
     }
 
@@ -422,21 +422,21 @@ Done:
     return return_value;
 }
 
-static inline enum attest_token_err_t
+static inline enum ctoken_err_t
 attest_token_decode_get_profile_definition(
-                                           struct attest_token_decode_context *me,
+                                           struct ctoken_decode_context *me,
                                            struct q_useful_buf_c *profile_definition)
 {
-    return attest_token_decode_get_tstr(me,
+    return ctoken_decode_get_tstr(me,
                                         EAT_CBOR_ARM_LABEL_PROFILE_DEFINITION,
                                         profile_definition);
 }
 
-static inline enum attest_token_err_t
-attest_token_decode_get_origination(struct attest_token_decode_context*me,
+static inline enum ctoken_err_t
+attest_token_decode_get_origination(struct ctoken_decode_context*me,
                                     struct q_useful_buf_c *origination)
 {
-    return attest_token_decode_get_tstr(me,
+    return ctoken_decode_get_tstr(me,
                                         EAT_CBOR_ARM_LABEL_ORIGINATION,
                                         origination);
 }

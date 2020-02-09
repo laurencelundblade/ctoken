@@ -1,5 +1,5 @@
 /*
- * cwt_labels.h
+ * ctoken_cwt_labels.h
  *
  * Copyright (c) 2020 Laurence Lundblade.
  *
@@ -27,14 +27,28 @@
              | cti  | 7   | byte string                      |
              +------+-----+----------------------------------+
 
+https://www.iana.org/assignments/cwt/cwt.xhtml#claims-registry
+
  */
 
-#define CWT_LABEL_ISSUER 1
-#define CWT_LABEL_SUBJECT 2
-#define CWT_LABEL_AUDIENCE 3
-#define CWT_LABEL_EXPIRATION 4
-#define CWT_LABEL_NOT_BEFORE 5
-#define CWT_LABEL_IAT   6
-#define CWT_LABEL_CTI 7
+#define CTOKEN_CWT_LABEL_ISSUER      1
+#define CTOKEN_CWT_LABEL_SUBJECT     2
+#define CTOKEN_CWT_LABEL_AUDIENCE    3
+#define CTOKEN_CWT_LABEL_EXPIRATION  4
+#define CTOKEN_CWT_LABEL_NOT_BEFORE  5
+#define CTOKEN_CWT_LABEL_IAT         6
+#define CTOKEN_CWT_LABEL_CTI         7
+
+#define CTOKEN_CWT_LABEL_CNF         8
+
+/*
+ For claim type CTOKEN_CWT_LABEL_CNF
+
+ https://www.iana.org/assignments/cwt/cwt.xhtml#confirmation-methods */
+enum ctoken_cwt_cnf_methods_t {
+    CTOKEN_CWT_CNF_COSE_KEY           = 1,
+    CTOKEN_CWT_CNF_Encrypted_Cose_Key = 2,
+    CTOKEN_CWT_CNF_kid                = 3
+};
 
 #endif /* cwt_labels_h */

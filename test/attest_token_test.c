@@ -42,7 +42,7 @@
  * \param[out] completed_token  Place to put pointer and length
  *                              of completed token.
  *
- * \return various errors. See \ref attest_token_err_t.
+ * \return various errors. See \ref CTOKEN_ERR_t.
  *
  */
 int token_main_alt(uint32_t option_flags,
@@ -220,7 +220,7 @@ int32_t buffer_too_small_test()
                                   token_storage,
                                   &completed_token);
 
-    if(return_value != ATTEST_TOKEN_ERR_TOO_SMALL) {
+    if(return_value != CTOKEN_ERR_TOO_SMALL) {
         return_value = -1;
     } else {
         return_value = 0;
@@ -865,20 +865,20 @@ static int_fast16_t decode_test_internal(enum decode_test_mode_t mode)
     attest_token_decode_init(&token_decode, token_decode_options);
     return_value = attest_token_decode_validate_token(&token_decode,
                                                       completed_token);
-    if(return_value != ATTEST_TOKEN_ERR_SUCCESS) {
+    if(return_value != CTOKEN_ERR_SUCCESS) {
         goto Done;
     }
 
     /* -- Get the all simple claims at once and check them -- */
     return_value = attest_token_decode_get_iat_simple(&token_decode,
                                                       &simple_claims);
-    if(return_value != ATTEST_TOKEN_ERR_SUCCESS) {
+    if(return_value != CTOKEN_ERR_SUCCESS) {
         goto Done;
     }
 
 
     return_value = check_simple_claims(&simple_claims);
-    if(return_value != ATTEST_TOKEN_ERR_SUCCESS) {
+    if(return_value != CTOKEN_ERR_SUCCESS) {
         goto Done;
     }
 

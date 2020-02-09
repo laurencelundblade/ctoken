@@ -13,14 +13,14 @@
 /*
  * Public function. See attest_token_decode.h
  */
-enum attest_token_err_t
-attest_token_decode_get_iat_simple(struct attest_token_decode_context *me,
+enum ctoken_err_t
+attest_token_decode_get_iat_simple(struct ctoken_decode_context *me,
                                    struct attest_token_iat_simple_t *items)
 {
     struct qcbor_util_items_to_get_t  list[NUMBER_OF_ITEMS+1];
     QCBORDecodeContext                decode_context;
     int64_t                           client_id_64;
-    enum attest_token_err_t           return_value;
+    enum ctoken_err_t           return_value;
 
     /* Set all q_useful_bufs to NULL and flags to 0 */
     memset(items, 0, sizeof(struct attest_token_iat_simple_t));
@@ -37,7 +37,7 @@ attest_token_decode_get_iat_simple(struct attest_token_decode_context *me,
     list[ORIGINATION_FLAG].label        = EAT_CBOR_ARM_LABEL_ORIGINATION;
     list[NUMBER_OF_ITEMS].label         = 0; /* terminate the list. */
 
-    if(me->last_error != ATTEST_TOKEN_ERR_SUCCESS) {
+    if(me->last_error != CTOKEN_ERR_SUCCESS) {
         return_value = me->last_error;
         goto Done;
     }
@@ -46,7 +46,7 @@ attest_token_decode_get_iat_simple(struct attest_token_decode_context *me,
 
     return_value = qcbor_util_get_items_in_map(&decode_context,
                                                list);
-    if(return_value != ATTEST_TOKEN_ERR_SUCCESS) {
+    if(return_value != CTOKEN_ERR_SUCCESS) {
         goto Done;
     }
 
@@ -125,14 +125,14 @@ Done:
 /*
  * Public function. See attest_token_decode.h
  */
-enum attest_token_err_t
-attest_token_get_num_sw_components(struct attest_token_decode_context *me,
+enum ctoken_err_t
+attest_token_get_num_sw_components(struct ctoken_decode_context *me,
                                    uint32_t *num_sw_components)
 {
-    enum attest_token_err_t return_value;
+    enum ctoken_err_t return_value;
     QCBORItem               item;
 
-    if(me->last_error != ATTEST_TOKEN_ERR_SUCCESS) {
+    if(me->last_error != CTOKEN_ERR_SUCCESS) {
         return_value = me->last_error;
         goto Done;
     }
@@ -141,8 +141,8 @@ attest_token_get_num_sw_components(struct attest_token_decode_context *me,
                                                         EAT_CBOR_ARM_LABEL_SW_COMPONENTS,
                                                         QCBOR_TYPE_ARRAY,
                                                         &item);
-    if(return_value != ATTEST_TOKEN_ERR_SUCCESS) {
-        if(return_value != ATTEST_TOKEN_ERR_NOT_FOUND) {
+    if(return_value != CTOKEN_ERR_SUCCESS) {
+        if(return_value != CTOKEN_ERR_NOT_FOUND) {
             /* Something very wrong. Bail out passing on the return_value */
             goto Done;
         } else {
@@ -151,25 +151,25 @@ attest_token_get_num_sw_components(struct attest_token_decode_context *me,
                                                                 EAT_CBOR_ARM_LABEL_NO_SW_COMPONENTS,
                                                                 QCBOR_TYPE_INT64,
                                                                 &item);
-            if(return_value == ATTEST_TOKEN_ERR_SUCCESS) {
+            if(return_value == CTOKEN_ERR_SUCCESS) {
                 if(item.val.int64 == NO_SW_COMPONENT_FIXED_VALUE) {
                     /* Successful omission of SW components. Pass on the
                      * success return_value */
                     *num_sw_components = 0;
                 } else {
                     /* Indicator for no SW components malformed */
-                    return_value = ATTEST_TOKEN_ERR_SW_COMPONENTS_MISSING;
+                    return_value = CTOKEN_ERR_SW_COMPONENTS_MISSING;
                 }
-            } else if(return_value == ATTEST_TOKEN_ERR_NOT_FOUND) {
+            } else if(return_value == CTOKEN_ERR_NOT_FOUND) {
                 /* Should have been an indicator for no SW components */
-                return_value = ATTEST_TOKEN_ERR_SW_COMPONENTS_MISSING;
+                return_value = CTOKEN_ERR_SW_COMPONENTS_MISSING;
             }
         }
     } else {
         /* The SW components claim exists */
         if(item.val.uCount == 0) {
             /* Empty SW component not allowed */
-            return_value = ATTEST_TOKEN_ERR_SW_COMPONENTS_MISSING;
+            return_value = CTOKEN_ERR_SW_COMPONENTS_MISSING;
         } else {
             /* SUCESSS! Pass on the success return_value */
             /* Note that this assumes the array is definite length */
@@ -190,22 +190,22 @@ Done:
  *                              component.
  * \param[out] sw_component     The structure to fill in with decoded data.
  *
- * \return An error from \ref attest_token_err_t.
+ * \return An error from \ref CTOKEN_ERR_t.
  *
  */
-static inline enum attest_token_err_t
+static inline enum ctoken_err_t
 decode_sw_component(QCBORDecodeContext               *decode_context,
                     const QCBORItem                  *sw_component_item,
                     struct attest_token_sw_component_t *sw_component)
 {
-    enum attest_token_err_t return_value;
+    enum ctoken_err_t return_value;
     QCBORItem claim_item;
     QCBORError cbor_error;
     uint_fast8_t next_nest_level; /* nest levels are 8-bit, but a uint8_t
                                    var is often slower and more code */
 
     if(sw_component_item->uDataType != QCBOR_TYPE_MAP) {
-        return_value = ATTEST_TOKEN_ERR_CBOR_STRUCTURE;
+        return_value = CTOKEN_ERR_CBOR_STRUCTURE;
         goto Done;
     }
 
@@ -213,13 +213,13 @@ decode_sw_component(QCBORDecodeContext               *decode_context,
      lengths to 0 */
     memset(sw_component, 0, sizeof(struct attest_token_sw_component_t));
 
-    return_value = ATTEST_TOKEN_ERR_SUCCESS;
+    return_value = CTOKEN_ERR_SUCCESS;
 
     while(1) {
         cbor_error = QCBORDecode_GetNext(decode_context, &claim_item);
         if(cbor_error != QCBOR_SUCCESS) {
             /* no tolerance for any errors here */
-            return_value = ATTEST_TOKEN_ERR_CBOR_NOT_WELL_FORMED;
+            return_value = CTOKEN_ERR_CBOR_NOT_WELL_FORMED;
             goto Done;
         }
 
@@ -294,7 +294,7 @@ decode_sw_component(QCBORDecodeContext               *decode_context,
         if(qcbor_util_consume_item(decode_context,
                                    &claim_item,
                                    &next_nest_level)) {
-            return_value = ATTEST_TOKEN_ERR_CBOR_NOT_WELL_FORMED;
+            return_value = CTOKEN_ERR_CBOR_NOT_WELL_FORMED;
             goto Done;
         }
         if(next_nest_level < sw_component_item->uNextNestLevel) {
@@ -311,19 +311,19 @@ Done:
 /*
  * Public function. See attest_token_decode.h
  */
-enum attest_token_err_t
-attest_token_get_sw_component(struct attest_token_decode_context *me,
+enum ctoken_err_t
+attest_token_get_sw_component(struct ctoken_decode_context *me,
                               uint32_t requested_index,
                               struct attest_token_sw_component_t *sw_components)
 {
-    enum attest_token_err_t return_value;
+    enum ctoken_err_t return_value;
     QCBORItem               sw_components_array_item;
     QCBORDecodeContext      decode_context;
     QCBORItem               sw_component_item;
     QCBORError              qcbor_error;
     uint_fast8_t            exit_array_level;
 
-    if(me->last_error != ATTEST_TOKEN_ERR_SUCCESS) {
+    if(me->last_error != CTOKEN_ERR_SUCCESS) {
         return_value = me->last_error;
         goto Done;
     }
@@ -334,7 +334,7 @@ attest_token_get_sw_component(struct attest_token_decode_context *me,
     return_value = qcbor_util_decode_to_labeled_item(&decode_context,
                                                      EAT_CBOR_ARM_LABEL_SW_COMPONENTS,
                                                      &sw_components_array_item);
-    if(return_value != ATTEST_TOKEN_ERR_SUCCESS) {
+    if(return_value != CTOKEN_ERR_SUCCESS) {
         goto Done;
     }
 
@@ -350,13 +350,13 @@ attest_token_get_sw_component(struct attest_token_decode_context *me,
         qcbor_error = QCBORDecode_GetNext(&decode_context, &sw_component_item);
         if(qcbor_error) {
             /* no tolerance for any errors here */
-            return_value = ATTEST_TOKEN_ERR_CBOR_NOT_WELL_FORMED;
+            return_value = CTOKEN_ERR_CBOR_NOT_WELL_FORMED;
             goto Done;
         }
 
         if(sw_component_item.uNextNestLevel <= exit_array_level) {
             /* Next item will be outside the array */
-            return_value = ATTEST_TOKEN_ERR_NOT_FOUND;
+            return_value = CTOKEN_ERR_NOT_FOUND;
             /* The end of the array containing SW components
              and didn't get to the requested_index. */
             goto Done;
@@ -375,7 +375,7 @@ attest_token_get_sw_component(struct attest_token_decode_context *me,
         requested_index--;
 
         if(qcbor_util_consume_item(&decode_context, &sw_component_item, NULL)) {
-            return_value = ATTEST_TOKEN_ERR_CBOR_NOT_WELL_FORMED;
+            return_value = CTOKEN_ERR_CBOR_NOT_WELL_FORMED;
             goto Done;
         }
     }

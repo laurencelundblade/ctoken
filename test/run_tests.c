@@ -241,8 +241,8 @@ static void PrintSize(const char *szWhat,
 
 
 
-#include "attest_token_encode.h" /* For struct size printing */
-#include "attest_token_decode.h" /* For struct size printing */
+#include "ctoken_encode.h" /* For struct size printing */
+#include "ctoken_decode.h" /* For struct size printing */
 
 /*
  Public function. See run_test.h.
@@ -252,7 +252,7 @@ void PrintSizesCToken(OutputStringCB pfOutput, void *pOutCtx)
    // Type and size of return from sizeof() varies. These will never be large
    // so cast is safe.
     PrintSize("sizeof(attest_token_decode_context)",
-              (uint32_t)sizeof(struct attest_token_decode_context),
+              (uint32_t)sizeof(struct ctoken_decode_context),
               pfOutput, pOutCtx);
     (*pfOutput)("", pOutCtx, 1);
 }

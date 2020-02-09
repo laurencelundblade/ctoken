@@ -1,0 +1,90 @@
+# Makefile -- UNIX-style make for ctoken using OpenSSL crypto
+#
+# Copyright (c) 2019-2020, Laurence Lundblade. All rights reserved.
+#
+# SPDX-License-Identifier: BSD-3-Clause
+#
+# See BSD-3-Clause license in README.md
+#
+
+# ---- comment ----
+# This is for OpenSSL Crypto. Adjust CRYPTO_INC and CRYPTO_LIB for the location of
+# the openssl libraries on your build machine.
+
+
+# ---- QCBOR location ----
+# Adjust this to the location of QCBOR in your build environment
+QCBOR_INC= -I ../../QCBOR/master/inc
+QCBOR_LIB=../../QCBOR/master/libqcbor.a
+
+# ---- t_cose location ----
+# Adjust this to the location of t_cose in your build environment
+T_COSE_INC= -I ../../t_cose/master/inc
+T_COSE_LIB=../../t_cose/master/libt_cose.a
+
+
+# ---- crypto configuration -----
+# Set up for OpenSSL. This may have to be adjusted for your build environment.
+CRYPTO_INC=-I ../../openssl/openssl-1.1.1b/include/openssl -I ../../openssl/openssl-1.1.1b/include
+CRYPTO_LIB=../../openssl/openssl-1.1.1b/libcrypto.a
+CRYPTO_CONFIG_OPTS=-DT_COSE_USE_OPENSSL_CRYPTO
+CRYPTO_OBJ=
+CRYPTO_TEST_OBJ=
+
+
+# ---- compiler configuration -----
+C_OPTS=-Os -Wall -pedantic-errors -Wextra -Wshadow -Wparentheses -xc -std=c99
+
+
+# ---- T_COSE Config and test options ----
+TEST_CONFIG_OPTS=
+TEST_OBJ=test/cwt_test.o test/run_tests.o
+
+
+# ---- the main body that is invariant ----
+INC=-I inc -I Test  -I src
+ALL_INC=$(CRYPTO_INC) $(QCBOR_INC) $(T_COSE_INC) $(INC) 
+CFLAGS=$(ALL_INC) $(C_OPTS) $(TEST_CONFIG_OPTS) $(CRYPTO_CONFIG_OPTS)
+
+SRC_OBJ=src/ctoken_encode.o src/ctoken_decode.o src/qcbor_util.o 
+
+all:	libctoken.a ctoken_test 
+
+
+libctoken.a: $(SRC_OBJ) $(CRYPTO_OBJ)
+	ar -r $@ $^
+
+
+ctoken_test: main.o $(TEST_OBJ) libctoken.a
+	cc -o $@ $^ $(QCBOR_LIB) $(T_COSE_LIB) $(CRYPTO_LIB) 
+
+
+t_cose_basic_example_ossl:	examples/t_cose_basic_example_ossl.o libt_cose.a
+	cc -o $@ $^ $(QCBOR_LIB) $(CRYPTO_LIB)
+
+clean:
+	rm -f $(SRC_OBJ) $(TEST_OBJ) $(CRYPTO_OBJ) t_cose_basic_example_ossl t_cose_test libt_cose.a main.o
+
+
+# ---- public headers -----
+PUBLIC_INTERFACE=inc/ctoken_encode.h inc/ctoken_decode.h \
+                 inc/ctoken_cwt_decode.h inc/ctoken_cwt_labels.h inc/ctoken_cwt_encode.h
+
+# ---- source dependecies -----
+src/qcbor_util.o:	src/qcbor_util.h
+src/ctoken_encode.o:	inc/ctoken_encode.h
+src/ctoken_decode.o:	inc/ctoken_decode.h src/qcbor_util.h
+
+
+# ---- test dependencies -----
+#test/t_cose_test.o:	test/t_cose_test.h test/t_cose_make_test_messages.h src/t_cose_crypto.h $(PUBLIC_INTERFACE)
+#test/t_cose_sign_verify_test.o:	test/t_cose_sign_verify_test.h test/t_cose_make_test_messages.h src/t_cose_crypto.h test/t_cose_make_test_pub_key.h $(PUBLIC_INTERFACE)
+#test/t_cose_make_test_messages.o: test/t_cose_make_test_messages.h inc/t_cose_sign1_sign.h inc/t_cose_common.h src/t_cose_standard_constants.h src/t_cose_crypto.h src/t_cose_util.h
+#test/run_test.o: test/run_test.h test/t_cose_test.h test/t_cose_hash_fail_test.h
+#test/t_cose_make_openssl_test_key.o:	test/t_cose_make_test_pub_key.h src/t_cose_standard_constants.h inc/t_cose_common.h
+
+# ---- crypto dependencies ----
+#crypto_adapters/t_cose_openssl_crypto.o:	src/t_cose_crypto.h inc/t_cose_common.h src/t_cose_standard_constants.h inc/q_useful_buf.h
+
+# ---- example dependencies ----
+#t_cose_basic_example_ossl.o:	$(PUBLIC_INTERFACE)

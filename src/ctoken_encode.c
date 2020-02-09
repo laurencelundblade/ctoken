@@ -1,14 +1,14 @@
 /*
- * attest_token_encode.c
+ * ctoken_encode.c (formerly attest_token_encode.c)
  *
- * Copyright (c) 2018-2019, Laurence Lundblade. All rights reserved.
+ * Copyright (c) 2018-2020, Laurence Lundblade. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
  * See BSD-3-Clause license in README.md
  */
 
-#include "attest_token_encode.h"
+#include "ctoken_encode.h"
 #include "qcbor.h"
 #include "t_cose_sign1_sign.h"
 
@@ -53,22 +53,22 @@
  *
  * \return the attestation token error.
  */
-static enum attest_token_err_t t_cose_err_to_attest_err(enum t_cose_err_t err)
+static enum ctoken_err_t t_cose_err_to_attest_err(enum t_cose_err_t err)
 {
     switch(err) {
 
     case T_COSE_SUCCESS:
-        return ATTEST_TOKEN_ERR_SUCCESS;
+        return CTOKEN_ERR_SUCCESS;
 
     case T_COSE_ERR_UNSUPPORTED_HASH:
-        return ATTEST_TOKEN_ERR_HASH_UNAVAILABLE;
+        return CTOKEN_ERR_HASH_UNAVAILABLE;
 
     default:
         /* A lot of the errors are not mapped because they are
          * primarily internal errors that should never happen. They
          * end up here.
          */
-        return ATTEST_TOKEN_ERR_GENERAL;
+        return CTOKEN_ERR_GENERAL;
     }
 }
 
@@ -76,13 +76,13 @@ static enum attest_token_err_t t_cose_err_to_attest_err(enum t_cose_err_t err)
 /*
  * Public function. See attest_token_decode.h
  */
-enum attest_token_err_t
-attest_token_encode_start(struct attest_token_encode_ctx *me,
+enum ctoken_err_t
+ctoken_encode_start(struct ctoken_encode_ctx        *me,
                           const struct q_useful_buf *out_buf)
 {
     /* approximate stack usage on 32-bit machine: 4 bytes */
     enum t_cose_err_t cose_return_value;
-    enum attest_token_err_t return_value;
+    enum ctoken_err_t return_value;
 
     /* Spin up the CBOR encoder */
     QCBOREncode_Init(&(me->cbor_enc_ctx), *out_buf);
@@ -103,16 +103,16 @@ attest_token_encode_start(struct attest_token_encode_ctx *me,
 
     QCBOREncode_OpenMap(&(me->cbor_enc_ctx));
 
-    return_value = ATTEST_TOKEN_ERR_SUCCESS;
+    return_value = CTOKEN_ERR_SUCCESS;
 
 Done:
     return return_value;
 }
 
-
-void attest_token_encode_open_submod(struct attest_token_encode_ctx *me,
-                                            char *submod_name,
-                                            int nConnectionType)
+#ifdef THIS_CODE_IS_COMPLETED
+void attest_token_encode_open_submod(struct ctoken_encode_ctx *me,
+                                            char              *submod_name,
+                                            int                nConnectionType)
 {
     if(me->submod_nest_level == 255) {
         return; // TODO: error out properly (or set error)
@@ -125,7 +125,7 @@ void attest_token_encode_open_submod(struct attest_token_encode_ctx *me,
     me->submod_nest_level++; // TODO; check for overflow
 }
 
-static void attest_token_encode_close_submod(struct attest_token_encode_ctx *me)
+static void attest_token_encode_close_submod(struct ctoken_encode_ctx *me)
 {
     if(me->submod_nest_level == 0 || me->submod_nest_level == 255) {
         // error
@@ -140,23 +140,24 @@ static void attest_token_encode_close_submod(struct attest_token_encode_ctx *me)
 }
 
 
-static void attest_token_encode_add_token(struct attest_token_encode_ctx *me,
+static void attest_token_encode_add_token(struct ctoken_encode_ctx *me,
                                           char *submod_name,
                                           int nConnectionType,
                                           struct q_useful_buf_c token)
 {
     
 }
+#endif /*THIS_CODE_IS_COMPLETED */
 
 /*
  * Public function. See attest_token_decode.h
  */
-enum attest_token_err_t
-attest_token_encode_finish(struct attest_token_encode_ctx *me,
-                           struct q_useful_buf_c *completed_token)
+enum ctoken_err_t
+ctoken_encode_finish(struct ctoken_encode_ctx *me,
+                     struct q_useful_buf_c    *completed_token)
 {
     /* approximate stack usage on 32-bit machine: 4 + 4 + 8 + 8 = 24 */
-    enum attest_token_err_t return_value = ATTEST_TOKEN_ERR_SUCCESS;
+    enum ctoken_err_t       return_value = CTOKEN_ERR_SUCCESS;
     /* The payload with all the claims that is signed */
     /* The completed and signed encoded cose_sign1 */
     struct q_useful_buf_c   completed_token_ub;
@@ -175,13 +176,12 @@ attest_token_encode_finish(struct attest_token_encode_ctx *me,
     }
 
     /* Close off the CBOR encoding and return the completed token */
-    qcbor_result = QCBOREncode_Finish(&(me->cbor_enc_ctx),
-                                      &completed_token_ub);
+    qcbor_result = QCBOREncode_Finish(&(me->cbor_enc_ctx),  &completed_token_ub);
     if(qcbor_result == QCBOR_ERR_BUFFER_TOO_SMALL) {
-        return_value = ATTEST_TOKEN_ERR_TOO_SMALL;
+        return_value = CTOKEN_ERR_TOO_SMALL;
     } else if (qcbor_result != QCBOR_SUCCESS) {
         /* likely from array not closed, too many closes, ... */
-        return_value = ATTEST_TOKEN_ERR_CBOR_FORMATTING;
+        return_value = CTOKEN_ERR_CBOR_FORMATTING;
     } else {
         *completed_token = completed_token_ub;
     }
@@ -189,3 +189,4 @@ attest_token_encode_finish(struct attest_token_encode_ctx *me,
 Done:
     return return_value;
 }
+

@@ -1,7 +1,7 @@
 /*
- * attest_token_encode.h
+ * ctoken_encode.h (formerly attest_token_encode.h)
  *
- * Copyright (c) 2018-2019, Laurence Lundblade.
+ * Copyright (c) 2018-2020, Laurence Lundblade.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -9,10 +9,10 @@
  */
 
 
-#ifndef __ATTEST_TOKEN_ENCODE_H__
-#define __ATTEST_TOKEN_ENCODE_H__
+#ifndef __CTOKEN_ENCODE_H__
+#define __CTOKEN_ENCODE_H__
 
-#include "attest_token.h"
+#include "ctoken.h"
 #include "qcbor.h"
 #include "t_cose_sign1_sign.h"
 
@@ -20,7 +20,7 @@
 /**
  * \file attest_token_encode.h
  *
- * \brief Attestation Token Creation Interface
+ * \brief CBOR Token Creation Interface
  *
  * The context and functions here are the way to create an attestation
  * token. The steps are roughly:
@@ -37,8 +37,8 @@
 
 
 /**
- * The context for creating an attestation token.  The caller of
- * attest_token must create one of these and pass it to the functions
+ * The context for creating a CBOR token.  The caller of
+ * ctoken_encode must create one of these and pass it to the functions
  * here. It is small enough that it can go on the stack. It is most of
  * the memory needed to create a token except the output buffer and
  * any memory requirements for the cryptographic operations.
@@ -47,7 +47,7 @@
  *
  * This is roughly 148 + 8 + 32 = 188 bytes
  */
-struct attest_token_encode_ctx {
+struct ctoken_encode_ctx {
     /* Private data structure */
     QCBOREncodeContext           cbor_enc_ctx;
     uint32_t                     opt_flags;
@@ -84,21 +84,21 @@ struct attest_token_encode_ctx {
  */
 
 static void
-attest_token_encode_init(struct attest_token_encode_ctx *me,
-                         uint32_t                        t_cose_opt_flags,
-                         uint32_t                        token_opt_flags,
-                         int32_t                         cose_alg_id);
+ctoken_encode_init(struct ctoken_encode_ctx *me,
+                   uint32_t                  t_cose_opt_flags,
+                   uint32_t                  token_opt_flags,
+                   int32_t                   cose_alg_id);
 
 
 static void
-attest_token_encode_set_key(struct attest_token_encode_ctx *me,
-                            struct t_cose_key               key,
-                            struct q_useful_buf_c           key_id);
+ctoken_encode_set_key(struct ctoken_encode_ctx *me,
+                      struct t_cose_key         key,
+                      struct q_useful_buf_c     key_id);
 
 
-enum attest_token_err_t
-attest_token_encode_start(struct attest_token_encode_ctx *me,
-                          const struct q_useful_buf *out_buffer);
+enum ctoken_err_t
+ctoken_encode_start(struct ctoken_encode_ctx *me,
+                    const struct q_useful_buf *out_buffer);
 
 
 
@@ -117,7 +117,7 @@ attest_token_encode_start(struct attest_token_encode_ctx *me,
  * QCBOREncode_Finish() should not be closed on this context.
  */
 static QCBOREncodeContext *
-attest_token_encode_borrow_cbor_cntxt(struct attest_token_encode_ctx *me);
+ctoken_encode_borrow_cbor_cntxt(struct ctoken_encode_ctx *me);
 
 /**
  * \brief Add a 64-bit signed integer claim
@@ -126,9 +126,9 @@ attest_token_encode_borrow_cbor_cntxt(struct attest_token_encode_ctx *me);
  * \param[in] label  Integer label for claim.
  * \param[in] value  The integer claim data.
  */
-static void attest_token_encode_add_integer(struct attest_token_encode_ctx *me,
-                                     int32_t label,
-                                     int64_t value);
+static void ctoken_encode_add_integer(struct ctoken_encode_ctx *me,
+                                      int32_t label,
+                                      int64_t value);
 
 /**
  * \brief Add a binary string claim
@@ -137,9 +137,9 @@ static void attest_token_encode_add_integer(struct attest_token_encode_ctx *me,
  * \param[in] label  Integer label for claim.
  * \param[in] value  The binary claim data.
  */
-static void attest_token_encode_add_bstr(struct attest_token_encode_ctx *me,
-                                  int32_t label,
-                                  struct q_useful_buf_c value);
+static void ctoken_encode_add_bstr(struct ctoken_encode_ctx *me,
+                                   int32_t label,
+                                   struct q_useful_buf_c value);
 
 /**
  * \brief Add a text string claim
@@ -148,9 +148,9 @@ static void attest_token_encode_add_bstr(struct attest_token_encode_ctx *me,
  * \param[in] label  Integer label for claim.
  * \param[in] value  The text claim data.
  */
-static void attest_token_encode_add_tstr(struct attest_token_encode_ctx *me,
-                                  int32_t label,
-                                  struct q_useful_buf_c value);
+static void ctoken_encode_add_tstr(struct ctoken_encode_ctx *me,
+                                   int32_t label,
+                                   struct q_useful_buf_c value);
 
 /**
  * \brief Add some already-encoded CBOR to payload
@@ -163,9 +163,9 @@ static void attest_token_encode_add_tstr(struct attest_token_encode_ctx *me,
  * type. It cannot be a partial map or array. It can be nested maps
  * and arrays, but they must all be complete.
  */
-static void attest_token_encode_add_cbor(struct attest_token_encode_ctx *me,
-                                  int32_t label,
-                                  struct q_useful_buf_c encoded);
+static void ctoken_encode_add_cbor(struct ctoken_encode_ctx *me,
+                                   int32_t label,
+                                   struct q_useful_buf_c encoded);
 
 
 
@@ -176,114 +176,95 @@ static void attest_token_encode_add_cbor(struct attest_token_encode_ctx *me,
  * \param[in] me                Token Creation Context.
  * \param[out] completed_token  Pointer and length to completed token.
  *
- * \return one of the \ref attest_token_err_t errors.
+ * \return one of the \ref CTOKEN_ERR_t errors.
  *
  * This completes the token after the payload has been added. When
  * this is called the signing algorithm is run and the final
  * formatting of the token is completed.
  */
-enum attest_token_err_t
-attest_token_encode_finish(struct attest_token_encode_ctx *me,
-                           struct q_useful_buf_c *completed_token);
+enum ctoken_err_t
+ctoken_encode_finish(struct ctoken_encode_ctx *me,
+                     struct q_useful_buf_c *completed_token);
 
 
+
+
+
+
+/* ----- inline implementations ------ */
 
 static inline void
-attest_token_encode_set_key(struct attest_token_encode_ctx *me,
-                            struct t_cose_key key,
-                            struct q_useful_buf_c key_id)
+ctoken_encode_set_key(struct ctoken_encode_ctx *me,
+                      struct t_cose_key key,
+                      struct q_useful_buf_c key_id)
 {
     t_cose_sign1_set_signing_key(&(me->signer_ctx), key, key_id);
 }
 
 
 static inline void
-attest_token_encode_init(struct attest_token_encode_ctx *me,
-                         uint32_t t_cose_opt_flags,
-                         uint32_t token_opt_flags,
-                         int32_t cose_alg_id)
+ctoken_encode_init(struct ctoken_encode_ctx *me,
+                   uint32_t t_cose_opt_flags,
+                   uint32_t token_opt_flags,
+                   int32_t cose_alg_id)
 {
     me->opt_flags = token_opt_flags;
     t_cose_sign1_sign_init(&(me->signer_ctx), t_cose_opt_flags, cose_alg_id);
 }
 
 
-
-/*
- * Public function. See attest_token_decode.h
- */
 static inline QCBOREncodeContext *
-attest_token_encode_borrow_cbor_cntxt(struct attest_token_encode_ctx *me)
+ctoken_encode_borrow_cbor_cntxt(struct ctoken_encode_ctx *me)
 {
     return &(me->cbor_enc_ctx);
 }
 
 
-/*
- * Public function. See attest_token_decode.h
- */
 static inline void
-attest_token_encode_add_integer(struct attest_token_encode_ctx *me,
-                                     int32_t label,
-                                     int64_t Value)
+ctoken_encode_add_integer(struct ctoken_encode_ctx *me,
+                          int32_t label,
+                          int64_t Value)
 {
     QCBOREncode_AddInt64ToMapN(&(me->cbor_enc_ctx), label, Value);
 }
 
 
-/*
- * Public function. See attest_token_decode.h
- */
 static inline void
-attest_token_encode_add_bstr(struct attest_token_encode_ctx *me,
-                                         int32_t label,
-                                         struct q_useful_buf_c bstr)
+ctoken_encode_add_bstr(struct ctoken_encode_ctx *me,
+                       int32_t label,
+                       struct q_useful_buf_c bstr)
 {
-    QCBOREncode_AddBytesToMapN(&(me->cbor_enc_ctx),
-                               label,
-                               bstr);
+    QCBOREncode_AddBytesToMapN(&(me->cbor_enc_ctx), label, bstr);
 }
 
 
-/*
- * Public function. See attest_token_decode.h
- */
 static inline void
-attest_token_encode_add_tstr(struct attest_token_encode_ctx *me,
-                                      int32_t label,
-                                  struct q_useful_buf_c tstr)
+ctoken_encode_add_tstr(struct ctoken_encode_ctx *me,
+                       int32_t label,
+                       struct q_useful_buf_c tstr)
 {
     QCBOREncode_AddTextToMapN(&(me->cbor_enc_ctx), label, tstr);
 }
 
 
-/*
- * Public function. See attest_token_decode.h
- */
 static inline void
-attest_token_encode_add_cbor(struct attest_token_encode_ctx *me,
-                                  int32_t label,
-                                  struct q_useful_buf_c encoded)
+ctoken_encode_add_cbor(struct ctoken_encode_ctx *me,
+                       int32_t label,
+                       struct q_useful_buf_c encoded)
 {
     QCBOREncode_AddEncodedToMapN(&(me->cbor_enc_ctx), label, encoded);
 }
 
 
-/*
- * Public function. See attest_token_decode.h
- */
 static inline void
-attest_token_encode_open_array(struct attest_token_encode_ctx *me, int32_t label)
+attest_token_encode_open_array(struct ctoken_encode_ctx *me, int32_t label)
 {
     QCBOREncode_OpenArrayInMapN(&(me->cbor_enc_ctx), label);
 }
 
 
-/*
- * Public function. See attest_token_decode.h
- */
 static inline void
-attest_token_encode_close_array(struct attest_token_encode_ctx *me)
+attest_token_encode_close_array(struct ctoken_encode_ctx *me)
 {
     QCBOREncode_CloseArray(&(me->cbor_enc_ctx));
 }
@@ -293,4 +274,4 @@ attest_token_encode_close_array(struct attest_token_encode_ctx *me)
 }
 #endif
 
-#endif /* __ATTEST_TOKEN_ENCODE_H__ */
+#endif /* __CTOKEN_ENCODE_H__ */

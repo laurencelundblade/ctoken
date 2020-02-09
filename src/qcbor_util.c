@@ -58,13 +58,13 @@ Done:
 /*
  * Public function. qcbor_util.h
  */
-enum attest_token_err_t
+enum ctoken_err_t
 qcbor_util_get_items_in_map(QCBORDecodeContext *decode_context,
                             struct qcbor_util_items_to_get_t *items_found)
 {
     QCBORItem                         item;
     struct qcbor_util_items_to_get_t  *iterator;
-    enum attest_token_err_t           return_value;
+    enum ctoken_err_t           return_value;
     uint_fast8_t                      map_nest_level;
     uint_fast8_t                      next_nest_level;
 
@@ -76,7 +76,7 @@ qcbor_util_get_items_in_map(QCBORDecodeContext *decode_context,
     /* Get the data item that is the map that is being searched */
     QCBORDecode_GetNext(decode_context, &item);
     if(item.uDataType != QCBOR_TYPE_MAP) {
-        return_value = ATTEST_TOKEN_ERR_CBOR_STRUCTURE;
+        return_value = CTOKEN_ERR_CBOR_STRUCTURE;
         goto Done;
     }
 
@@ -89,7 +89,7 @@ qcbor_util_get_items_in_map(QCBORDecodeContext *decode_context,
     while(1) {
         if(QCBORDecode_GetNext(decode_context, &item) != QCBOR_SUCCESS) {
             /* Got non-well-formed CBOR */
-            return_value = ATTEST_TOKEN_ERR_CBOR_NOT_WELL_FORMED;
+            return_value = CTOKEN_ERR_CBOR_NOT_WELL_FORMED;
             goto Done;
         }
 
@@ -108,11 +108,11 @@ qcbor_util_get_items_in_map(QCBORDecodeContext *decode_context,
         /* Only looking at top-level data items, so just consume any
          * map or array encountered.*/
         if(qcbor_util_consume_item(decode_context, &item, &next_nest_level)) {
-            return_value = ATTEST_TOKEN_ERR_CBOR_NOT_WELL_FORMED;
+            return_value = CTOKEN_ERR_CBOR_NOT_WELL_FORMED;
             goto Done;
         }
         if(next_nest_level < map_nest_level) {
-            return_value = ATTEST_TOKEN_ERR_SUCCESS;
+            return_value = CTOKEN_ERR_SUCCESS;
             /* Got all the items in the map. This is the non-error exit
              * from the loop. */
             break;
@@ -127,20 +127,20 @@ Done:
 /*
  * Public function. See qcbor_util.h
  */
-enum attest_token_err_t
+enum ctoken_err_t
 qcbor_util_decode_to_labeled_item(QCBORDecodeContext *decode_context,
                                   int32_t label,
                                   QCBORItem *item)
 {
     QCBORItem               map_item;
-    enum attest_token_err_t return_value;
+    enum ctoken_err_t return_value;
 
-    return_value = ATTEST_TOKEN_ERR_SUCCESS;
+    return_value = CTOKEN_ERR_SUCCESS;
 
     QCBORDecode_GetNext(decode_context, &map_item);
     if(map_item.uDataType != QCBOR_TYPE_MAP) {
         /* Isn't a map */
-        return_value = ATTEST_TOKEN_ERR_CBOR_STRUCTURE;
+        return_value = CTOKEN_ERR_CBOR_STRUCTURE;
         goto Done;
     }
 
@@ -148,7 +148,7 @@ qcbor_util_decode_to_labeled_item(QCBORDecodeContext *decode_context,
     while(1) {
         if(QCBORDecode_GetNext(decode_context, item) != QCBOR_SUCCESS) {
             /* Got non-well-formed CBOR */
-            return_value = ATTEST_TOKEN_ERR_CBOR_NOT_WELL_FORMED;
+            return_value = CTOKEN_ERR_CBOR_NOT_WELL_FORMED;
             goto Done;
         }
 
@@ -157,7 +157,7 @@ qcbor_util_decode_to_labeled_item(QCBORDecodeContext *decode_context,
             /* See if it is one we are looking for */
             if(item->label.int64 == label) {
                 /* This is successful exit from the loop */
-                return_value = ATTEST_TOKEN_ERR_SUCCESS;
+                return_value = CTOKEN_ERR_SUCCESS;
                 goto Done;
             }
         }
@@ -165,14 +165,14 @@ qcbor_util_decode_to_labeled_item(QCBORDecodeContext *decode_context,
         /* Only looking at top-level data items, so just consume any
          * map or array encountered */
         if(qcbor_util_consume_item(decode_context, item, NULL)) {
-            return_value = ATTEST_TOKEN_ERR_CBOR_NOT_WELL_FORMED;
+            return_value = CTOKEN_ERR_CBOR_NOT_WELL_FORMED;
             goto Done;
         }
 
         if(item->uNextNestLevel < map_item.uNextNestLevel) {
             /* Fetched last item in the map without
              * finding what was requested */
-            return_value = ATTEST_TOKEN_ERR_NOT_FOUND;
+            return_value = CTOKEN_ERR_NOT_FOUND;
             goto Done;
         }
     }
@@ -185,13 +185,13 @@ Done:
 /*
  * Public function. See qcbor_util.h
  */
-enum attest_token_err_t
+enum ctoken_err_t
 qcbor_util_get_item_in_map(QCBORDecodeContext *decode_context,
                            int32_t label,
                            QCBORItem *item)
 {
     struct qcbor_util_items_to_get_t  one_item[2];
-    enum attest_token_err_t           return_value;
+    enum ctoken_err_t           return_value;
 
     one_item[0].label = label;
     one_item[1].label = 0; /* Terminator for search list */
@@ -202,7 +202,7 @@ qcbor_util_get_item_in_map(QCBORDecodeContext *decode_context,
     }
 
     if(one_item[0].item.uDataType == QCBOR_TYPE_NONE) {
-        return_value = ATTEST_TOKEN_ERR_NOT_FOUND;
+        return_value = CTOKEN_ERR_NOT_FOUND;
         goto Done;
     }
 
@@ -216,19 +216,19 @@ Done:
 /*
  * Public function. See qcbor_util.h
  */
-enum attest_token_err_t
+enum ctoken_err_t
 qcbor_util_get_top_level_item_in_map(struct q_useful_buf_c payload,
                                      int32_t label,
                                      uint_fast8_t qcbor_type,
                                      QCBORItem *item)
 {
-    enum attest_token_err_t return_value;
+    enum ctoken_err_t return_value;
     QCBORItem               found_item;
     QCBORDecodeContext      decode_context;
     QCBORError              cbor_error;
 
     if(q_useful_buf_c_is_null(payload)) {
-        return_value = ATTEST_TOKEN_ERR_COSE_SIGN1_VALIDATION;
+        return_value = CTOKEN_ERR_COSE_SIGN1_VALIDATION;
         goto Done;
     }
 
@@ -237,17 +237,17 @@ qcbor_util_get_top_level_item_in_map(struct q_useful_buf_c payload,
     return_value = qcbor_util_get_item_in_map(&decode_context,
                                               label,
                                               &found_item);
-    if(return_value != ATTEST_TOKEN_ERR_SUCCESS) {
+    if(return_value != CTOKEN_ERR_SUCCESS) {
         goto Done;
     }
 
     cbor_error = QCBORDecode_Finish(&decode_context);
     if(cbor_error != QCBOR_SUCCESS) {
         if(cbor_error == QCBOR_ERR_ARRAY_OR_MAP_STILL_OPEN) {
-            return_value = ATTEST_TOKEN_ERR_CBOR_STRUCTURE;
+            return_value = CTOKEN_ERR_CBOR_STRUCTURE;
         } else {
             /* This is usually due to extra bytes at the end */
-            return_value = ATTEST_TOKEN_ERR_CBOR_NOT_WELL_FORMED;
+            return_value = CTOKEN_ERR_CBOR_NOT_WELL_FORMED;
         }
         goto Done;
     }

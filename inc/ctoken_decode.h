@@ -1,18 +1,18 @@
 /*
- * attest_token_decode.h
+ * ctoken_decode.h (formerly attest_token_decode.h)
  *
- * Copyright (c) 2019, Laurence Lundblade.
+ * Copyright (c) 2020, Laurence Lundblade.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
  * See BSD-3-Clause license in README.md
  */
-#ifndef __ATTEST_TOKEN_DECODE_H__
-#define __ATTEST_TOKEN_DECODE_H__
+#ifndef __CTOKEN_DECODE_H__
+#define __CTOKEN_DECODE_H__
 
 #include "q_useful_buf.h"
 #include <stdbool.h>
-#include "attest_token.h"
+#include "ctoken.h"
 #include "t_cose_sign1_verify.h"
 
 #ifdef __cplusplus
@@ -98,12 +98,12 @@ extern "C" {
  * The structure is opaque for the caller.
  *
  */
-struct attest_token_decode_context {
+struct ctoken_decode_context {
     /* PRIVATE DATA STRUCTURE. USE ACCESSOR FUNCTIONS. */
     struct t_cose_sign1_verify_ctx verify_context;
     struct q_useful_buf_c          payload;
     uint32_t                       options;
-    enum attest_token_err_t        last_error;
+    enum ctoken_err_t        last_error;
 };
 
 
@@ -118,7 +118,7 @@ struct attest_token_decode_context {
  * use. An instance of \ref attest_token_decode_context can
  * be used again by calling this on it again.
  **/
-void attest_token_decode_init(struct attest_token_decode_context *me,
+void ctoken_decode_init(struct ctoken_decode_context *me,
                               uint32_t t_cose_options,
                               uint32_t token_options);
 
@@ -148,12 +148,12 @@ void attest_token_decode_init(struct attest_token_decode_context *me,
  * attest_token_decode_set_pub_key_select().
  */
 static inline void
-attest_token_decode_set_verification_key(struct attest_token_decode_context *me,
+ctoken_decode_set_verification_key(struct ctoken_decode_context *me,
                                          struct t_cose_key verification_key);
 
 
-enum attest_token_err_t
-attest_token_decode_get_kid(struct attest_token_decode_context *me,
+enum ctoken_err_t
+ctoken_decode_get_kid(struct ctoken_decode_context *me,
                             struct q_useful_buf_c token,
                             struct q_useful_buf_c *kid);
 
@@ -163,7 +163,7 @@ attest_token_decode_get_kid(struct attest_token_decode_context *me,
  * \param[in] me     The token decoder context to validate with.
  * \param[in] token  The CBOR-encoded token to validate and decode.
  *
- * \return An error from \ref attest_token_err_t.
+ * \return An error from \ref CTOKEN_ERR_t.
  *
  * The signature on the token is validated. If it is successful the
  * token and its payload is remembered in the \ref
@@ -187,8 +187,8 @@ attest_token_decode_get_kid(struct attest_token_decode_context *me,
  * attest_token_decode_get_error() is called before any of the claim
  * data returned is used.
  */
-enum attest_token_err_t
-attest_token_decode_validate_token(struct attest_token_decode_context *me,
+enum ctoken_err_t
+ctoken_decode_validate_token(struct ctoken_decode_context *me,
                                    struct q_useful_buf_c token);
 
 
@@ -197,10 +197,10 @@ attest_token_decode_validate_token(struct attest_token_decode_context *me,
  *
  * \param[in] me The token decoder context.
  *
- * \return An error from \ref attest_token_err_t.
+ * \return An error from \ref CTOKEN_ERR_t.
  */
-static enum attest_token_err_t
-attest_token_decode_get_error(struct attest_token_decode_context *me);
+static enum ctoken_err_t
+ctoken_decode_get_error(struct ctoken_decode_context *me);
 
 
 /**
@@ -209,7 +209,7 @@ attest_token_decode_get_error(struct attest_token_decode_context *me);
  * \param[in]  me      The token decoder context.
  * \param[out] payload The returned, verified token payload.
  *
- * \return An error from \ref attest_token_err_t.
+ * \return An error from \ref CTOKEN_ERR_t.
  *
  * This will return an error if the signature over the payload did not
  * validate.
@@ -219,8 +219,8 @@ attest_token_decode_get_error(struct attest_token_decode_context *me);
  * token not supported by decoding in this implementation, for example
  * claims that have non-integer labels.
  */
-enum attest_token_err_t
-attest_token_decode_get_payload(struct attest_token_decode_context *me,
+enum ctoken_err_t
+ctoken_decode_get_payload(struct ctoken_decode_context *me,
                                 struct q_useful_buf_c *payload);
 
 
@@ -234,27 +234,27 @@ attest_token_decode_get_payload(struct attest_token_decode_context *me,
  * \param[in]  label The integer label identifying the claim.
  * \param[out] claim The byte string or \c NULL_Q_USEFUL_BUF_C.
  *
- * \return An error from \ref attest_token_err_t.
+ * \return An error from \ref CTOKEN_ERR_t.
  *
- * \retval ATTEST_TOKEN_ERR_CBOR_STRUCTURE
+ * \retval CTOKEN_ERR_CBOR_STRUCTURE
  *         General structure of the token is incorrect, for example
  *         the top level is not a map or some map wasn't closed.
  *
- * \retval ATTEST_TOKEN_ERR_CBOR_NOT_WELL_FORMED
+ * \retval CTOKEN_ERR_CBOR_NOT_WELL_FORMED
  *         CBOR syntax is wrong and it is not decodable.
  *
  * \retval ATTETST_TOKEN_ERR_CBOR_TYPE
  *         Returned if the claim is not a byte string.
  *
- * \retval ATTEST_TOKEN_ERR_NOT_FOUND
+ * \retval CTOKEN_ERR_NOT_FOUND
  *         Data item for \c label was not found in token.
  *
  * If an error occurs, the claim will be set to \c NULL_Q_USEFUL_BUF_C
  * and the error state inside \c attest_token_decode_context will
  * be set.
  */
-enum attest_token_err_t
-attest_token_decode_get_bstr(struct attest_token_decode_context *me,
+enum ctoken_err_t
+ctoken_decode_get_bstr(struct ctoken_decode_context *me,
                              int32_t label,
                              struct q_useful_buf_c *claim);
 
@@ -267,19 +267,19 @@ attest_token_decode_get_bstr(struct attest_token_decode_context *me,
  * \param[in] label  The integer label identifying the claim.
  * \param[out] claim The byte string or \c NULL_Q_USEFUL_BUF_C.
  *
- * \return An error from \ref attest_token_err_t.
+ * \return An error from \ref CTOKEN_ERR_t.
  *
- * \retval ATTEST_TOKEN_ERR_CBOR_STRUCTURE
+ * \retval CTOKEN_ERR_CBOR_STRUCTURE
  *         General structure of the token is incorrect, for example
  *         the top level is not a map or some map wasn't closed.
  *
- * \retval ATTEST_TOKEN_ERR_CBOR_NOT_WELL_FORMED
+ * \retval CTOKEN_ERR_CBOR_NOT_WELL_FORMED
  *         CBOR syntax is wrong and it is not decodable.
  *
  * \retval ATTETST_TOKEN_ERR_CBOR_TYPE
  *         Returned if the claim is not a byte string.
  *
- * \retval ATTEST_TOKEN_ERR_NOT_FOUND
+ * \retval CTOKEN_ERR_NOT_FOUND
  *         Data item for \c label was not found in token.
  *
  * Even though this is a text string, it is not NULL-terminated.
@@ -288,8 +288,8 @@ attest_token_decode_get_bstr(struct attest_token_decode_context *me,
  * and the error state inside \c attest_token_decode_context will
  * be set.
  */
-enum attest_token_err_t
-attest_token_decode_get_tstr(struct attest_token_decode_context *me,
+enum ctoken_err_t
+ctoken_decode_get_tstr(struct ctoken_decode_context *me,
                              int32_t label,
                              struct q_useful_buf_c *claim);
 
@@ -303,22 +303,22 @@ attest_token_decode_get_tstr(struct attest_token_decode_context *me,
  * \param[in]  label The integer label identifying the claim.
  * \param[out] claim The signed integer or 0.
  *
- * \return An error from \ref attest_token_err_t.
+ * \return An error from \ref CTOKEN_ERR_t.
  *
- * \retval ATTEST_TOKEN_ERR_CBOR_STRUCTURE
+ * \retval CTOKEN_ERR_CBOR_STRUCTURE
  *         General structure of the token is incorrect, for example
  *         the top level is not a map or some map wasn't closed.
  *
- * \retval ATTEST_TOKEN_ERR_CBOR_NOT_WELL_FORMED
+ * \retval CTOKEN_ERR_CBOR_NOT_WELL_FORMED
  *         CBOR syntax is wrong and it is not decodable.
  *
  * \retval ATTETST_TOKEN_ERR_CBOR_TYPE
  *         Returned if the claim is not a byte string.
  *
- * \retval ATTEST_TOKEN_ERR_NOT_FOUND
+ * \retval CTOKEN_ERR_NOT_FOUND
  *         Data item for \c label was not found in token.
  *
- * \retval ATTEST_TOKEN_ERR_INTEGER_VALUE
+ * \retval CTOKEN_ERR_INTEGER_VALUE
  *         Returned if the integer value is larger
  *         than \c INT64_MAX.
  *
@@ -331,8 +331,8 @@ attest_token_decode_get_tstr(struct attest_token_decode_context *me,
  * If an error occurs the value 0 will be returned and the error
  * inside the \c attest_token_decode_context will be set.
  */
-enum attest_token_err_t
-attest_token_decode_get_int(struct attest_token_decode_context *me,
+enum ctoken_err_t
+ctoken_decode_get_int(struct ctoken_decode_context *me,
                             int32_t label,
                             int64_t *claim);
 
@@ -345,22 +345,22 @@ attest_token_decode_get_int(struct attest_token_decode_context *me,
  * \param[in]  label The integer label identifying the claim.
  * \param[out] claim The unsigned integer or 0.
  *
- * \return An error from \ref attest_token_err_t.
+ * \return An error from \ref CTOKEN_ERR_t.
  *
- * \retval ATTEST_TOKEN_ERR_CBOR_STRUCTURE
+ * \retval CTOKEN_ERR_CBOR_STRUCTURE
  *         General structure of the token is incorrect, for example
  *         the top level is not a map or some map wasn't closed.
  *
- * \retval ATTEST_TOKEN_ERR_CBOR_NOT_WELL_FORMED
+ * \retval CTOKEN_ERR_CBOR_NOT_WELL_FORMED
  *         CBOR syntax is wrong and it is not decodable.
  *
  * \retval ATTETST_TOKEN_ERR_CBOR_TYPE
  *         Returned if the claim is not a byte string.
  *
- * \retval ATTEST_TOKEN_ERR_NOT_FOUND
+ * \retval CTOKEN_ERR_NOT_FOUND
  *         Data item for \c label was not found in token.
  *
- * \retval ATTEST_TOKEN_ERR_INTEGER_VALUE
+ * \retval CTOKEN_ERR_INTEGER_VALUE
  *         Returned if the integer value is negative.
  *
  * This will succeed if the CBOR type of the claim is either a
@@ -372,8 +372,8 @@ attest_token_decode_get_int(struct attest_token_decode_context *me,
  *  If an error occurs the value 0 will be returned and the error
  *  inside the \c attest_token_decode_context will be set.
  */
-enum attest_token_err_t
-attest_token_decode_get_uint(struct attest_token_decode_context *me,
+enum ctoken_err_t
+ctoken_decode_get_uint(struct ctoken_decode_context *me,
                              int32_t label,
                              uint64_t *claim);
 
@@ -389,15 +389,15 @@ attest_token_decode_get_uint(struct attest_token_decode_context *me,
  * Public function. See attest_token_decode.h
  */
 static inline void
-attest_token_decode_set_pub_key(struct attest_token_decode_context *me,
+ctoken_decode_set_verification_key(struct ctoken_decode_context *me,
                                 struct t_cose_key verification_key) {
 
     t_cose_sign1_set_verification_key(&(me->verify_context), verification_key);
 }
 
 
-static inline enum attest_token_err_t
-attest_token_decode_get_error(struct attest_token_decode_context *me)
+static inline enum ctoken_err_t
+ctoken_decode_get_error(struct ctoken_decode_context *me)
 {
     return me->last_error;
 }
@@ -412,4 +412,4 @@ attest_token_decode_get_error(struct attest_token_decode_context *me)
 #endif
 
 
-#endif /* __ATTEST_TOKEN_DECODE_H__ */
+#endif /* __CTOKEN_DECODE_H__ */

@@ -14,7 +14,7 @@
 
 #include "qcbor.h"
 #include "q_useful_buf.h"
-#include "attest_token.h" /* For error codes */
+#include "ctoken.h" /* For error codes */
 
 #ifdef __cplusplus
 extern "C" {
@@ -92,11 +92,11 @@ struct qcbor_util_items_to_get_t {
  *                                found. See \ref
  *                                qcbor_util_items_to_get_t.
  *
- * \retval ATTEST_TOKEN_ERR_CBOR_STRUCTURE
+ * \retval CTOKEN_ERR_CBOR_STRUCTURE
  *         The next item in the decode context is not a map.
- * \retval ATTEST_TOKEN_ERR_CBOR_NOT_WELL_FORMED
+ * \retval CTOKEN_ERR_CBOR_NOT_WELL_FORMED
  *         The CBOR is not well-formed.
- * \retval ATTEST_TOKEN_ERR_SUCCESS
+ * \retval CTOKEN_ERR_SUCCESS
  *         Success. This just means the map was searched, not that
  *         anything was found. The contents of \c items must be
  *         checked to see what was found.
@@ -113,7 +113,7 @@ struct qcbor_util_items_to_get_t {
  *
  * This will ignore any data items that do not have integer labels.
  */
-enum attest_token_err_t
+enum ctoken_err_t
 qcbor_util_get_items_in_map(QCBORDecodeContext *decode_context,
                             struct qcbor_util_items_to_get_t *items);
 
@@ -127,13 +127,13 @@ qcbor_util_get_items_in_map(QCBORDecodeContext *decode_context,
  * \param[out] item              The item that is filled in with the
  *                               when the match is found.
  *
- * \retval ATTEST_TOKEN_ERR_CBOR_STRUCTURE
+ * \retval CTOKEN_ERR_CBOR_STRUCTURE
  *         The next item in the decode context is not a map.
- * \retval ATTEST_TOKEN_ERR_CBOR_NOT_WELL_FORMED
+ * \retval CTOKEN_ERR_CBOR_NOT_WELL_FORMED
  *         The CBOR is not well-formed.
- * \retval ATTEST_TOKEN_ERR_SUCCESS
+ * \retval CTOKEN_ERR_SUCCESS
  *         The labeled item was found.
- * \retval ATTEST_TOKEN_ERR_NOT_FOUND
+ * \retval CTOKEN_ERR_NOT_FOUND
            The entire map was consumed without finding \c label.
  *
  * The next item from \c decode_context must be a map. This is the map
@@ -151,7 +151,7 @@ qcbor_util_get_items_in_map(QCBORDecodeContext *decode_context,
  *
  * This will ignore any data items that do not have integer labels.
  **/
-enum attest_token_err_t
+enum ctoken_err_t
 qcbor_util_decode_to_labeled_item(QCBORDecodeContext *decode_context,
                                   int32_t label,
                                   QCBORItem *item);
@@ -166,13 +166,13 @@ qcbor_util_decode_to_labeled_item(QCBORDecodeContext *decode_context,
  * \param[out] item              The item that is filled in when
  *                               the match is found.
  *
- * \retval ATTEST_TOKEN_ERR_CBOR_NOT_WELL_FORMED
+ * \retval CTOKEN_ERR_CBOR_NOT_WELL_FORMED
  *         CBOR was not well-formed
- * \retval ATTEST_TOKEN_ERR_CBOR_STRUCTURE
+ * \retval CTOKEN_ERR_CBOR_STRUCTURE
  *         Starting item on \c decode context was not a map.
- * \retval ATTEST_TOKEN_ERR_SUCCESS
+ * \retval CTOKEN_ERR_SUCCESS
  *         The labeled item was found and returned.
- * \retval ATTEST_TOKEN_ERR_NOT_FOUND
+ * \retval CTOKEN_ERR_NOT_FOUND
  *         The entire map was consumed without finding \c label.
  *
  * This is qcbor_util_get_items_in_map() for just one item.
@@ -182,7 +182,7 @@ qcbor_util_decode_to_labeled_item(QCBORDecodeContext *decode_context,
  * arrays and maps. See qcbor_util_decode_to_labeled_item() for arrays
  * and maps.
  */
-enum attest_token_err_t
+enum ctoken_err_t
 qcbor_util_get_item_in_map(QCBORDecodeContext *decode_context,
                            int32_t label,
                            QCBORItem *item);
@@ -200,13 +200,13 @@ qcbor_util_get_item_in_map(QCBORDecodeContext *decode_context,
  *
  *\retval ATTETST_TOKEN_ERR_CBOR_TYPE
  *        The labeled item was found, but it didn't match \c qcbor_type.
- * \retval ATTEST_TOKEN_ERR_SUCCESS
+ * \retval CTOKEN_ERR_SUCCESS
  *        The labeled item was found and returned.
- * \retval ATTEST_TOKEN_ERR_CBOR_NOT_WELL_FORMED
+ * \retval CTOKEN_ERR_CBOR_NOT_WELL_FORMED
  *         CBOR was not well-formed
- * \retval ATTEST_TOKEN_ERR_CBOR_STRUCTURE
+ * \retval CTOKEN_ERR_CBOR_STRUCTURE
  *         A map was expected.
- * \retval ATTEST_TOKEN_ERR_NOT_FOUND
+ * \retval CTOKEN_ERR_NOT_FOUND
  *         The entire map was consumed without finding \c label.
  *
  * This will decode the \c payload from beginning to end. If there are
@@ -221,7 +221,7 @@ qcbor_util_get_item_in_map(QCBORDecodeContext *decode_context,
  *
  * This uses qcbor_util_get_item_in_map() to do its work.
  */
-enum attest_token_err_t
+enum ctoken_err_t
 qcbor_util_get_top_level_item_in_map(struct q_useful_buf_c payload,
                                      int32_t label,
                                      uint_fast8_t qcbor_type,
