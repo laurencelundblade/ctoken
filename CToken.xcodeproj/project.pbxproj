@@ -77,6 +77,7 @@
 		0F3AF36F23EF5C4700A60561 /* cwt_test.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = cwt_test.h; path = test/cwt_test.h; sourceTree = "<group>"; };
 		0F3AF37023EF5C4700A60561 /* cwt_test.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = cwt_test.c; path = test/cwt_test.c; sourceTree = "<group>"; };
 		0F3AF37223EF731000A60561 /* ctoken_cwt_decode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ctoken_cwt_decode.h; path = inc/ctoken_cwt_decode.h; sourceTree = "<group>"; };
+		0F3AF37323F0567A00A60561 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -96,6 +97,7 @@
 		0F3AF31023E4DB6100A60561 = {
 			isa = PBXGroup;
 			children = (
+				0F3AF37323F0567A00A60561 /* README.md */,
 				0F3AF33F23E5005900A60561 /* main.c */,
 				0F3AF33423E4FD7D00A60561 /* inc */,
 				0F3AF32C23E4FD4C00A60561 /* src */,
