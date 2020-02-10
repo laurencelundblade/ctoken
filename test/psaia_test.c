@@ -1,5 +1,5 @@
 /*
- * attest_token_test.c
+ * psaiai_test.c (formerly attest_token_test.c)
  *
  * Copyright (c) 2018-2019, Laurence Lundblade.
  *
@@ -14,7 +14,7 @@
 #include "attest_token_test_values.h"
 
 /**
- * \file attest_token_test.c
+ * \file psaiai_test.c
  *
  * \brief Implementation for attestation token tests.
  *

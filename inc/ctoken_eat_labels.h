@@ -16,7 +16,7 @@
 
 /* These are temporary labels until the real ones are assigned by IANA */
 
-#define CTOKEN_EAT_UEID_LABEL 100000
+#define CTOKEN_EAT_LABEL_UEID 100000
 
 #define CTOKEN_EAT_LABEL_NONCE 100001
 

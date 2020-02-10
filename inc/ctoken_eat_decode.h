@@ -30,7 +30,7 @@ static inline enum ctoken_err_t
 ctoken_decode_eat_ueid(struct ctoken_decode_context *me,
                        struct q_useful_buf_c        *ueid)
 {
-    return ctoken_decode_get_bstr(me, CTOKEN_EAT_UEID_LABEL, ueid);
+    return ctoken_decode_get_bstr(me, CTOKEN_EAT_LABEL_UEID, ueid);
 }
 
 static inline enum ctoken_err_t
@@ -54,6 +54,10 @@ ctoken_decode_eat_security_level(struct ctoken_decode_context     *me,
     return ctoken_decode_get_int(me, CTOKEN_EAT_LABEL_SECURITY_LEVEL, (int64_t *)security_level);
 }
 
+enum ctoken_err_t
+ctoken_decode_eat_boot_state(struct ctoken_decode_context *me,
+                             bool *secure_boot_enabled,
+                             enum ctoken_eat_debug_level_t *debug_state);
 
 
 

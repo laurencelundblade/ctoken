@@ -300,7 +300,7 @@ ctoken_decode_get_int(struct ctoken_decode_context *me,
             return_value = CTOKEN_ERR_INTEGER_VALUE;
         }
     } else {
-        return_value = ATTETST_TOKEN_ERR_CBOR_TYPE;
+        return_value = CTOKEN_ERR_CBOR_TYPE;
     }
 
 Done:
@@ -348,7 +348,7 @@ ctoken_decode_get_uint(struct ctoken_decode_context *me,
             return_value = CTOKEN_ERR_INTEGER_VALUE;
         }
     } else {
-        return_value = ATTETST_TOKEN_ERR_CBOR_TYPE;
+        return_value = CTOKEN_ERR_CBOR_TYPE;
     }
 
 Done:

@@ -1,5 +1,5 @@
 /*
- * attest_token_test.h
+ * psaia_test.h (formerly attest_token_test.h)
  *
  * Copyright (c) 2018-2019, Laurence Lundblade.
  *

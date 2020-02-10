@@ -1,12 +1,15 @@
-//
-//  psa_ia_decode.c
-//  CToken
-//
-//  Created by Laurence Lundblade on 1/31/20.
-//  Copyright © 2020 Laurence Lundblade. All rights reserved.
-//
+/*
+ * ctoken_psaia_decode.c (formerly part of attest_token_decode.c)
+ *
+ * Copyright (c) 2019-2020, Laurence Lundblade.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ *
+ * See BSD-3-Clause license in README.md
+ */
 
-#include "psa_ia_decode.h"
+
+#include "ctoken_psaia_decode.h"
 #include "qcbor_util.h"
 
 
@@ -14,16 +17,16 @@
  * Public function. See attest_token_decode.h
  */
 enum ctoken_err_t
-attest_token_decode_get_iat_simple(struct ctoken_decode_context *me,
-                                   struct attest_token_iat_simple_t *items)
+ctoken_psaia_decode_simple_claims(struct ctoken_decode_context *me,
+                                  struct ctoken_psaia_simple_claims_t *items)
 {
     struct qcbor_util_items_to_get_t  list[NUMBER_OF_ITEMS+1];
     QCBORDecodeContext                decode_context;
     int64_t                           client_id_64;
-    enum ctoken_err_t           return_value;
+    enum ctoken_err_t                 return_value;
 
     /* Set all q_useful_bufs to NULL and flags to 0 */
-    memset(items, 0, sizeof(struct attest_token_iat_simple_t));
+    memset(items, 0, sizeof(struct ctoken_psaia_simple_claims_t));
 
     /* Re use flags as array indexes because it works nicely */
     list[NONCE_FLAG].label              = EAT_CBOR_ARM_LABEL_CHALLENGE;
@@ -126,7 +129,7 @@ Done:
  * Public function. See attest_token_decode.h
  */
 enum ctoken_err_t
-attest_token_get_num_sw_components(struct ctoken_decode_context *me,
+ctoken_psaia_decode_num_sw_components(struct ctoken_decode_context *me,
                                    uint32_t *num_sw_components)
 {
     enum ctoken_err_t return_value;
@@ -196,7 +199,7 @@ Done:
 static inline enum ctoken_err_t
 decode_sw_component(QCBORDecodeContext               *decode_context,
                     const QCBORItem                  *sw_component_item,
-                    struct attest_token_sw_component_t *sw_component)
+                    struct ctoken_psaia_sw_component_t *sw_component)
 {
     enum ctoken_err_t return_value;
     QCBORItem claim_item;
@@ -211,7 +214,7 @@ decode_sw_component(QCBORDecodeContext               *decode_context,
 
     /* Zero it, setting booleans to false, pointers to NULL and
      lengths to 0 */
-    memset(sw_component, 0, sizeof(struct attest_token_sw_component_t));
+    memset(sw_component, 0, sizeof(struct ctoken_psaia_sw_component_t));
 
     return_value = CTOKEN_ERR_SUCCESS;
 
@@ -227,7 +230,7 @@ decode_sw_component(QCBORDecodeContext               *decode_context,
             switch(claim_item.label.int64) {
                 case EAT_CBOR_SW_COMPONENT_MEASUREMENT_TYPE:
                     if(claim_item.uDataType != QCBOR_TYPE_TEXT_STRING) {
-                        return_value = ATTETST_TOKEN_ERR_CBOR_TYPE;
+                        return_value = CTOKEN_ERR_CBOR_TYPE;
                         goto Done;
                     }
                     sw_component->measurement_type = claim_item.val.string;
@@ -238,7 +241,7 @@ decode_sw_component(QCBORDecodeContext               *decode_context,
 
                 case EAT_CBOR_SW_COMPONENT_MEASUREMENT_VALUE:
                     if(claim_item.uDataType != QCBOR_TYPE_BYTE_STRING) {
-                        return_value = ATTETST_TOKEN_ERR_CBOR_TYPE;
+                        return_value = CTOKEN_ERR_CBOR_TYPE;
                         goto Done;
                     }
                     sw_component->measurement_val = claim_item.val.string;
@@ -248,7 +251,7 @@ decode_sw_component(QCBORDecodeContext               *decode_context,
 
                 case EAT_CBOR_SW_COMPONENT_SECURITY_EPOCH:
                     if(claim_item.uDataType != QCBOR_TYPE_INT64) {
-                        return_value = ATTETST_TOKEN_ERR_CBOR_TYPE;
+                        return_value = CTOKEN_ERR_CBOR_TYPE;
                         goto Done;
                     }
                     if(claim_item.val.int64 < UINT32_MAX &&
@@ -261,7 +264,7 @@ decode_sw_component(QCBORDecodeContext               *decode_context,
 
                 case EAT_CBOR_SW_COMPONENT_VERSION:
                     if(claim_item.uDataType != QCBOR_TYPE_TEXT_STRING) {
-                        return_value = ATTETST_TOKEN_ERR_CBOR_TYPE;
+                        return_value = CTOKEN_ERR_CBOR_TYPE;
                         goto Done;
                     }
                     sw_component->version = claim_item.val.string;
@@ -271,7 +274,7 @@ decode_sw_component(QCBORDecodeContext               *decode_context,
 
                 case EAT_CBOR_SW_COMPONENT_SIGNER_ID:
                     if(claim_item.uDataType != QCBOR_TYPE_BYTE_STRING) {
-                        return_value = ATTETST_TOKEN_ERR_CBOR_TYPE;
+                        return_value = CTOKEN_ERR_CBOR_TYPE;
                         goto Done;
                     }
                     sw_component->signer_id = claim_item.val.string;
@@ -281,7 +284,7 @@ decode_sw_component(QCBORDecodeContext               *decode_context,
 
                 case EAT_CBOR_SW_COMPONENT_MEASUREMENT_DESC:
                     if(claim_item.uDataType != QCBOR_TYPE_TEXT_STRING) {
-                        return_value = ATTETST_TOKEN_ERR_CBOR_TYPE;
+                        return_value = CTOKEN_ERR_CBOR_TYPE;
                         goto Done;
                     }
                     sw_component->measurement_desc = claim_item.val.string;
@@ -312,9 +315,9 @@ Done:
  * Public function. See attest_token_decode.h
  */
 enum ctoken_err_t
-attest_token_get_sw_component(struct ctoken_decode_context *me,
+ctoken_psaia_decode_sw_component(struct ctoken_decode_context *me,
                               uint32_t requested_index,
-                              struct attest_token_sw_component_t *sw_components)
+                              struct ctoken_psaia_sw_component_t *sw_components)
 {
     enum ctoken_err_t return_value;
     QCBORItem               sw_components_array_item;
@@ -339,7 +342,7 @@ attest_token_get_sw_component(struct ctoken_decode_context *me,
     }
 
     if(sw_components_array_item.uDataType != QCBOR_TYPE_ARRAY) {
-        return_value = ATTETST_TOKEN_ERR_CBOR_TYPE;
+        return_value = CTOKEN_ERR_CBOR_TYPE;
         goto Done;
     }
 

@@ -230,6 +230,15 @@ ctoken_encode_add_integer(struct ctoken_encode_ctx *me,
 
 
 static inline void
+ctoken_encode_add_unsigned(struct ctoken_encode_ctx *me,
+                          int32_t label,
+                          uint64_t Value)
+{
+    QCBOREncode_AddUInt64ToMapN(&(me->cbor_enc_ctx), label, Value);
+}
+
+
+static inline void
 ctoken_encode_add_bstr(struct ctoken_encode_ctx *me,
                        int32_t label,
                        struct q_useful_buf_c bstr)

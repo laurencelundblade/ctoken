@@ -251,8 +251,11 @@ void PrintSizesCToken(OutputStringCB pfOutput, void *pOutCtx)
 {
    // Type and size of return from sizeof() varies. These will never be large
    // so cast is safe.
-    PrintSize("sizeof(attest_token_decode_context)",
+    PrintSize("sizeof(ctoken_decode_context)",
               (uint32_t)sizeof(struct ctoken_decode_context),
+              pfOutput, pOutCtx);
+    PrintSize("sizeof(ctoken_encode_ctx)",
+              (uint32_t)sizeof(struct ctoken_encode_ctx),
               pfOutput, pOutCtx);
     (*pfOutput)("", pOutCtx, 1);
 }

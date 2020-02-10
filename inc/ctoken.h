@@ -52,7 +52,7 @@ enum ctoken_err_t {
     CTOKEN_ERR_CBOR_STRUCTURE,
     /** Bad CBOR type, for example an not a text string, when a text
         string is required. */
-    ATTETST_TOKEN_ERR_CBOR_TYPE,
+    CTOKEN_ERR_CBOR_TYPE,
     /** Integer too large, for example an \c int32_t is required, but
         value only fits in \c int64_t */
     CTOKEN_ERR_INTEGER_VALUE,

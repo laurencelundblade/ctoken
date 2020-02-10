@@ -1,7 +1,7 @@
 /*
- * psa_ia_decode.h
+ * ctoken_psaia_decode.h (formerly part of attest_token_decode.h)
  *
- * Copyright (c) 2020 Laurence Lundblade.
+ * Copyright (c) 2019-2020 Laurence Lundblade.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -16,51 +16,9 @@
 
 #include "ctoken_decode.h"
 #include "ctoken_eat_decode.h"
-#include "psa_ia_labels.h"
+#include "ctoken_psaia_labels.h"
 
 
-/** Label for bits in \c item_flags in \ref
- attest_token_iat_simple_t */
-enum attest_token_item_index_t {
-    NONCE_FLAG =              0,
-    UEID_FLAG  =              1,
-    BOOT_SEED_FLAG =          2,
-    HW_VERSION_FLAG =         3,
-    IMPLEMENTATION_ID_FLAG =  4,
-    CLIENT_ID_FLAG =          5,
-    SECURITY_LIFECYCLE_FLAG = 6,
-    PROFILE_DEFINITION_FLAG = 7,
-    ORIGINATION_FLAG =        8,
-    NUMBER_OF_ITEMS =         9
-};
-
-
-/**
- * This structure holds the simple-to-get fields from the
- * token that can be bundled into one structure.
- *
- * This is 7 * 8 + 12 = 72 bytes on a 32-bit machine.
- */
-struct attest_token_iat_simple_t {
-    struct q_useful_buf_c nonce; /* byte string */
-    struct q_useful_buf_c ueid; /* byte string */
-    struct q_useful_buf_c boot_seed; /* byte string */
-    struct q_useful_buf_c hw_version; /* text string */
-    struct q_useful_buf_c implementation_id; /* byte string */
-    uint32_t              security_lifecycle;
-    int32_t               client_id;
-    struct q_useful_buf_c profile_definition; /* text string */
-    struct q_useful_buf_c origination; /* text string */
-    uint32_t              item_flags;
-};
-
-
-/**
- * Macro to determine if data item is present in \ref
- * attest_token_iat_simple_t
- */
-#define IS_ITEM_FLAG_SET(item_index, item_flags) \
-    (((0x01U << (item_index))) & (item_flags))
 
 
 /**
@@ -91,8 +49,8 @@ struct attest_token_iat_simple_t {
  * not and whether the corresponding member in the structure is valid.
  */
 enum ctoken_err_t
-attest_token_decode_get_iat_simple(struct ctoken_decode_context *me,
-                                   struct attest_token_iat_simple_t *items);
+ctoken_psaia_decode_simple_claims(struct ctoken_decode_context *me,
+                                  struct ctoken_psaia_simple_claims_t *items);
 
 
 /**
@@ -107,7 +65,7 @@ attest_token_decode_get_iat_simple(struct ctoken_decode_context *me,
  * challenge.
  */
 static inline enum ctoken_err_t
-attest_token_decode_get_nonce(struct ctoken_decode_context *me,
+ctoken_psaia_decode_nonce(struct ctoken_decode_context *me,
                               struct q_useful_buf_c *nonce);
 
 
@@ -122,8 +80,8 @@ attest_token_decode_get_nonce(struct ctoken_decode_context *me,
  * The boot seed is a byte string.
  */
 static enum ctoken_err_t
-attest_token_decode_get_boot_seed(struct ctoken_decode_context *me,
-                                  struct q_useful_buf_c *boot_seed);
+ctoken_psaia_decode_boot_seed(struct ctoken_decode_context *me,
+                              struct q_useful_buf_c *boot_seed);
 
 
 /**
@@ -137,8 +95,8 @@ attest_token_decode_get_boot_seed(struct ctoken_decode_context *me,
  * The UEID is a byte string.
  */
 static inline enum ctoken_err_t
-attest_token_decode_get_ueid(struct ctoken_decode_context *me,
-                             struct q_useful_buf_c *ueid);
+ctoken_psaia_decode_ueid(struct ctoken_decode_context *me,
+                         struct q_useful_buf_c *ueid);
 
 
 
@@ -157,8 +115,8 @@ attest_token_decode_get_ueid(struct ctoken_decode_context *me,
  * and length. It is NOT \c NULL terminated.
  */
 static enum ctoken_err_t
-attest_token_decode_get_hw_version(struct ctoken_decode_context *me,
-                                   struct q_useful_buf_c *hw_version);
+ctoken_psaia_decode_hw_version(struct ctoken_decode_context *me,
+                               struct q_useful_buf_c *hw_version);
 
 
 /**
@@ -173,8 +131,8 @@ attest_token_decode_get_hw_version(struct ctoken_decode_context *me,
  * The implementation ID is a byte string.
  */
 static enum ctoken_err_t
-attest_token_decode_get_implementation_id(struct ctoken_decode_context*me,
-                                          struct q_useful_buf_c *implementation_id);
+ctoken_psaia_decode_implementation_id(struct ctoken_decode_context*me,
+                                      struct q_useful_buf_c *implementation_id);
 
 
 /**
@@ -191,8 +149,8 @@ attest_token_decode_get_implementation_id(struct ctoken_decode_context*me,
  * pointer* and length. It is NOT \c NULL terminated.
  */
 static enum ctoken_err_t
-attest_token_decode_get_origination(struct ctoken_decode_context *me,
-                                    struct q_useful_buf_c *origination);
+ctoken_psaia_decode_origination(struct ctoken_decode_context *me,
+                                struct q_useful_buf_c *origination);
 
 
 /**
@@ -208,9 +166,8 @@ attest_token_decode_get_origination(struct ctoken_decode_context *me,
  * pointer and length. It is NOT \c NULL terminated.
  */
 static enum ctoken_err_t
-attest_token_decode_get_profile_definition(
-                                           struct ctoken_decode_context *me,
-                                           struct q_useful_buf_c *profile_definition);
+ctoken_psaia_decode_profile_definition(struct ctoken_decode_context *me,
+                                       struct q_useful_buf_c *profile_definition);
 
 
 /**
@@ -228,8 +185,8 @@ attest_token_decode_get_profile_definition(
  * Also called the caller ID.
  */
 static enum ctoken_err_t
-attest_token_decode_get_client_id(struct ctoken_decode_context *me,
-                                  int32_t *client_id);
+ctoken_psaia_decode_client_id(struct ctoken_decode_context *me,
+                              int32_t *client_id);
 
 
 /**
@@ -245,9 +202,8 @@ attest_token_decode_get_client_id(struct ctoken_decode_context *me,
  *         or smaller than will fit in a \c uint32_t.
  */
 static enum ctoken_err_t
-attest_token_decode_get_security_lifecycle(
-                                           struct ctoken_decode_context *me,
-                                           uint32_t *lifecycle);
+ctoken_psaia_decode_security_lifecycle(struct ctoken_decode_context *me,
+                                       uint32_t *lifecycle);
 
 
 /**
@@ -276,7 +232,7 @@ enum attest_token_sw_index_t {
  * There will probably be an expanded version of this when more is
  * added to describe a SW component.
  */
-struct attest_token_sw_component_t {
+struct ctoken_psaia_sw_component_t {
     struct q_useful_buf_c measurement_type; /* text string */
     struct q_useful_buf_c measurement_val; /* binary string */
     uint32_t              epoch;
@@ -307,8 +263,8 @@ struct attest_token_sw_component_t {
  * is 1, and the SW Components array is absent.
  */
 enum ctoken_err_t
-attest_token_get_num_sw_components(struct ctoken_decode_context *me,
-                                   uint32_t *num_sw_components);
+ctoken_psaia_decode_num_sw_components(struct ctoken_decode_context *me,
+                                      uint32_t *num_sw_components);
 
 
 /**
@@ -323,30 +279,27 @@ attest_token_get_num_sw_components(struct ctoken_decode_context *me,
  * \retval CTOKEN_ERR_NOT_FOUND
  *         There were not \c requested_index in the token.
  *
- * \retval ATTETST_TOKEN_ERR_CBOR_TYPE
+ * \retval CTOKEN_ERR_CBOR_TYPE
  *         The claim labeled to contain SW components is not an array.
  */
 enum ctoken_err_t
-attest_token_get_sw_component(struct ctoken_decode_context *me,
-                              uint32_t requested_index,
-                              struct attest_token_sw_component_t *sw_components);
+ctoken_psaia_decode_sw_component(struct ctoken_decode_context *me,
+                                 uint32_t requested_index,
+                                 struct ctoken_psaia_sw_component_t *sw_components);
 
 
 
 static inline enum ctoken_err_t
 attest_token_decode_psa_ia_nonce(struct ctoken_decode_context *me,
-                              struct q_useful_buf_c *nonce)
+                                 struct q_useful_buf_c *nonce)
 {
     return ctoken_decode_eat_nonce(me, nonce);
 }
 
 
 
-
-
-
 static inline enum ctoken_err_t
-attest_token_decode_get_boot_seed(struct ctoken_decode_context *me,
+ctoken_psaia_decode_boot_seed(struct ctoken_decode_context *me,
                                   struct q_useful_buf_c *boot_seed)
 {
     return ctoken_decode_get_bstr(me,
@@ -356,36 +309,29 @@ attest_token_decode_get_boot_seed(struct ctoken_decode_context *me,
 
 
 static inline enum ctoken_err_t
-attest_token_decode_get_hw_version(struct ctoken_decode_context *me,
-                                   struct q_useful_buf_c *hw_version)
+ctoken_psaia_decode_hw_version(struct ctoken_decode_context *me,
+                               struct q_useful_buf_c *hw_version)
 {
-    return ctoken_decode_get_tstr(me,
-                                        EAT_CBOR_ARM_LABEL_HW_VERSION,
-                                        hw_version);
+    return ctoken_decode_get_tstr(me, EAT_CBOR_ARM_LABEL_HW_VERSION, hw_version);
 }
 
 
 static inline enum ctoken_err_t
-attest_token_decode_get_implementation_id(
-                                          struct ctoken_decode_context *me,
-                                          struct q_useful_buf_c*implementation_id)
+ctoken_psaia_decode_implementation_id(struct ctoken_decode_context *me,
+                                      struct q_useful_buf_c*implementation_id)
 {
-    return ctoken_decode_get_bstr(me,
-                                        EAT_CBOR_ARM_LABEL_IMPLEMENTATION_ID,
-                                        implementation_id);
+    return ctoken_decode_get_bstr(me, EAT_CBOR_ARM_LABEL_IMPLEMENTATION_ID, implementation_id);
 }
 
 
 static inline enum ctoken_err_t
-attest_token_decode_get_client_id(struct ctoken_decode_context *me,
-                                  int32_t *caller_id)
+ctoken_psaia_decode_client_id(struct ctoken_decode_context *me,
+                              int32_t *caller_id)
 {
     enum ctoken_err_t return_value;
     int64_t caller_id_64;
 
-    return_value = ctoken_decode_get_int(me,
-                                               EAT_CBOR_ARM_LABEL_CLIENT_ID,
-                                               &caller_id_64);
+    return_value = ctoken_decode_get_int(me, EAT_CBOR_ARM_LABEL_CLIENT_ID, &caller_id_64);
     if(return_value != CTOKEN_ERR_SUCCESS) {
         goto Done;
     }
@@ -401,16 +347,15 @@ Done:
 
 
 static inline enum ctoken_err_t
-attest_token_decode_get_security_lifecycle(
-                                           struct ctoken_decode_context *me,
-                                           uint32_t *security_lifecycle)
+ctoken_psaia_decode_security_lifecycle(struct ctoken_decode_context *me,
+                                       uint32_t *security_lifecycle)
 {
     enum ctoken_err_t return_value;
     uint64_t security_lifecycle_64;
 
     return_value = ctoken_decode_get_uint(me,
-                                                EAT_CBOR_ARM_LABEL_SECURITY_LIFECYCLE,
-                                                &security_lifecycle_64);
+                                          EAT_CBOR_ARM_LABEL_SECURITY_LIFECYCLE,
+                                          &security_lifecycle_64);
     if(security_lifecycle_64 > UINT32_MAX) {
         return_value = CTOKEN_ERR_INTEGER_VALUE;
         goto Done;
@@ -423,22 +368,17 @@ Done:
 }
 
 static inline enum ctoken_err_t
-attest_token_decode_get_profile_definition(
-                                           struct ctoken_decode_context *me,
-                                           struct q_useful_buf_c *profile_definition)
+ctoken_psaia_decode_profile_definition(struct ctoken_decode_context *me,
+                                       struct q_useful_buf_c *profile_definition)
 {
-    return ctoken_decode_get_tstr(me,
-                                        EAT_CBOR_ARM_LABEL_PROFILE_DEFINITION,
-                                        profile_definition);
+    return ctoken_decode_get_tstr(me, EAT_CBOR_ARM_LABEL_PROFILE_DEFINITION, profile_definition);
 }
 
 static inline enum ctoken_err_t
-attest_token_decode_get_origination(struct ctoken_decode_context*me,
-                                    struct q_useful_buf_c *origination)
+ctoken_psaia_decode_origination(struct ctoken_decode_context*me,
+                                struct q_useful_buf_c *origination)
 {
-    return ctoken_decode_get_tstr(me,
-                                        EAT_CBOR_ARM_LABEL_ORIGINATION,
-                                        origination);
+    return ctoken_decode_eat_origination(me, origination);
 }
 
 #endif /* psa_ia_decode_h */

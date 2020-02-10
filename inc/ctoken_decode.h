@@ -243,7 +243,7 @@ ctoken_decode_get_payload(struct ctoken_decode_context *me,
  * \retval CTOKEN_ERR_CBOR_NOT_WELL_FORMED
  *         CBOR syntax is wrong and it is not decodable.
  *
- * \retval ATTETST_TOKEN_ERR_CBOR_TYPE
+ * \retval CTOKEN_ERR_CBOR_TYPE
  *         Returned if the claim is not a byte string.
  *
  * \retval CTOKEN_ERR_NOT_FOUND
@@ -276,7 +276,7 @@ ctoken_decode_get_bstr(struct ctoken_decode_context *me,
  * \retval CTOKEN_ERR_CBOR_NOT_WELL_FORMED
  *         CBOR syntax is wrong and it is not decodable.
  *
- * \retval ATTETST_TOKEN_ERR_CBOR_TYPE
+ * \retval CTOKEN_ERR_CBOR_TYPE
  *         Returned if the claim is not a byte string.
  *
  * \retval CTOKEN_ERR_NOT_FOUND
@@ -312,7 +312,7 @@ ctoken_decode_get_tstr(struct ctoken_decode_context *me,
  * \retval CTOKEN_ERR_CBOR_NOT_WELL_FORMED
  *         CBOR syntax is wrong and it is not decodable.
  *
- * \retval ATTETST_TOKEN_ERR_CBOR_TYPE
+ * \retval CTOKEN_ERR_CBOR_TYPE
  *         Returned if the claim is not a byte string.
  *
  * \retval CTOKEN_ERR_NOT_FOUND
@@ -354,7 +354,7 @@ ctoken_decode_get_int(struct ctoken_decode_context *me,
  * \retval CTOKEN_ERR_CBOR_NOT_WELL_FORMED
  *         CBOR syntax is wrong and it is not decodable.
  *
- * \retval ATTETST_TOKEN_ERR_CBOR_TYPE
+ * \retval CTOKEN_ERR_CBOR_TYPE
  *         Returned if the claim is not a byte string.
  *
  * \retval CTOKEN_ERR_NOT_FOUND
