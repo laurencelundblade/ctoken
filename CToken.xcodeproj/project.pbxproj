@@ -10,7 +10,6 @@
 		0F3AF33123E4FD6C00A60561 /* ctoken_encode.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F3AF32D23E4FD6C00A60561 /* ctoken_encode.c */; };
 		0F3AF33223E4FD6C00A60561 /* ctoken_decode.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F3AF32E23E4FD6C00A60561 /* ctoken_decode.c */; };
 		0F3AF33323E4FD6C00A60561 /* qcbor_util.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F3AF32F23E4FD6C00A60561 /* qcbor_util.c */; };
-		0F3AF34023E5005900A60561 /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F3AF33F23E5005900A60561 /* main.c */; };
 		0F3AF34823E5008200A60561 /* run_tests.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F3AF34423E5008100A60561 /* run_tests.c */; };
 		0F3AF34C23E53BCF00A60561 /* ctoken_psaia_decode.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F3AF34B23E53BCF00A60561 /* ctoken_psaia_decode.c */; };
 		0F3AF35223E5463300A60561 /* ctoken_psaia_encode.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F3AF35123E5463300A60561 /* ctoken_psaia_encode.c */; };
@@ -22,10 +21,33 @@
 		0F3AF36C23EE522A00A60561 /* libt_cose.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0F3AF36B23EE522A00A60561 /* libt_cose.a */; };
 		0F3AF36E23EF5B6600A60561 /* libcrypto.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0F3AF36D23EF5B6600A60561 /* libcrypto.a */; };
 		0F3AF37123EF5C4700A60561 /* cwt_test.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F3AF37023EF5C4700A60561 /* cwt_test.c */; };
+		0F3AF37A23F1BB5600A60561 /* ctoken_psaia_encode.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F3AF35123E5463300A60561 /* ctoken_psaia_encode.c */; };
+		0F3AF37B23F1BB5600A60561 /* ctoken_cwt_encode.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F3AF36023E57DAC00A60561 /* ctoken_cwt_encode.c */; };
+		0F3AF37C23F1BB5600A60561 /* ctoken_cwt_decode.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F3AF36423E57E8C00A60561 /* ctoken_cwt_decode.c */; };
+		0F3AF37F23F1BB5600A60561 /* ctoken_eat_encode.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F3AF35423E5474700A60561 /* ctoken_eat_encode.c */; };
+		0F3AF38023F1BB5600A60561 /* ctoken_eat_decode.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F3AF35F23E57DAC00A60561 /* ctoken_eat_decode.c */; };
+		0F3AF38123F1BB5600A60561 /* ctoken_psaia_decode.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F3AF34B23E53BCF00A60561 /* ctoken_psaia_decode.c */; };
+		0F3AF38223F1BB5600A60561 /* eat_example_ossl.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F3AF37523F1BACE00A60561 /* eat_example_ossl.c */; };
+		0F3AF38323F1BB5600A60561 /* ctoken_encode.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F3AF32D23E4FD6C00A60561 /* ctoken_encode.c */; };
+		0F3AF38423F1BB5600A60561 /* qcbor_util.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F3AF32F23E4FD6C00A60561 /* qcbor_util.c */; };
+		0F3AF38523F1BB5600A60561 /* ctoken_decode.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F3AF32E23E4FD6C00A60561 /* ctoken_decode.c */; };
+		0F3AF38723F1BB5600A60561 /* libt_cose.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0F3AF36B23EE522A00A60561 /* libt_cose.a */; };
+		0F3AF38823F1BB5600A60561 /* libqcbor.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0F3AF36923EE51B500A60561 /* libqcbor.a */; };
+		0F3AF38923F1BB5600A60561 /* libcrypto.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0F3AF36D23EF5B6600A60561 /* libcrypto.a */; };
+		0FBE2D8523F1BC7B00A31C46 /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F3AF33F23E5005900A60561 /* main.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
 		0F3AF31723E4DB6100A60561 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = /usr/share/man/man1/;
+			dstSubfolderSpec = 0;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 1;
+		};
+		0F3AF38A23F1BB5600A60561 /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
 			dstPath = /usr/share/man/man1/;
@@ -78,6 +100,8 @@
 		0F3AF37023EF5C4700A60561 /* cwt_test.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = cwt_test.c; path = test/cwt_test.c; sourceTree = "<group>"; };
 		0F3AF37223EF731000A60561 /* ctoken_cwt_decode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ctoken_cwt_decode.h; path = inc/ctoken_cwt_decode.h; sourceTree = "<group>"; };
 		0F3AF37323F0567A00A60561 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		0F3AF37523F1BACE00A60561 /* eat_example_ossl.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = eat_example_ossl.c; sourceTree = "<group>"; };
+		0F3AF38E23F1BB5600A60561 /* OSSL Example */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "OSSL Example"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -91,12 +115,23 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		0F3AF38623F1BB5600A60561 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0F3AF38723F1BB5600A60561 /* libt_cose.a in Frameworks */,
+				0F3AF38823F1BB5600A60561 /* libqcbor.a in Frameworks */,
+				0F3AF38923F1BB5600A60561 /* libcrypto.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
 		0F3AF31023E4DB6100A60561 = {
 			isa = PBXGroup;
 			children = (
+				0F3AF37423F1B9FF00A60561 /* examples */,
 				0F3AF37323F0567A00A60561 /* README.md */,
 				0F3AF33F23E5005900A60561 /* main.c */,
 				0F3AF33423E4FD7D00A60561 /* inc */,
@@ -113,6 +148,7 @@
 			isa = PBXGroup;
 			children = (
 				0F3AF31923E4DB6100A60561 /* CToken */,
+				0F3AF38E23F1BB5600A60561 /* OSSL Example */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -214,6 +250,14 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
+		0F3AF37423F1B9FF00A60561 /* examples */ = {
+			isa = PBXGroup;
+			children = (
+				0F3AF37523F1BACE00A60561 /* eat_example_ossl.c */,
+			);
+			path = examples;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -232,6 +276,23 @@
 			name = CToken;
 			productName = CToken;
 			productReference = 0F3AF31923E4DB6100A60561 /* CToken */;
+			productType = "com.apple.product-type.tool";
+		};
+		0F3AF37723F1BB5600A60561 /* OSSL Example */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 0F3AF38B23F1BB5600A60561 /* Build configuration list for PBXNativeTarget "OSSL Example" */;
+			buildPhases = (
+				0F3AF37823F1BB5600A60561 /* Sources */,
+				0F3AF38623F1BB5600A60561 /* Frameworks */,
+				0F3AF38A23F1BB5600A60561 /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "OSSL Example";
+			productName = CToken;
+			productReference = 0F3AF38E23F1BB5600A60561 /* OSSL Example */;
 			productType = "com.apple.product-type.tool";
 		};
 /* End PBXNativeTarget section */
@@ -261,6 +322,7 @@
 			projectRoot = "";
 			targets = (
 				0F3AF31823E4DB6100A60561 /* CToken */,
+				0F3AF37723F1BB5600A60561 /* OSSL Example */,
 			);
 		};
 /* End PBXProject section */
@@ -274,14 +336,31 @@
 				0F3AF35223E5463300A60561 /* ctoken_psaia_encode.c in Sources */,
 				0F3AF36223E57DAC00A60561 /* ctoken_cwt_encode.c in Sources */,
 				0F3AF36523E57E8C00A60561 /* ctoken_cwt_decode.c in Sources */,
-				0F3AF34023E5005900A60561 /* main.c in Sources */,
 				0F3AF34823E5008200A60561 /* run_tests.c in Sources */,
 				0F3AF35523E5474700A60561 /* ctoken_eat_encode.c in Sources */,
 				0F3AF36123E57DAC00A60561 /* ctoken_eat_decode.c in Sources */,
 				0F3AF34C23E53BCF00A60561 /* ctoken_psaia_decode.c in Sources */,
+				0FBE2D8523F1BC7B00A31C46 /* main.c in Sources */,
 				0F3AF33123E4FD6C00A60561 /* ctoken_encode.c in Sources */,
 				0F3AF33323E4FD6C00A60561 /* qcbor_util.c in Sources */,
 				0F3AF33223E4FD6C00A60561 /* ctoken_decode.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		0F3AF37823F1BB5600A60561 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0F3AF37A23F1BB5600A60561 /* ctoken_psaia_encode.c in Sources */,
+				0F3AF37B23F1BB5600A60561 /* ctoken_cwt_encode.c in Sources */,
+				0F3AF37C23F1BB5600A60561 /* ctoken_cwt_decode.c in Sources */,
+				0F3AF37F23F1BB5600A60561 /* ctoken_eat_encode.c in Sources */,
+				0F3AF38023F1BB5600A60561 /* ctoken_eat_decode.c in Sources */,
+				0F3AF38123F1BB5600A60561 /* ctoken_psaia_decode.c in Sources */,
+				0F3AF38223F1BB5600A60561 /* eat_example_ossl.c in Sources */,
+				0F3AF38323F1BB5600A60561 /* ctoken_encode.c in Sources */,
+				0F3AF38423F1BB5600A60561 /* qcbor_util.c in Sources */,
+				0F3AF38523F1BB5600A60561 /* ctoken_decode.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -418,6 +497,23 @@
 			};
 			name = Release;
 		};
+		0F3AF38C23F1BB5600A60561 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				"HEADER_SEARCH_PATHS[arch=*]" = "/Users/laurencelundblade/Code/openssl/openssl-1.1.1b/include";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		0F3AF38D23F1BB5600A60561 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -435,6 +531,15 @@
 			buildConfigurations = (
 				0F3AF32123E4DB6100A60561 /* Debug */,
 				0F3AF32223E4DB6100A60561 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		0F3AF38B23F1BB5600A60561 /* Build configuration list for PBXNativeTarget "OSSL Example" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				0F3AF38C23F1BB5600A60561 /* Debug */,
+				0F3AF38D23F1BB5600A60561 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

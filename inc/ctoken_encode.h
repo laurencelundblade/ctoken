@@ -98,7 +98,7 @@ ctoken_encode_set_key(struct ctoken_encode_ctx *me,
 
 enum ctoken_err_t
 ctoken_encode_start(struct ctoken_encode_ctx *me,
-                    const struct q_useful_buf *out_buffer);
+                    const struct q_useful_buf out_buffer);
 
 
 

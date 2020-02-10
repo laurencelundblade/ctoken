@@ -48,7 +48,7 @@ CFLAGS=$(ALL_INC) $(C_OPTS) $(TEST_CONFIG_OPTS) $(CRYPTO_CONFIG_OPTS)
 
 SRC_OBJ=src/ctoken_encode.o src/ctoken_decode.o src/qcbor_util.o 
 
-all:	libctoken.a ctoken_test 
+all:	libctoken.a ctoken_test eat_example_ossl
 
 
 libctoken.a: $(SRC_OBJ) $(CRYPTO_OBJ)
@@ -59,8 +59,8 @@ ctoken_test: main.o $(TEST_OBJ) libctoken.a
 	cc -o $@ $^ $(QCBOR_LIB) $(T_COSE_LIB) $(CRYPTO_LIB) 
 
 
-t_cose_basic_example_ossl:	examples/t_cose_basic_example_ossl.o libt_cose.a
-	cc -o $@ $^ $(QCBOR_LIB) $(CRYPTO_LIB)
+eat_example_ossl:	examples/eat_example_ossl.o libctoken.a
+	cc -o $@ $^ $(QCBOR_LIB) $(CRYPTO_LIB) $(T_COSE_LIB)
 
 clean:
 	rm -f $(SRC_OBJ) $(TEST_OBJ) $(CRYPTO_OBJ) t_cose_basic_example_ossl t_cose_test libt_cose.a main.o

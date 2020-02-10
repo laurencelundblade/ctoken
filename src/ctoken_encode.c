@@ -78,14 +78,14 @@ static enum ctoken_err_t t_cose_err_to_attest_err(enum t_cose_err_t err)
  */
 enum ctoken_err_t
 ctoken_encode_start(struct ctoken_encode_ctx        *me,
-                          const struct q_useful_buf *out_buf)
+                          const struct q_useful_buf out_buf)
 {
     /* approximate stack usage on 32-bit machine: 4 bytes */
     enum t_cose_err_t cose_return_value;
     enum ctoken_err_t return_value;
 
     /* Spin up the CBOR encoder */
-    QCBOREncode_Init(&(me->cbor_enc_ctx), *out_buf);
+    QCBOREncode_Init(&(me->cbor_enc_ctx), out_buf);
 
     // TODO: add the CBOR tag if requested
 
