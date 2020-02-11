@@ -85,7 +85,7 @@ ctoken_encode_start(struct ctoken_encode_ctx        *me,
     enum ctoken_err_t return_value;
 
     /* Spin up the CBOR encoder */
-    QCBOREncode_Init(&(me->cbor_enc_ctx), out_buf);
+    QCBOREncode_Init(&(me->cbor_encode_context), out_buf);
 
     // TODO: add the CBOR tag if requested
 
@@ -95,13 +95,13 @@ ctoken_encode_start(struct ctoken_encode_ctx        *me,
      * encoded and written into out_buf using me->cbor_enc_ctx
      */
     cose_return_value = t_cose_sign1_encode_parameters(&(me->signer_ctx),
-                                                       &(me->cbor_enc_ctx));
+                                                       &(me->cbor_encode_context));
     if(cose_return_value) {
         return_value = t_cose_err_to_attest_err(cose_return_value);
         goto Done;
     }
 
-    QCBOREncode_OpenMap(&(me->cbor_enc_ctx));
+    QCBOREncode_OpenMap(&(me->cbor_encode_context));
 
     return_value = CTOKEN_ERR_SUCCESS;
 
@@ -164,11 +164,11 @@ ctoken_encode_finish(struct ctoken_encode_ctx *me,
     QCBORError              qcbor_result;
     enum t_cose_err_t       cose_return_value;
 
-    QCBOREncode_CloseMap(&(me->cbor_enc_ctx));
+    QCBOREncode_CloseMap(&(me->cbor_encode_context));
 
     /* Finish off the cose signature. This does all the interesting work of
      hashing and signing */
-    cose_return_value = t_cose_sign1_encode_signature(&(me->signer_ctx), &(me->cbor_enc_ctx));
+    cose_return_value = t_cose_sign1_encode_signature(&(me->signer_ctx), &(me->cbor_encode_context));
     if(cose_return_value) {
         /* Main errors are invoking the hash or signature */
         return_value = t_cose_err_to_attest_err(cose_return_value);
@@ -176,7 +176,7 @@ ctoken_encode_finish(struct ctoken_encode_ctx *me,
     }
 
     /* Close off the CBOR encoding and return the completed token */
-    qcbor_result = QCBOREncode_Finish(&(me->cbor_enc_ctx),  &completed_token_ub);
+    qcbor_result = QCBOREncode_Finish(&(me->cbor_encode_context),  &completed_token_ub);
     if(qcbor_result == QCBOR_ERR_BUFFER_TOO_SMALL) {
         return_value = CTOKEN_ERR_TOO_SMALL;
     } else if (qcbor_result != QCBOR_SUCCESS) {

@@ -12,8 +12,6 @@
 #define __CTOKEN_H__
 
 #include <stdint.h>
-#include "qcbor.h"
-#include "t_cose_sign1_sign.h"
 
 #ifdef __cplusplus
 extern "C" {

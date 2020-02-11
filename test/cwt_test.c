@@ -39,7 +39,7 @@ int32_t cwt_test()
 
     /* Get started on a particular token by giving an out buffer.
      */
-    result = ctoken_encode_start(&encode_ctx, &token_out_buffer);
+    result = ctoken_encode_start(&encode_ctx, token_out_buffer);
     if(result) {
         return 100 + (int32_t)result;
     }
