@@ -959,7 +959,7 @@ int32_t decode_test_normal_sig(void)
 int32_t make_normal_token(struct q_useful_buf token_storage, struct q_useful_buf_c *completed_token)
 {
     int_fast16_t return_value;
-    
+
     /* -- Make a token with all the claims -- */
     struct q_useful_buf_c tmp = TOKEN_TEST_VALUE_NONCE;
     return_value = token_main_alt(0,

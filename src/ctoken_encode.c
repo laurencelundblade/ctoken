@@ -145,7 +145,7 @@ static void attest_token_encode_add_token(struct ctoken_encode_ctx *me,
                                           int nConnectionType,
                                           struct q_useful_buf_c token)
 {
-    
+
 }
 #endif /*THIS_CODE_IS_COMPLETED */
 

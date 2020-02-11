@@ -1,7 +1,7 @@
 /*
  * ctoken_decode.h (formerly attest_token_decode.h)
  *
- * Copyright (c) 2020, Laurence Lundblade.
+ * Copyright (c) 2019-2020, Laurence Lundblade.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -17,30 +17,35 @@
 
 #ifdef __cplusplus
 extern "C" {
+#ifdef 0
+} // Keep editor indention formatting happy
+#endif
 #endif
 
+
 /**
- * \file attest_token_decode.h
+ * \file ctoken_decode.h
  *
- * \brief Attestation Token Decoding Interface
+ * \brief CBOR Token Decoding Interface
  *
  * The context and functions here are used to decode an attestation
  * token as follows:
  *
- * -# Create a \ref attest_token_decode_context, most likely as a
+ * -# Create a \ref ctoken_decode_context, most likely as a
  *    stack variable.
  *
- * -# Initialize it by calling attest_token_decode_init()
+ * -# Initialize it by calling ctoken_decode_init()
  *
  * -# Tell it which public key to use for verification using
- *    attest_token_decode_set_cose_pub_key() or
- *    attest_token_decode_set_pub_key_select().
+ *    ctoken_decode_set_verification_key().
  *
  * -# Pass the token in and validate it by calling
- *    attest_token_decode_validate_token().
+ *    ctoken_decode_validate_token().
  *
- * -# Call the various \c attest_token_get_xxx() methods in any
- * order. The strings returned by the these functions will point into
+ * -# Call the various \c ctoken_get_xxx() methods in any
+ * order. Also call the ctoken_eat_decode_xxx(), ctoken_cwt_decode and
+ * other methods in any order. The strings returned by the these functions
+ * will point into
  * the token passed to attest_token_decode_validate_token(). A copy is
  * NOT made.
  *
@@ -61,10 +66,6 @@ extern "C" {
  * All claims are optional in tokens. This decoder will ignore all
  * CBOR encoded data that it doesn't understand without error.
  *
- * This interface is primarily for the claims defined by Arm for
- * TF-M. It includes only some of the claims from the EAT IETF draft,
- * https://tools.ietf.org/html/draft-mandyam-eat-01.
- *
  * The claims are not described in detail here. That is left to the
  * definition documents and eventually an IETF standard.
  *
@@ -77,19 +78,11 @@ extern "C" {
  * separate CBOR parser to decode the claims out of it.  Future work may
  * include more general facilities for handling claims with complex
  * structures made up of maps and arrays.
- *
- * This should not yet be considered a real commercial
- * implementation of token decoding. It is
- * close, but not there yet. It's purpose is to test
- * token encoding. The main thing this needs to become
- * a real commercial implementation is code that
- * tests this. It is a parser / decoder, so a
- * proper test involves a lot of hostile input.
  */
 
 
 /**
- * The context for decoding an attestation token. The caller of must
+ * The context for decoding a CBOR token. The caller of ctoken must
  * create one of these and pass it to the functions here. It is small
  * enough that it can go on the stack. It is most of the memory needed
  * to create a token except the output buffer and any memory
@@ -97,20 +90,21 @@ extern "C" {
  *
  * The structure is opaque for the caller.
  *
+ * Aproximate size on 64-bit CPU: 48 bytes.
  */
-struct ctoken_decode_context {
+struct ctoken_decode_cxt {
     /* PRIVATE DATA STRUCTURE. USE ACCESSOR FUNCTIONS. */
     struct t_cose_sign1_verify_ctx verify_context;
     struct q_useful_buf_c          payload;
     uint32_t                       options;
-    enum ctoken_err_t        last_error;
+    enum ctoken_err_t              last_error;
 };
 
 
 /**
  * \brief Initialize token decoder.
  *
- * \param[in] me      The token decoder context to be initialized.
+ * \param[in] me             gtThe token decoder context to be initialized.
  * \param[in] t_cose_options Options passed to t_cose verification.
  * \param[in] token_options  Decoding options.
  *
@@ -118,9 +112,9 @@ struct ctoken_decode_context {
  * use. An instance of \ref attest_token_decode_context can
  * be used again by calling this on it again.
  **/
-void ctoken_decode_init(struct ctoken_decode_context *me,
-                              uint32_t t_cose_options,
-                              uint32_t token_options);
+void ctoken_decode_init(struct ctoken_decode_cxt *me,
+                        uint32_t t_cose_options,
+                        uint32_t token_options);
 
 
 
@@ -148,14 +142,34 @@ void ctoken_decode_init(struct ctoken_decode_context *me,
  * attest_token_decode_set_pub_key_select().
  */
 static inline void
-ctoken_decode_set_verification_key(struct ctoken_decode_context *me,
-                                         struct t_cose_key verification_key);
+ctoken_decode_set_verification_key(struct ctoken_decode_cxt *me,
+                                   struct t_cose_key verification_key);
 
 
+
+/**
+ * \brief Get the kid (key ID) from the token
+ *
+ * \param[in] me     The token decoder context.
+ * \param[in] token  The token from which to get the kid.
+ * \param[out] kid   The kid from the token.
+ *
+ * This decodes the token, particularly the COSE headers
+ * in it to get the kid (key ID).
+ *
+ * Typically use is to call this first to get the kid,
+ * then use the kid to look up the public key, and then
+ * call ctoken_decode_set_verification_key() to
+ * set the public key for verification.
+ *
+ * Different use cases for tokens (CWTs, EATs, etc will
+ * have different ways of managing the signing keys. Some
+ * will use key ID and some will not.
+ */
 enum ctoken_err_t
-ctoken_decode_get_kid(struct ctoken_decode_context *me,
-                            struct q_useful_buf_c token,
-                            struct q_useful_buf_c *kid);
+ctoken_decode_get_kid(struct ctoken_decode_cxt *me,
+                      struct q_useful_buf_c token,
+                      struct q_useful_buf_c *kid);
 
 /**
  * \brief Set the token to work on and validate its signature.
@@ -186,10 +200,14 @@ ctoken_decode_get_kid(struct ctoken_decode_context *me,
  * token and ignore the error codes as long as
  * attest_token_decode_get_error() is called before any of the claim
  * data returned is used.
+ *
+ * TODO: this may need an option to be able to decode fields in the
+ * token without signature verification because the info to look
+ * up the verification key is the token, not the COSE key id.
  */
 enum ctoken_err_t
-ctoken_decode_validate_token(struct ctoken_decode_context *me,
-                                   struct q_useful_buf_c token);
+ctoken_decode_validate_token(struct ctoken_decode_cxt *me,
+                             struct q_useful_buf_c token);
 
 
 /**
@@ -200,7 +218,7 @@ ctoken_decode_validate_token(struct ctoken_decode_context *me,
  * \return An error from \ref CTOKEN_ERR_t.
  */
 static enum ctoken_err_t
-ctoken_decode_get_error(struct ctoken_decode_context *me);
+ctoken_decode_get_error(struct ctoken_decode_cxt *me);
 
 
 /**
@@ -220,15 +238,14 @@ ctoken_decode_get_error(struct ctoken_decode_context *me);
  * claims that have non-integer labels.
  */
 enum ctoken_err_t
-ctoken_decode_get_payload(struct ctoken_decode_context *me,
-                                struct q_useful_buf_c *payload);
+ctoken_decode_get_payload(struct ctoken_decode_cxt *me,
+                          struct q_useful_buf_c    *payload);
 
 
 
 /**
  *
- * \brief Get a top-level claim, by integer label that is a byte
- * string.
+ * \brief Get a claim of type byte string.
  *
  * \param[in]  me    The token decoder context.
  * \param[in]  label The integer label identifying the claim.
@@ -254,13 +271,13 @@ ctoken_decode_get_payload(struct ctoken_decode_context *me,
  * be set.
  */
 enum ctoken_err_t
-ctoken_decode_get_bstr(struct ctoken_decode_context *me,
-                             int32_t label,
+ctoken_decode_get_bstr(struct ctoken_decode_cxt    *me,
+                             int32_t                label,
                              struct q_useful_buf_c *claim);
 
 
 /**
- * \brief Get a top-level claim, by integer label that is a text
+ * \brief Get a claim of type text string.
  * string.
  *
  * \param[in] me     The token decoder context.
@@ -289,15 +306,14 @@ ctoken_decode_get_bstr(struct ctoken_decode_context *me,
  * be set.
  */
 enum ctoken_err_t
-ctoken_decode_get_tstr(struct ctoken_decode_context *me,
+ctoken_decode_get_tstr(struct ctoken_decode_cxt *me,
                              int32_t label,
                              struct q_useful_buf_c *claim);
 
 
 
 /**
- * \brief Get a top-level claim by integer label who's value is a
- * signed integer
+ * \brief Get a claim of type signed integer.
  *
  * \param[in]  me    The token decoder context.
  * \param[in]  label The integer label identifying the claim.
@@ -332,14 +348,13 @@ ctoken_decode_get_tstr(struct ctoken_decode_context *me,
  * inside the \c attest_token_decode_context will be set.
  */
 enum ctoken_err_t
-ctoken_decode_get_int(struct ctoken_decode_context *me,
+ctoken_decode_get_int(struct ctoken_decode_cxt *me,
                             int32_t label,
                             int64_t *claim);
 
 
 /**
- * \brief Get a top-level claim by integer label who's value is an
- * unsigned integer
+ * \brief Get a claim of type unsigned integer.
  *
  * \param[in]  me    The token decoder context.
  * \param[in]  label The integer label identifying the claim.
@@ -373,7 +388,7 @@ ctoken_decode_get_int(struct ctoken_decode_context *me,
  *  inside the \c attest_token_decode_context will be set.
  */
 enum ctoken_err_t
-ctoken_decode_get_uint(struct ctoken_decode_context *me,
+ctoken_decode_get_uint(struct ctoken_decode_cxt *me,
                              int32_t label,
                              uint64_t *claim);
 
@@ -384,12 +399,10 @@ ctoken_decode_get_uint(struct ctoken_decode_context *me,
  *   Inline Implementations
  *   Typically, these are small and called only once.
  * ==================================================================== */
-    
-/*
- * Public function. See attest_token_decode.h
- */
+
+
 static inline void
-ctoken_decode_set_verification_key(struct ctoken_decode_context *me,
+ctoken_decode_set_verification_key(struct ctoken_decode_cxt *me,
                                 struct t_cose_key verification_key) {
 
     t_cose_sign1_set_verification_key(&(me->verify_context), verification_key);
@@ -397,14 +410,10 @@ ctoken_decode_set_verification_key(struct ctoken_decode_context *me,
 
 
 static inline enum ctoken_err_t
-ctoken_decode_get_error(struct ctoken_decode_context *me)
+ctoken_decode_get_error(struct ctoken_decode_cxt *me)
 {
     return me->last_error;
 }
-
-
-
-
 
 
 #ifdef __cplusplus

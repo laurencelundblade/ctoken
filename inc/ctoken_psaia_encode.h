@@ -64,7 +64,7 @@ static inline void
 ctoken_psaia_encode_origination(struct ctoken_encode_ctx *me,
                                 struct q_useful_buf_c origination)
 {
-    ctoken_encode_eat_origination(me, origination);
+    ctoken_eat_encode_origination(me, origination);
 }
 
 static inline void

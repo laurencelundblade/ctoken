@@ -347,7 +347,7 @@ int32_t eat_decode(struct t_cose_key     verification_key,
                    struct q_useful_buf_c *nonce)
 {
     int return_value;
-    struct ctoken_decode_context decode_context;
+    struct ctoken_decode_cxt decode_context;
 
     /* Initialize the decoding context. No options are given.
      * The algorithm in use comes from the header in the token
@@ -368,7 +368,7 @@ int32_t eat_decode(struct t_cose_key     verification_key,
     }
 
     /* Parse the nonce out of the token */
-    return_value = ctoken_decode_eat_nonce(&decode_context, nonce);
+    return_value = ctoken_eat_decode_nonce(&decode_context, nonce);
 
 Done:
     return return_value;

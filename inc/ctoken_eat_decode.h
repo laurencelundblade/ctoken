@@ -20,42 +20,42 @@
 
 
 static inline enum ctoken_err_t
-ctoken_decode_eat_nonce(struct ctoken_decode_context *me,
+ctoken_eat_decode_nonce(struct ctoken_decode_cxt *me,
                         struct q_useful_buf_c        *nonce)
 {
     return ctoken_decode_get_bstr(me, CTOKEN_EAT_LABEL_NONCE, nonce);
 }
 
 static inline enum ctoken_err_t
-ctoken_decode_eat_ueid(struct ctoken_decode_context *me,
+ctoken_eat_decode_ueid(struct ctoken_decode_cxt *me,
                        struct q_useful_buf_c        *ueid)
 {
     return ctoken_decode_get_bstr(me, CTOKEN_EAT_LABEL_UEID, ueid);
 }
 
 static inline enum ctoken_err_t
-ctoken_decode_eat_oemid(struct ctoken_decode_context *me,
+ctoken_eat_decode_oemid(struct ctoken_decode_cxt *me,
                         struct q_useful_buf_c        *oemid)
 {
     return ctoken_decode_get_bstr(me, CTOKEN_EAT_LABEL_OEMID, oemid);
 }
 
 static inline enum ctoken_err_t
-ctoken_decode_eat_origination(struct ctoken_decode_context *me,
+ctoken_eat_decode_origination(struct ctoken_decode_cxt *me,
                               struct q_useful_buf_c        *origination)
 {
     return ctoken_decode_get_tstr(me, CTOKEN_EAT_LABEL_ORIGINATION, origination);
 }
 
 static inline enum ctoken_err_t
-ctoken_decode_eat_security_level(struct ctoken_decode_context     *me,
+ctoken_eat_decode_security_level(struct ctoken_decode_cxt     *me,
                                  enum ctoken_eat_security_level_t *security_level)
 {
     return ctoken_decode_get_int(me, CTOKEN_EAT_LABEL_SECURITY_LEVEL, (int64_t *)security_level);
 }
 
 enum ctoken_err_t
-ctoken_decode_eat_boot_state(struct ctoken_decode_context *me,
+ctoken_eat_decode_boot_state(struct ctoken_decode_cxt *me,
                              bool *secure_boot_enabled,
                              enum ctoken_eat_debug_level_t *debug_state);
 

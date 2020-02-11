@@ -48,7 +48,9 @@ static inline void ctoken_encode_cwt_expiration(struct ctoken_encode_ctx *me,
 static inline void ctoken_encode_cwt_not_before(struct ctoken_encode_ctx *me,
                                                int64_t not_before)
 {
-    // TAG by time? No... TODO:
+    // Per RFC 8239 (CWT) this can be a float. That is not handled
+    // here. TODO: figure out if the standard should allow floats
+    // or not.
     ctoken_encode_add_integer(me, CTOKEN_CWT_LABEL_NOT_BEFORE, not_before);
 }
 

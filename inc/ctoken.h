@@ -96,7 +96,7 @@ enum ctoken_err_t {
 #define TOKEN_OPT_SHORT_CIRCUIT_SIGN 0x80000000
 
 
-    
+
 #ifdef __cplusplus
 }
 #endif

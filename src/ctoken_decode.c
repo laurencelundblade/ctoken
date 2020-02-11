@@ -42,11 +42,11 @@
 /*
  * Public function. See ctoken_decode.h
  */
-void ctoken_decode_init(struct ctoken_decode_context *me,
+void ctoken_decode_init(struct ctoken_decode_cxt *me,
                               uint32_t                t_cose_options,
                               uint32_t                options)
 {
-    memset(me, 0, sizeof(struct ctoken_decode_context));
+    memset(me, 0, sizeof(struct ctoken_decode_cxt));
     me->options    = options;
     me->last_error = CTOKEN_ERR_NO_VALID_TOKEN;
 
@@ -132,7 +132,7 @@ map_t_cose_errors(enum t_cose_err_t t_cose_error)
 
 
 enum ctoken_err_t
-ctoken_decode_get_kid(struct ctoken_decode_context *me,
+ctoken_decode_get_kid(struct ctoken_decode_cxt *me,
                             struct q_useful_buf_c   token,
                             struct q_useful_buf_c  *kid)
 {
@@ -158,7 +158,7 @@ ctoken_decode_get_kid(struct ctoken_decode_context *me,
  * Public function. See ctoken_decode.h
  */
 enum ctoken_err_t
-ctoken_decode_validate_token(struct ctoken_decode_context *me,
+ctoken_decode_validate_token(struct ctoken_decode_cxt *me,
                              struct q_useful_buf_c         token)
 {
     enum t_cose_err_t t_cose_error;
@@ -167,7 +167,7 @@ ctoken_decode_validate_token(struct ctoken_decode_context *me,
     /*
      * FIXME: check for CWT/EAT CBOR tag if requested
      */
-    
+
     t_cose_error = t_cose_sign1_verify(&(me->verify_context), token, &me->payload, NULL);
     return_value = map_t_cose_errors(t_cose_error);
     me->last_error = return_value;
@@ -180,7 +180,7 @@ ctoken_decode_validate_token(struct ctoken_decode_context *me,
  * Public function. See ctoken_decode.h
  */
 enum ctoken_err_t
-ctoken_decode_get_map(struct ctoken_decode_context *me,
+ctoken_decode_get_map(struct ctoken_decode_cxt *me,
                             int32_t                 label,
                             QCBORItem              *item)
 {
@@ -200,7 +200,7 @@ ctoken_decode_get_map(struct ctoken_decode_context *me,
  * Public function. See ctoken_decode.h
  */
 enum ctoken_err_t
-ctoken_decode_get_bstr(struct ctoken_decode_context *me,
+ctoken_decode_get_bstr(struct ctoken_decode_cxt *me,
                              int32_t                 label,
                              struct q_useful_buf_c  *claim)
 {
@@ -232,7 +232,7 @@ Done:
  * Public function. See ctoken_decode.h
  */
 enum ctoken_err_t
-ctoken_decode_get_tstr(struct ctoken_decode_context *me,
+ctoken_decode_get_tstr(struct ctoken_decode_cxt *me,
                        int32_t                       label,
                        struct q_useful_buf_c        *claim)
 {
@@ -264,7 +264,7 @@ Done:
  * Public function. See ctoken_decode.h
  */
 enum ctoken_err_t
-ctoken_decode_get_int(struct ctoken_decode_context *me,
+ctoken_decode_get_int(struct ctoken_decode_cxt *me,
                       int32_t                       label,
                       int64_t                      *integer)
 {
@@ -312,7 +312,7 @@ Done:
  * Public function. See ctoken_decode.h
  */
 enum ctoken_err_t
-ctoken_decode_get_uint(struct ctoken_decode_context *me,
+ctoken_decode_get_uint(struct ctoken_decode_cxt *me,
                        int32_t                       label,
                        uint64_t                     *integer)
 {
@@ -360,7 +360,7 @@ Done:
  * Public function. See ctoken_decode.h
  */
 enum ctoken_err_t
-ctoken_decode_get_payload(struct ctoken_decode_context *me,
+ctoken_decode_get_payload(struct ctoken_decode_cxt *me,
                           struct q_useful_buf_c        *payload)
 {
     enum ctoken_err_t return_value;

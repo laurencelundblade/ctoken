@@ -39,7 +39,7 @@ QCBORError GetBool(QCBORDecodeContext *decode, bool *b)
 
 
 enum ctoken_err_t
-ctoken_decode_eat_boot_state(struct ctoken_decode_context *me,
+ctoken_eat_decode_boot_state(struct ctoken_decode_cxt *me,
                              bool *secure_boot_enabled,
                              enum ctoken_eat_debug_level_t *debug_state)
 {

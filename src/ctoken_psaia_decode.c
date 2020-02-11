@@ -17,7 +17,7 @@
  * Public function. See attest_token_decode.h
  */
 enum ctoken_err_t
-ctoken_psaia_decode_simple_claims(struct ctoken_decode_context *me,
+ctoken_psaia_decode_simple_claims(struct ctoken_decode_cxt *me,
                                   struct ctoken_psaia_simple_claims_t *items)
 {
     struct qcbor_util_items_to_get_t  list[NUMBER_OF_ITEMS+1];
@@ -129,7 +129,7 @@ Done:
  * Public function. See attest_token_decode.h
  */
 enum ctoken_err_t
-ctoken_psaia_decode_num_sw_components(struct ctoken_decode_context *me,
+ctoken_psaia_decode_num_sw_components(struct ctoken_decode_cxt *me,
                                    uint32_t *num_sw_components)
 {
     enum ctoken_err_t return_value;
@@ -315,7 +315,7 @@ Done:
  * Public function. See attest_token_decode.h
  */
 enum ctoken_err_t
-ctoken_psaia_decode_sw_component(struct ctoken_decode_context *me,
+ctoken_psaia_decode_sw_component(struct ctoken_decode_cxt *me,
                               uint32_t requested_index,
                               struct ctoken_psaia_sw_component_t *sw_components)
 {

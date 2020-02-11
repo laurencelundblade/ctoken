@@ -18,7 +18,7 @@
  * Public function. See ctoken_eat_encode.h
  */
 void
-ctoken_encode_eat_boot_state(struct ctoken_encode_ctx     *me,
+ctoken_eat_encode_boot_state(struct ctoken_encode_ctx     *me,
                              bool                          secure_boot_enabled,
                              enum ctoken_eat_debug_level_t debug_state)
 {

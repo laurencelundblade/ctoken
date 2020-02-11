@@ -212,7 +212,7 @@ static void ctoken_encode_add_cbor(struct ctoken_encode_ctx *me,
  */
 enum ctoken_err_t
 ctoken_encode_finish(struct ctoken_encode_ctx *me,
-                     struct q_useful_buf_c *completed_token);
+                     struct q_useful_buf_c    *completed_token);
 
 
 

@@ -99,11 +99,11 @@ int32_t decode_test_normal_sig(void);
  * any keys configured.
  */
 int32_t decode_test_short_circuit_sig(void);
-    
-    
+
+
 int32_t make_normal_token(struct q_useful_buf token_storage, struct q_useful_buf_c *completed_token);
 
-    
+
 
 #ifdef __cplusplus
 }
