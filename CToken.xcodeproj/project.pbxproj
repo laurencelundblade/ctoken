@@ -183,8 +183,8 @@
 				0F3AF36423E57E8C00A60561 /* ctoken_cwt_decode.c */,
 				0F3AF35423E5474700A60561 /* ctoken_eat_encode.c */,
 				0F3AF35F23E57DAC00A60561 /* ctoken_eat_decode.c */,
-				0F3AF34B23E53BCF00A60561 /* ctoken_psaia_decode.c */,
 				0F3AF35123E5463300A60561 /* ctoken_psaia_encode.c */,
+				0F3AF34B23E53BCF00A60561 /* ctoken_psaia_decode.c */,
 			);
 			name = src;
 			path = "New Group";

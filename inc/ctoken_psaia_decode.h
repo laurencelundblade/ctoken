@@ -289,6 +289,11 @@ ctoken_psaia_decode_sw_component(struct ctoken_decode_cxt *me,
 
 
 
+
+/* --------------------------------------------------------------------------
+         Inline implementations
+   --------------------------------------------------------------------------*/
+
 static inline enum ctoken_err_t
 attest_token_decode_psa_ia_nonce(struct ctoken_decode_cxt *me,
                                  struct q_useful_buf_c *nonce)

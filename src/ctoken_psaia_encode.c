@@ -53,3 +53,5 @@ void ctoken_psaia_encode_simple_claims(struct ctoken_encode_ctx *me,
         ctoken_psaia_encode_security_lifecycle(me, claims->security_lifecycle);
     }
 }
+
+// TODO: implementation of SW components; review the TF-M code to do this.

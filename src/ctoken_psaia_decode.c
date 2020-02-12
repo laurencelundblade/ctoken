@@ -14,7 +14,7 @@
 
 
 /*
- * Public function. See attest_token_decode.h
+ * Public function. See ctoken_psaia_decode.h
  */
 enum ctoken_err_t
 ctoken_psaia_decode_simple_claims(struct ctoken_decode_cxt *me,
@@ -118,6 +118,7 @@ Done:
     return return_value;
 }
 
+
 /** Value for EAT_CBOR_ARM_LABEL_NO_SW_COMPONENTS when present.
  * It must be this value if present.
  * Indicates that the boot status does not contain any SW components'
@@ -126,7 +127,7 @@ Done:
 #define NO_SW_COMPONENT_FIXED_VALUE 1
 
 /*
- * Public function. See attest_token_decode.h
+ * Public function.  See ctoken_psaia_decode.h
  */
 enum ctoken_err_t
 ctoken_psaia_decode_num_sw_components(struct ctoken_decode_cxt *me,
@@ -312,7 +313,7 @@ Done:
 
 
 /*
- * Public function. See attest_token_decode.h
+ * Public function.  See ctoken_psaia_decode.h
  */
 enum ctoken_err_t
 ctoken_psaia_decode_sw_component(struct ctoken_decode_cxt *me,
