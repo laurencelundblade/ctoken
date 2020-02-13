@@ -17,6 +17,7 @@
 
 //#include "attest_token_test.h"
 #include "cwt_test.h"
+#include "eat_test.h"
 
 /*
  Test configuration
@@ -48,6 +49,7 @@ static test_entry2 s_tests2[] = {
 #endif
 
 static test_entry s_tests[] = {
+    TEST_ENTRY(basic_eat_test),
     TEST_ENTRY(cwt_test),
 };
 

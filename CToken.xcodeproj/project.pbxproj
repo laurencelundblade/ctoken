@@ -35,6 +35,7 @@
 		0F3AF38823F1BB5600A60561 /* libqcbor.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0F3AF36923EE51B500A60561 /* libqcbor.a */; };
 		0F3AF38923F1BB5600A60561 /* libcrypto.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0F3AF36D23EF5B6600A60561 /* libcrypto.a */; };
 		0FBE2D8523F1BC7B00A31C46 /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F3AF33F23E5005900A60561 /* main.c */; };
+		0FBE2D8823F5D9C800A31C46 /* eat_test.c in Sources */ = {isa = PBXBuildFile; fileRef = 0FBE2D8723F5D9C800A31C46 /* eat_test.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -102,6 +103,8 @@
 		0F3AF37323F0567A00A60561 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		0F3AF37523F1BACE00A60561 /* eat_example_ossl.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = eat_example_ossl.c; sourceTree = "<group>"; };
 		0F3AF38E23F1BB5600A60561 /* OSSL Example */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "OSSL Example"; sourceTree = BUILT_PRODUCTS_DIR; };
+		0FBE2D8623F5D9C800A31C46 /* eat_test.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = eat_test.h; path = test/eat_test.h; sourceTree = "<group>"; };
+		0FBE2D8723F5D9C800A31C46 /* eat_test.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = eat_test.c; path = test/eat_test.c; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -236,6 +239,8 @@
 				0F3AF34323E5008100A60561 /* psaia_test.h */,
 				0F3AF36F23EF5C4700A60561 /* cwt_test.h */,
 				0F3AF37023EF5C4700A60561 /* cwt_test.c */,
+				0FBE2D8623F5D9C800A31C46 /* eat_test.h */,
+				0FBE2D8723F5D9C800A31C46 /* eat_test.c */,
 			);
 			name = test;
 			sourceTree = "<group>";
@@ -340,6 +345,7 @@
 				0F3AF35523E5474700A60561 /* ctoken_eat_encode.c in Sources */,
 				0F3AF36123E57DAC00A60561 /* ctoken_eat_decode.c in Sources */,
 				0F3AF34C23E53BCF00A60561 /* ctoken_psaia_decode.c in Sources */,
+				0FBE2D8823F5D9C800A31C46 /* eat_test.c in Sources */,
 				0FBE2D8523F1BC7B00A31C46 /* main.c in Sources */,
 				0F3AF33123E4FD6C00A60561 /* ctoken_encode.c in Sources */,
 				0F3AF33323E4FD6C00A60561 /* qcbor_util.c in Sources */,

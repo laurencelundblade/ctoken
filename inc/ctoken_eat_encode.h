@@ -17,7 +17,7 @@
 #include "ctoken_cwt_encode.h"
 #include "ctoken_eat_labels.h"
 
-
+// TODO: prototype and document all these; move the inline implementations to the end.
 
 static inline void
 ctoken_eat_encode_nonce(struct ctoken_encode_ctx *me,
@@ -66,6 +66,20 @@ ctoken_eat_encode_boot_state(struct ctoken_encode_ctx *me,
                              bool secure_boot_enabled,
                              enum ctoken_eat_debug_level_t debug_state);
 
+
+
+/**
+ * \brief Encode an EAT location claims
+ *
+ * \param[in] context   ctoken encode context to output to.
+ * \param[in] location  The location to output.
+ *
+ * Only the location fields indicated as present in \c item_flags
+ * will be output.
+ */
+void
+ctoken_eat_encode_location(struct ctoken_encode_ctx           *context,
+                           const struct ctoken_eat_location_t *location);
 
 
 

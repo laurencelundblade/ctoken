@@ -16,6 +16,7 @@
 
 #include "ctoken_cwt_decode.h"
 #include "ctoken_eat_labels.h"
+#include "ctoken_decode.h"
 
 
 
@@ -59,6 +60,27 @@ ctoken_eat_decode_boot_state(struct ctoken_decode_cxt *me,
                              bool *secure_boot_enabled,
                              enum ctoken_eat_debug_level_t *debug_state);
 
+
+
+/**
+ * \brief Decode position location (e.g. GPS location)
+ *
+ * \param[in] context   The decoding context to decode from.
+ * \param[out] location The returned location
+ *
+ * \retval CTOKEN_ERR_NOT_FOUND             No location claims exists.
+ * \retval CTOKEN_ERR_CBOR_NOT_WELL_FORMED  CBOR is not well formed.
+ * \retval CTOKEN_ERR_CBOR_STRUCTURE        The location claim format is bad.
+ *
+ * This finds the location claim in the token and returns its
+ * contents.
+ *
+ * Only some of the values in the location claim may be present. See
+ * TODO:...
+ */
+enum ctoken_err_t
+ctoken_eat_decode_location(struct ctoken_decode_cxt *context,
+                           struct ctoken_eat_location_t *location);
 
 
 #ifdef SUBMODS_ARE_IMPLEMENTED
