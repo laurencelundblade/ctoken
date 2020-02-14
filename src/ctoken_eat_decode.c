@@ -107,7 +107,7 @@ GetDouble(QCBORDecodeContext *decode,
  * Public function. See ctoken_eat_encode.h
  */
 enum ctoken_err_t
-ctoken_eat_decode_boot_state(struct ctoken_decode_cxt *me,
+ctoken_eat_decode_boot_state(struct ctoken_decode_ctx *me,
                              bool *secure_boot_enabled,
                              enum ctoken_eat_debug_level_t *debug_state)
 {
@@ -182,7 +182,8 @@ ctoken_eat_decode_boot_state(struct ctoken_decode_cxt *me,
     }
 
 
-    if(boot_state_item.val.int64 < NOT_REPORTED || boot_state_item.val.int64 > FULL_PERMANENT_DISABLE) {
+    if(boot_state_item.val.int64 < EAT_DL_NOT_REPORTED ||
+       boot_state_item.val.int64 > EAT_DL_FULL_PERMANENT_DISABLE) {
         // TODO: better error here
         return_value = CTOKEN_ERR_CBOR_NOT_WELL_FORMED;
         goto Done;
@@ -201,7 +202,7 @@ Done:
  * Public function. See ctoken_eat_encode.h
  */
 enum ctoken_err_t
-ctoken_eat_decode_location(struct ctoken_decode_cxt     *me,
+ctoken_eat_decode_location(struct ctoken_decode_ctx     *me,
                            struct ctoken_eat_location_t *location)
 {
     enum ctoken_err_t   return_value;
@@ -233,6 +234,7 @@ ctoken_eat_decode_location(struct ctoken_decode_cxt     *me,
     }
 
     /* Loop fetching all the items in the map */
+    location->item_flags = 0;
     do {
         return_value = GetDouble(&decode_context, &label, &d, &next_nest_level);
         if(return_value) {
@@ -244,6 +246,7 @@ ctoken_eat_decode_location(struct ctoken_decode_cxt     *me,
         }
 
         location->items[label-1] = d;
+        location->item_flags |= (0x01U << (label-1));
     } while(next_nest_level == location_map_item.uNextNestLevel);
 
 Done:

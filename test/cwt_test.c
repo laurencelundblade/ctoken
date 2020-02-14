@@ -60,7 +60,7 @@ int32_t cwt_test()
 
 
 
-    struct ctoken_decode_cxt decode_context;
+    struct ctoken_decode_ctx decode_context;
     int64_t expiration;
     /* Set up to verify and decode the token */
 
