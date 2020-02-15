@@ -12,6 +12,8 @@ This relies on [QCBOR](https://github.com/laurencelundblade/QCBOR) for CBOR enco
 This code only encodes and decodes the claims in the right CBOR format. It doesn't
 create them as that is very dependent on the operating environment and such.
 
+![Cake Diagram](https://github.com/laurencelundblade/ctoken/blob/master/ctoken_cake-diagram.png)
+
 ## Standards Status
 
 CWT is a stable IETF standard described in [RFC 8392](https://tools.ietf.org/html/rfc8392). It is not expected to change,
