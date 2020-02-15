@@ -92,7 +92,7 @@ extern "C" {
  *
  * Aproximate size on 64-bit CPU: 48 bytes.
  */
-struct ctoken_decode_cxt {
+struct ctoken_decode_ctx {
     /* PRIVATE DATA STRUCTURE. USE ACCESSOR FUNCTIONS. */
     struct t_cose_sign1_verify_ctx verify_context;
     struct q_useful_buf_c          payload;
@@ -112,7 +112,7 @@ struct ctoken_decode_cxt {
  * use. An instance of \ref attest_token_decode_context can
  * be used again by calling this on it again.
  **/
-void ctoken_decode_init(struct ctoken_decode_cxt *me,
+void ctoken_decode_init(struct ctoken_decode_ctx *me,
                         uint32_t t_cose_options,
                         uint32_t token_options);
 
@@ -142,7 +142,7 @@ void ctoken_decode_init(struct ctoken_decode_cxt *me,
  * attest_token_decode_set_pub_key_select().
  */
 static inline void
-ctoken_decode_set_verification_key(struct ctoken_decode_cxt *me,
+ctoken_decode_set_verification_key(struct ctoken_decode_ctx *me,
                                    struct t_cose_key verification_key);
 
 
@@ -167,7 +167,7 @@ ctoken_decode_set_verification_key(struct ctoken_decode_cxt *me,
  * will use key ID and some will not.
  */
 enum ctoken_err_t
-ctoken_decode_get_kid(struct ctoken_decode_cxt *me,
+ctoken_decode_get_kid(struct ctoken_decode_ctx *me,
                       struct q_useful_buf_c token,
                       struct q_useful_buf_c *kid);
 
@@ -206,7 +206,7 @@ ctoken_decode_get_kid(struct ctoken_decode_cxt *me,
  * up the verification key is the token, not the COSE key id.
  */
 enum ctoken_err_t
-ctoken_decode_validate_token(struct ctoken_decode_cxt *me,
+ctoken_decode_validate_token(struct ctoken_decode_ctx *me,
                              struct q_useful_buf_c token);
 
 
@@ -218,7 +218,7 @@ ctoken_decode_validate_token(struct ctoken_decode_cxt *me,
  * \return An error from \ref CTOKEN_ERR_t.
  */
 static enum ctoken_err_t
-ctoken_decode_get_error(struct ctoken_decode_cxt *me);
+ctoken_decode_get_error(struct ctoken_decode_ctx *me);
 
 
 /**
@@ -238,7 +238,7 @@ ctoken_decode_get_error(struct ctoken_decode_cxt *me);
  * claims that have non-integer labels.
  */
 enum ctoken_err_t
-ctoken_decode_get_payload(struct ctoken_decode_cxt *me,
+ctoken_decode_get_payload(struct ctoken_decode_ctx *me,
                           struct q_useful_buf_c    *payload);
 
 
@@ -271,7 +271,7 @@ ctoken_decode_get_payload(struct ctoken_decode_cxt *me,
  * be set.
  */
 enum ctoken_err_t
-ctoken_decode_get_bstr(struct ctoken_decode_cxt    *me,
+ctoken_decode_get_bstr(struct ctoken_decode_ctx    *me,
                              int32_t                label,
                              struct q_useful_buf_c *claim);
 
@@ -306,7 +306,7 @@ ctoken_decode_get_bstr(struct ctoken_decode_cxt    *me,
  * be set.
  */
 enum ctoken_err_t
-ctoken_decode_get_tstr(struct ctoken_decode_cxt *me,
+ctoken_decode_get_tstr(struct ctoken_decode_ctx *me,
                              int32_t label,
                              struct q_useful_buf_c *claim);
 
@@ -348,7 +348,7 @@ ctoken_decode_get_tstr(struct ctoken_decode_cxt *me,
  * inside the \c attest_token_decode_context will be set.
  */
 enum ctoken_err_t
-ctoken_decode_get_int(struct ctoken_decode_cxt *me,
+ctoken_decode_get_int(struct ctoken_decode_ctx *me,
                             int32_t label,
                             int64_t *claim);
 
@@ -388,7 +388,7 @@ ctoken_decode_get_int(struct ctoken_decode_cxt *me,
  *  inside the \c attest_token_decode_context will be set.
  */
 enum ctoken_err_t
-ctoken_decode_get_uint(struct ctoken_decode_cxt *me,
+ctoken_decode_get_uint(struct ctoken_decode_ctx *me,
                              int32_t label,
                              uint64_t *claim);
 
@@ -402,7 +402,7 @@ ctoken_decode_get_uint(struct ctoken_decode_cxt *me,
 
 
 static inline void
-ctoken_decode_set_verification_key(struct ctoken_decode_cxt *me,
+ctoken_decode_set_verification_key(struct ctoken_decode_ctx *me,
                                 struct t_cose_key verification_key) {
 
     t_cose_sign1_set_verification_key(&(me->verify_context), verification_key);
@@ -410,7 +410,7 @@ ctoken_decode_set_verification_key(struct ctoken_decode_cxt *me,
 
 
 static inline enum ctoken_err_t
-ctoken_decode_get_error(struct ctoken_decode_cxt *me)
+ctoken_decode_get_error(struct ctoken_decode_ctx *me)
 {
     return me->last_error;
 }

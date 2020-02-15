@@ -347,7 +347,7 @@ int32_t eat_decode(struct t_cose_key     verification_key,
                    struct q_useful_buf_c *nonce)
 {
     int return_value;
-    struct ctoken_decode_cxt decode_context;
+    struct ctoken_decode_ctx decode_context;
 
     /* Initialize the decoding context. No options are given.
      * The algorithm in use comes from the header in the token

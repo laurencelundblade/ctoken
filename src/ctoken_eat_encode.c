@@ -45,7 +45,9 @@ ctoken_eat_encode_location(struct ctoken_encode_ctx *me,
 
     for(item_iterator = CTOKEN_EAT_LABEL_LATITUDE-1; item_iterator < NUM_LOCATION_ITEMS-1; item_iterator++) {
         if(location->item_flags & (0x01u << item_iterator)) {
-            QCBOREncode_AddDoubleToMapN(encode_cxt, item_iterator + 1, location->items[item_iterator]);
+            QCBOREncode_AddDoubleToMapN(encode_cxt,
+                                        item_iterator + 1,
+                                        location->items[item_iterator]);
         }
     }
 

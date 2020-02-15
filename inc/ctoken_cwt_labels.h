@@ -15,6 +15,15 @@
 
 
 /*
+
+ File: ctoken_cwt_labels.h
+
+ These are based on the IETF Cbor Web Token standard, RCF 8329.
+ https://tools.ietf.org/html/rfc8392
+
+ They are not likely to change. Note that this implementation
+ doesn't support floating point dates.
+
              +------+-----+----------------------------------+
              | Name | Key | Value Type                       |
              +------+-----+----------------------------------+
