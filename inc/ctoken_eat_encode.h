@@ -233,7 +233,7 @@ ctoken_eat_encode_nonce(struct ctoken_encode_ctx *me,
 
 static inline void
 ctoken_eat_encode_ueid(struct ctoken_encode_ctx *me,
-                       struct q_useful_buf_c ueid)
+                       struct q_useful_buf_c     ueid)
 {
     ctoken_encode_add_bstr(me, CTOKEN_EAT_LABEL_UEID, ueid);
 }
@@ -241,7 +241,7 @@ ctoken_eat_encode_ueid(struct ctoken_encode_ctx *me,
 
 static inline void
 ctoken_eat_encode_oemid(struct ctoken_encode_ctx *me,
-                        struct q_useful_buf_c oemid)
+                        struct q_useful_buf_c     oemid)
 {
     ctoken_encode_add_bstr(me, CTOKEN_EAT_LABEL_OEMID, oemid);
 }

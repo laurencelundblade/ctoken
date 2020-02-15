@@ -16,6 +16,8 @@
 #include "ctoken_cwt_labels.h"
 #include "ctoken_decode.h"
 
+// TODO: Make prototypes of these and document them
+
 static inline enum ctoken_err_t
 ctoken_decode_cwt_issuer(struct ctoken_decode_ctx *me,
                          struct q_useful_buf_c *issuer)

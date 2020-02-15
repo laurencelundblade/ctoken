@@ -253,13 +253,25 @@ ctoken_eat_decode_age(struct ctoken_decode_ctx  *context,
 
 
 
-
+/**
+ * \brief  Decode the uptime claim.
+ *
+ * \param[in] context         The decoding context to output to.
+ * \paran[in] uptime          The uptime in seconds since boot or restart.
+ *
+ * This decodes the uptime claim.
+ *
+ * This is the time in seconds since the device booted or started.
+ *
+ * If there is an error like insufficient space in the output buffer,
+ * the error state is entered. It is returned later when ctoken_encode_finish()
+ * is called.
+ */
 static inline enum ctoken_err_t
 ctoken_eat_decode_uptime(struct ctoken_decode_ctx  *context,
                          uint64_t                   *uptime);
 
 
-// TODO: the age and uptime claims
 
 #ifdef SUBMODS_ARE_IMPLEMENTED
 

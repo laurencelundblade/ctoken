@@ -27,6 +27,16 @@
 #define CTOKEN_EAT_LABEL_AGE 100007
 #define CTOKEN_EAT_LABEL_UPTIME 100008
 
+/**
+ * File: ctoken_eat_labels.h
+ *
+ * The EAT standard (Entity Attestation Token) is still in development
+ * in the IETF. This code is roughly based on
+ * https://tools.ietf.org/html/draft-ietf-rats-eat-02
+ *
+ * While the core basis on CWT is unlikely to change, the
+ * individual claims are likely to change.
+ */
 
 /**
  * This gives a rough notion of the security level of the attester.
