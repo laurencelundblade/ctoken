@@ -17,6 +17,7 @@
 #include "ctoken_cwt_labels.h"
 
 
+// TODO: Make prototypes of these and document them
 
 
 static inline void ctoken_encode_cwt_issuer(struct ctoken_encode_ctx *me,

@@ -16,8 +16,10 @@
 #include "ctoken_cwt_labels.h"
 #include "ctoken_decode.h"
 
+// TODO: Make prototypes of these and document them
+
 static inline enum ctoken_err_t
-ctoken_decode_cwt_issuer(struct ctoken_decode_cxt *me,
+ctoken_decode_cwt_issuer(struct ctoken_decode_ctx *me,
                          struct q_useful_buf_c *issuer)
 {
     return ctoken_decode_get_tstr(me, CTOKEN_CWT_LABEL_ISSUER, issuer);
@@ -25,7 +27,7 @@ ctoken_decode_cwt_issuer(struct ctoken_decode_cxt *me,
 
 
 static inline enum ctoken_err_t
-ctoken_decode_cwt_subject(struct ctoken_decode_cxt *me,
+ctoken_decode_cwt_subject(struct ctoken_decode_ctx *me,
                           struct q_useful_buf_c *subject)
 {
     return ctoken_decode_get_tstr(me, CTOKEN_CWT_LABEL_SUBJECT, subject);
@@ -33,7 +35,7 @@ ctoken_decode_cwt_subject(struct ctoken_decode_cxt *me,
 
 
 static inline enum ctoken_err_t
-ctoken_decode_cwt_audience(struct ctoken_decode_cxt *me,
+ctoken_decode_cwt_audience(struct ctoken_decode_ctx *me,
                            struct q_useful_buf_c *audience)
 {
     return ctoken_decode_get_tstr(me, CTOKEN_CWT_LABEL_AUDIENCE, audience);
@@ -41,14 +43,14 @@ ctoken_decode_cwt_audience(struct ctoken_decode_cxt *me,
 
 
 static inline enum ctoken_err_t
-ctoken_decode_cwt_expiration(struct ctoken_decode_cxt *me,
+ctoken_decode_cwt_expiration(struct ctoken_decode_ctx *me,
                              int64_t *expiration)
 {
     return ctoken_decode_get_int(me, CTOKEN_CWT_LABEL_EXPIRATION, expiration);
 }
 
 static inline enum ctoken_err_t
-ctoken_decode_cwt_not_before(struct ctoken_decode_cxt *me,
+ctoken_decode_cwt_not_before(struct ctoken_decode_ctx *me,
                              int64_t *not_before)
 {
     return ctoken_decode_get_int(me, CTOKEN_CWT_LABEL_NOT_BEFORE, not_before);
@@ -56,7 +58,7 @@ ctoken_decode_cwt_not_before(struct ctoken_decode_cxt *me,
 
 
 static inline enum ctoken_err_t
-ctoken_decode_cwt_iat(struct ctoken_decode_cxt *me,
+ctoken_decode_cwt_iat(struct ctoken_decode_ctx *me,
                       int64_t *iat)
 {
     return ctoken_decode_get_int(me, CTOKEN_CWT_LABEL_NOT_BEFORE, iat);
@@ -64,7 +66,7 @@ ctoken_decode_cwt_iat(struct ctoken_decode_cxt *me,
 
 
 static inline enum ctoken_err_t
-ctoken_decode_cwt_cti(struct ctoken_decode_cxt *me,
+ctoken_decode_cwt_cti(struct ctoken_decode_ctx *me,
                       struct q_useful_buf_c *cti)
 {
     return ctoken_decode_get_bstr(me, CTOKEN_CWT_LABEL_CTI,  cti);
