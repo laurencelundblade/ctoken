@@ -1,16 +1,137 @@
 /*
  * psaiai_test.c (formerly attest_token_test.c)
  *
- * Copyright (c) 2018-2019, Laurence Lundblade.
+ * Copyright (c) 2018-2020, Laurence Lundblade.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
  * See BSD-3-Clause license in README.md
  */
 
-#include "attest_token_test.h"
+#include "psaia_test.h"
 #include "q_useful_buf.h"
-#include "attest_token_decode.h"
+#include "ctoken_decode.h"
+#include "ctoken_encode.h"
+#include "ctoken_psaia_encode.h"
+#include "ctoken_psaia_decode.h"
+
+
+
+
+int32_t psaia_basic_test()
+{
+    struct ctoken_encode_ctx     encode_ctx;
+    MakeUsefulBufOnStack(        token_out_buffer, 400);
+    struct q_useful_buf_c        completed_token;
+    enum ctoken_err_t            result;
+    struct ctoken_psaia_simple_claims_t psaia_claims;
+
+    uint8_t test_nonce_bytes[] = {0x05, 0x08, 0x33, 0x99};
+    const struct q_useful_buf_c test_nonce = Q_USEFUL_BUF_FROM_BYTE_ARRAY_LITERAL(test_nonce_bytes);
+
+    uint8_t test_ueid_bytes[] = {0xa4, 0x68, 0x23, 0x99, 0x00, 0x01};
+    const struct q_useful_buf_c test_ueid = Q_USEFUL_BUF_FROM_BYTE_ARRAY_LITERAL(test_ueid_bytes);
+
+    const struct q_useful_buf_c test_origination = Q_USEFUL_BUF_FROM_SZ_LITERAL("Acme TEE");
+
+
+    /* Set up the encoder to use short-circuit signing. It doesn't require a
+     * key, so it is easy to get going with.  Must tell it a valid algorithm
+     * ID even though it doesn't use it. This context can be used to create
+     * one or more tokens.
+     */
+    ctoken_encode_init(&encode_ctx,
+                       T_COSE_OPT_SHORT_CIRCUIT_SIG,
+                       0,
+                       T_COSE_ALGORITHM_ES256);
+
+    /* Get started on a particular token by giving an out buffer.
+     */
+    result = ctoken_encode_start(&encode_ctx, token_out_buffer);
+    if(result) {
+        return 100 + (int32_t)result;
+    }
+
+    /* --- Add the claims --- */
+    /* Values are just made up for test */
+
+    psaia_claims.nonce = test_nonce;
+    psaia_claims.ueid = test_ueid;
+    psaia_claims.origination = test_origination;
+    psaia_claims.item_flags =  ITEM_FLAG(NONCE_FLAG) |
+                               ITEM_FLAG(UEID_FLAG) |
+                               ITEM_FLAG(ORIGINATION_FLAG);
+
+    ctoken_psaia_encode_simple_claims(&encode_ctx, &psaia_claims);
+
+    /* --- Done adding the claims --- */
+
+    /* Finsh up the token. This is when the signing happens. The pointer
+     * and length of the completed token are returned
+     */
+    result = ctoken_encode_finish(&encode_ctx, &completed_token);
+    if(result) {
+        return 200 + (int32_t)result;
+    }
+
+    struct ctoken_decode_ctx decode_context;
+    /* Set up to verify and decode the token */
+
+    /* Initialize the decoder / verifier context. No options are set
+     * so two 0's are passed
+     */
+    ctoken_decode_init(&decode_context, T_COSE_OPT_ALLOW_SHORT_CIRCUIT, 0);
+
+    /* Pass in the token and have it validated. If the token was corrupt
+     * or the signature check failed, it will be returned here
+     */
+    result = ctoken_decode_validate_token(&decode_context, completed_token);
+    if(result) {
+        return 300 + (int32_t)result;
+    }
+
+    memset(&psaia_claims, 0, sizeof(psaia_claims));
+
+    result = ctoken_psaia_decode_simple_claims(&decode_context,
+                                               &psaia_claims);
+    if(result) {
+        return result;
+    }
+
+    if(psaia_claims.item_flags != (ITEM_FLAG(NONCE_FLAG) |
+                                  ITEM_FLAG(UEID_FLAG) |
+                                  ITEM_FLAG(ORIGINATION_FLAG))) {
+        return 400;
+    }
+
+    if(q_useful_buf_compare(psaia_claims.nonce, test_nonce)) {
+        return 401;
+    }
+
+
+    if(q_useful_buf_compare(psaia_claims.ueid, test_ueid)) {
+        return 402;
+    }
+
+
+    if(q_useful_buf_compare(psaia_claims.origination, test_origination)) {
+        return 431;
+    }
+    return 0;
+}
+
+
+
+
+
+
+
+// TODO: this tests a lot of the PSA layer about ctoken and needs to be removed
+// or refactored.
+
+
+#if REFACTOR_THIS
+
 #include "attest_token_test_values.h"
 
 /**
@@ -968,4 +1089,6 @@ int32_t make_normal_token(struct q_useful_buf token_storage, struct q_useful_buf
                                   completed_token);
     return return_value;
 }
+
+#endif
 

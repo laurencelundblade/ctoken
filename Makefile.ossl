@@ -33,7 +33,7 @@ C_OPTS=-Os -Wall -pedantic-errors -Wextra -Wshadow -Wparentheses -xc -std=c99
 
 # ---- T_COSE Config and test options ----
 TEST_CONFIG_OPTS=
-TEST_OBJ=test/eat_test.o test/cwt_test.o test/run_tests.o
+TEST_OBJ=test/eat_test.o test/cwt_test.o test/psaia_test.o test/run_tests.o
 
 
 # ---- the main body that is invariant ----

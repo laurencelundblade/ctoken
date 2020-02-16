@@ -146,7 +146,7 @@ ctoken_psaia_decode_implementation_id(struct ctoken_decode_ctx*me,
  * This is also known as the Verification Service Indicator.
  *
  * The \c origination is a UTF-8 text string. It is returned as a
- * pointer* and length. It is NOT \c NULL terminated.
+ * pointer and length. It is NOT \c NULL terminated.
  */
 static enum ctoken_err_t
 ctoken_psaia_decode_origination(struct ctoken_decode_ctx *me,
@@ -302,7 +302,6 @@ attest_token_decode_psa_ia_nonce(struct ctoken_decode_ctx *me,
 }
 
 
-
 static inline enum ctoken_err_t
 ctoken_psaia_decode_boot_seed(struct ctoken_decode_ctx *me,
                                   struct q_useful_buf_c *boot_seed)
@@ -372,12 +371,14 @@ Done:
     return return_value;
 }
 
+
 static inline enum ctoken_err_t
 ctoken_psaia_decode_profile_definition(struct ctoken_decode_ctx *me,
                                        struct q_useful_buf_c *profile_definition)
 {
     return ctoken_decode_get_tstr(me, EAT_CBOR_ARM_LABEL_PROFILE_DEFINITION, profile_definition);
 }
+
 
 static inline enum ctoken_err_t
 ctoken_psaia_decode_origination(struct ctoken_decode_ctx*me,

@@ -36,6 +36,7 @@
 		0F3AF38923F1BB5600A60561 /* libcrypto.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0F3AF36D23EF5B6600A60561 /* libcrypto.a */; };
 		0FBE2D8523F1BC7B00A31C46 /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F3AF33F23E5005900A60561 /* main.c */; };
 		0FBE2D8823F5D9C800A31C46 /* eat_test.c in Sources */ = {isa = PBXBuildFile; fileRef = 0FBE2D8723F5D9C800A31C46 /* eat_test.c */; };
+		0FBE2D8923F976BF00A31C46 /* psaia_test.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F3AF34223E5008100A60561 /* psaia_test.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -343,6 +344,7 @@
 				0F3AF36523E57E8C00A60561 /* ctoken_cwt_decode.c in Sources */,
 				0F3AF34823E5008200A60561 /* run_tests.c in Sources */,
 				0F3AF35523E5474700A60561 /* ctoken_eat_encode.c in Sources */,
+				0FBE2D8923F976BF00A31C46 /* psaia_test.c in Sources */,
 				0F3AF36123E57DAC00A60561 /* ctoken_eat_decode.c in Sources */,
 				0F3AF34C23E53BCF00A60561 /* ctoken_psaia_decode.c in Sources */,
 				0FBE2D8823F5D9C800A31C46 /* eat_test.c in Sources */,

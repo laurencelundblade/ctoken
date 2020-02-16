@@ -17,10 +17,10 @@
 #include <stdint.h>
 
 /* These are temporary labels until the real ones are assigned by IANA */
-#define CTOKEN_EAT_LABEL_UEID 100000
-#define CTOKEN_EAT_LABEL_NONCE 100001
-#define CTOKEN_EAT_LABEL_OEMID  100002
-#define CTOKEN_EAT_LABEL_ORIGINATION  100003
+#define CTOKEN_EAT_LABEL_UEID -75009 // Same as PSA for now
+#define CTOKEN_EAT_LABEL_NONCE -75008 // Same as PSA for now
+#define CTOKEN_EAT_LABEL_OEMID  100002 // Same as PSA for now
+#define CTOKEN_EAT_LABEL_ORIGINATION  -75010 // Same as PSA for now
 #define CTOKEN_EAT_LABEL_SECURITY_LEVEL 100004
 #define CTOKEN_EAT_LABEL_BOOT_STATE 100005
 #define CTOKEN_EAT_LABEL_LOCATION 100006

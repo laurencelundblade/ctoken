@@ -1,23 +1,38 @@
 /*
  * psaia_test.h (formerly attest_token_test.h)
  *
- * Copyright (c) 2018-2019, Laurence Lundblade.
+ * Copyright (c) 2018-2020, Laurence Lundblade.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
  * See BSD-3-Clause license in README.md
  */
 
-#ifndef __ATTEST_TOKEN_TEST_H__
-#define __ATTEST_TOKEN_TEST_H__
+#ifndef __PSAIA_TEST_H__
+#define __PSAIA_TEST_H__
 
 #include <stdint.h>
 #include "q_useful_buf.h"
 
 #ifdef __cplusplus
 extern "C" {
+#ifdef 0
+} // Keep editor indention formatting happy
+#endif
 #endif
 
+
+int32_t psaia_basic_test(void);
+
+
+
+
+// TODO: this tests a lot of the PSA layer about ctoken and needs to be removed
+// or refactored.
+
+
+
+#if REFACTOR_THIS
 /**
  * \file attest_token_test.h
  *
@@ -104,9 +119,10 @@ int32_t decode_test_short_circuit_sig(void);
 int32_t make_normal_token(struct q_useful_buf token_storage, struct q_useful_buf_c *completed_token);
 
 
+#endif /* REFACTOR_THIS */
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* __TOKEN_TEST_H__ */
+#endif /* __PSAIA_TEST_H__ */

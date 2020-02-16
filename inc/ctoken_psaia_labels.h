@@ -1,13 +1,13 @@
 /*
- * ctoken_psaia_labels.h
+ * ctoken_psaia_labels.h (partly derived from attest_eat_defines.h)
  *
  * Copyright (c) 2020 Laurence Lundblade.
+ * Copyright (c) 2019, Arm Limited. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
  * See BSD-3-Clause license in README.md
  *
- * Created by Laurence Lundblade on 2/3/20.
  */
 
 #ifndef psa_ia_labels_h
@@ -17,40 +17,33 @@
 #include "q_useful_buf.h"
 
 
-#define EAT_CBOR_ARM_LABEL_CHALLENGE  CTOKEN_EAT_LABEL_NONCE
+/**
+ * These labels are temporary and in the proprietary space for
+ * CWT claims. These will be changed with they get officially
+ * assigned by IANA. See https://tools.ietf.org/html/draft-tschofenig-rats-psa-token-04
+ * and eventually https://www.iana.org/assignments/cwt/cwt.xhtml.
+ */
 
-#define EAT_CBOR_ARM_LABEL_UEID  CTOKEN_EAT_LABEL_UEID
+#define EAT_CBOR_ARM_RANGE_BASE                 (-75000)
+#define EAT_CBOR_ARM_LABEL_PROFILE_DEFINITION   (EAT_CBOR_ARM_RANGE_BASE - 0)
+#define EAT_CBOR_ARM_LABEL_CLIENT_ID            (EAT_CBOR_ARM_RANGE_BASE - 1)
+#define EAT_CBOR_ARM_LABEL_SECURITY_LIFECYCLE   (EAT_CBOR_ARM_RANGE_BASE - 2)
+#define EAT_CBOR_ARM_LABEL_IMPLEMENTATION_ID    (EAT_CBOR_ARM_RANGE_BASE - 3)
+#define EAT_CBOR_ARM_LABEL_BOOT_SEED            (EAT_CBOR_ARM_RANGE_BASE - 4)
+#define EAT_CBOR_ARM_LABEL_HW_VERSION           (EAT_CBOR_ARM_RANGE_BASE - 5)
+#define EAT_CBOR_ARM_LABEL_SW_COMPONENTS        (EAT_CBOR_ARM_RANGE_BASE - 6)
+#define EAT_CBOR_ARM_LABEL_NO_SW_COMPONENTS     (EAT_CBOR_ARM_RANGE_BASE - 7)
+#define EAT_CBOR_ARM_LABEL_CHALLENGE            (EAT_CBOR_ARM_RANGE_BASE - 8)
+#define EAT_CBOR_ARM_LABEL_UEID                 (EAT_CBOR_ARM_RANGE_BASE - 9)
+#define EAT_CBOR_ARM_LABEL_ORIGINATION          (EAT_CBOR_ARM_RANGE_BASE - 10)
 
-#define EAT_CBOR_ARM_LABEL_BOOT_SEED 90000
-
-#define EAT_CBOR_ARM_LABEL_HW_VERSION 90001
-
-#define EAT_CBOR_ARM_LABEL_IMPLEMENTATION_ID 90002
-
-#define EAT_CBOR_ARM_LABEL_CLIENT_ID 90003
-
-#define EAT_CBOR_ARM_LABEL_SECURITY_LIFECYCLE 90004
-
-#define EAT_CBOR_ARM_LABEL_PROFILE_DEFINITION 90005
-
-#define EAT_CBOR_ARM_LABEL_ORIGINATION CTOKEN_EAT_LABEL_ORIGINATION
-
-#define EAT_CBOR_ARM_LABEL_NO_SW_COMPONENTS 90010
-
-#define EAT_CBOR_ARM_LABEL_SW_COMPONENTS 90009
-
-#define EAT_CBOR_SW_COMPONENT_MEASUREMENT_TYPE 90011
-
-#define EAT_CBOR_SW_COMPONENT_MEASUREMENT_VALUE 90012
-
-#define EAT_CBOR_SW_COMPONENT_VERSION 90013
-
-#define EAT_CBOR_SW_COMPONENT_MEASUREMENT_DESC 90014
-
-#define EAT_CBOR_SW_COMPONENT_SIGNER_ID 90015
-
-#define EAT_CBOR_SW_COMPONENT_SECURITY_EPOCH 90016
-
+// TODO: unify with enum in .._decode.h
+#define EAT_CBOR_SW_COMPONENT_MEASUREMENT_TYPE  (1)
+#define EAT_CBOR_SW_COMPONENT_MEASUREMENT_VALUE (2)
+#define EAT_CBOR_SW_COMPONENT_SECURITY_EPOCH    (3)
+#define EAT_CBOR_SW_COMPONENT_VERSION           (4)
+#define EAT_CBOR_SW_COMPONENT_SIGNER_ID         (5)
+#define EAT_CBOR_SW_COMPONENT_MEASUREMENT_DESC  (6)
 
 
 /**
@@ -89,8 +82,6 @@ enum ctoken_psaia_item_index_t {
 };
 
 
-
-
 /**
  * Macro to determine if data item is present in \ref
  * attest_token_iat_simple_t
@@ -99,5 +90,6 @@ enum ctoken_psaia_item_index_t {
 
 #define IS_ITEM_FLAG_SET(item_index, item_flags)   (ITEM_FLAG(item_index) & (item_flags))
 
+// TODO: add the security lifecycle values.
 
 #endif /* psa_ia_labels_h */
