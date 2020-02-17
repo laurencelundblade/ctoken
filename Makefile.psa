@@ -1,0 +1,88 @@
+# Makefile -- UNIX-style make for ctoken with MBed Crypto
+#
+# Copyright (c) 2019-2020, Laurence Lundblade. All rights reserved.
+#
+# SPDX-License-Identifier: BSD-3-Clause
+#
+# See BSD-3-Clause license in README.md
+#
+
+# ---- comment ----
+# This is for PSA Crypto / MBed Crypto. See longer explanation in README.md
+
+
+# ---- QCBOR location ----
+# Adjust this to the location of QCBOR in your build environment
+QCBOR_INC= -I ../../QCBOR/master/inc
+QCBOR_LIB=../../QCBOR/master/libqcbor.a
+
+# ---- t_cose location ----
+# Adjust this to the location of t_cose in your build environment
+T_COSE_INC= -I ../../t_cose/master/inc
+T_COSE_LIB=../../t_cose/master/libt_cose.a
+
+# ---- crypto configuration -----
+# The lib and inc directories may have to be adjusted for your build environment.
+CRYPTO_LIB=../../mbed-crypto/library/libmbedcrypto.a
+CRYPTO_INC= -I  ../../mbed-crypto/include/
+
+# ---- compiler configuration -----
+C_OPTS=-Os -Wall -pedantic-errors -Wextra -Wshadow -Wparentheses -xc -std=c99
+
+
+# ---- T_COSE Config and test options ----
+TEST_CONFIG_OPTS=
+TEST_OBJ=test/eat_test.o test/cwt_test.o test/psaia_test.o test/run_tests.o
+
+
+# ---- the main body that is invariant ----
+INC=-I inc -I test  -I src
+ALL_INC=$(CRYPTO_INC) $(QCBOR_INC) $(T_COSE_INC) $(INC) 
+CFLAGS=$(ALL_INC) $(C_OPTS) $(TEST_CONFIG_OPTS) $(CRYPTO_CONFIG_OPTS)
+
+SRC_OBJ=src/ctoken_encode.o src/ctoken_decode.o src/qcbor_util.o \
+        src/ctoken_cwt_encode.o src/ctoken_cwt_decode.o \
+        src/ctoken_eat_encode.o src/ctoken_eat_decode.o \
+        src/ctoken_psaia_encode.o src/ctoken_psaia_decode.o
+
+
+all:	libctoken.a ctoken_test eat_example_psa
+
+
+libctoken.a: $(SRC_OBJ) $(CRYPTO_OBJ)
+	ar -r $@ $^
+
+
+ctoken_test: main.o $(TEST_OBJ) libctoken.a
+	cc -o $@ $^ $(QCBOR_LIB) $(T_COSE_LIB) $(CRYPTO_LIB) 
+
+
+eat_example_psa:	examples/eat_example_psa.o libctoken.a
+	cc -o $@ $^ $(QCBOR_LIB) $(CRYPTO_LIB) $(T_COSE_LIB)
+
+clean:
+	rm -f $(SRC_OBJ) $(TEST_OBJ) $(CRYPTO_OBJ) eat_example_psa t_cose_test libctoken.a main.o examples/eat_example_psa.o ctoken_test
+
+
+# ---- public headers -----
+PUBLIC_INTERFACE=inc/ctoken_encode.h inc/ctoken_decode.h \
+                 inc/ctoken_cwt_decode.h inc/ctoken_cwt_labels.h inc/ctoken_cwt_encode.h
+
+# ---- source dependecies -----
+src/qcbor_util.o:	src/qcbor_util.h
+src/ctoken_encode.o:	inc/ctoken_encode.h
+src/ctoken_decode.o:	inc/ctoken_decode.h src/qcbor_util.h
+src/ctoken_cwt_encode.o:	inc/ctoken_cwt_encode.h
+src/ctoken_cwt_decode.o:	inc/ctoken_cwt_decode.h
+src/ctoken_eat_encode.o:	inc/ctoken_eat_encode.h
+src/ctoken_eat_decode.o:	inc/ctoken_eat_decode.h
+src/ctoken_psaia_encode.o:	inc/ctoken_psaia_encode.h inc/ctoken_psaia_labels.h inc/ctoken_eat_encode.h inc/ctoken_cwt_encode.h inc/ctoken_cwt_labels.h
+src/ctoken_psaia_decode.o:	inc/ctoken_psaia_decode.h inc/ctoken_psaia_labels.h inc/ctoken_eat_decode.h inc/ctoken_cwt_decode.h inc/ctoken_cwt_labels.h
+
+
+# ---- test dependencies -----
+test/cwt_test.o:	test/cwt_test.h $(PUBLIC_INTERFACE)
+test/eat_test.o:	test/eat_test.h $(PUBLIC_INTERFACE)
+
+# ---- example dependencies ----
+eat_example_psa.o:	$(PUBLIC_INTERFACE)

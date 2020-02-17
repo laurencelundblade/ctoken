@@ -54,3 +54,4 @@ dkms.conf
 # Compiled binaries
 ctoken_test
 eat_example_ossl
+eat_example_psa
