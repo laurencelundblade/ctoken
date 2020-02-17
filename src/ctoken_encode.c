@@ -101,7 +101,11 @@ ctoken_encode_start(struct ctoken_encode_ctx        *me,
         goto Done;
     }
 
-    QCBOREncode_OpenMap(&(me->cbor_encode_context));
+    if(me->opt_flags & CTOKEN_OPT_ARRAY_MODE) {
+        QCBOREncode_OpenArray(&(me->cbor_encode_context));
+    } else  {
+        QCBOREncode_OpenMap(&(me->cbor_encode_context));
+    }
 
     return_value = CTOKEN_ERR_SUCCESS;
 
@@ -164,7 +168,11 @@ ctoken_encode_finish(struct ctoken_encode_ctx *me,
     QCBORError              qcbor_result;
     enum t_cose_err_t       cose_return_value;
 
-    QCBOREncode_CloseMap(&(me->cbor_encode_context));
+    if(me->opt_flags & CTOKEN_OPT_ARRAY_MODE) {
+        QCBOREncode_CloseArray(&(me->cbor_encode_context));
+    } else {
+        QCBOREncode_CloseMap(&(me->cbor_encode_context));
+    }
 
     /* Finish off the cose signature. This does all the interesting work of
      hashing and signing */

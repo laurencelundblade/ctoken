@@ -96,6 +96,12 @@ enum ctoken_err_t {
 #define TOKEN_OPT_SHORT_CIRCUIT_SIGN 0x80000000
 
 
+/**
+ * The payload is an array, not a map. This makes it not compliant
+ * with CWT, EAT... but is used in some use cases.
+ */
+#define CTOKEN_OPT_ARRAY_MODE       0x20000000
+
 
 #ifdef __cplusplus
 }

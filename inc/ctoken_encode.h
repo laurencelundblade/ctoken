@@ -258,11 +258,27 @@ ctoken_encode_add_integer(struct ctoken_encode_ctx *me,
 
 
 static inline void
+ctoken_encode_a_add_integer(struct ctoken_encode_ctx *me,
+                           int64_t Value)
+{
+    QCBOREncode_AddInt64(&(me->cbor_encode_context), Value);
+}
+
+
+static inline void
 ctoken_encode_add_unsigned(struct ctoken_encode_ctx *me,
                           int32_t label,
                           uint64_t Value)
 {
     QCBOREncode_AddUInt64ToMapN(&(me->cbor_encode_context), label, Value);
+}
+
+
+static inline void
+ctoken_encode_a_add_unsigned(struct ctoken_encode_ctx *me,
+                           uint64_t Value)
+{
+    QCBOREncode_AddUInt64(&(me->cbor_encode_context), Value);
 }
 
 
@@ -276,11 +292,27 @@ ctoken_encode_add_bstr(struct ctoken_encode_ctx *me,
 
 
 static inline void
+ctoken_encode_a_add_bstr(struct ctoken_encode_ctx *me,
+                       struct q_useful_buf_c bstr)
+{
+    QCBOREncode_AddBytes(&(me->cbor_encode_context), bstr);
+}
+
+
+static inline void
 ctoken_encode_add_tstr(struct ctoken_encode_ctx *me,
                        int32_t label,
                        struct q_useful_buf_c tstr)
 {
     QCBOREncode_AddTextToMapN(&(me->cbor_encode_context), label, tstr);
+}
+
+
+static inline void
+ctoken_encode_a_add_tstr(struct ctoken_encode_ctx *me,
+                       struct q_useful_buf_c tstr)
+{
+    QCBOREncode_AddText(&(me->cbor_encode_context), tstr);
 }
 
 
@@ -292,6 +324,14 @@ ctoken_encode_add_cbor(struct ctoken_encode_ctx *me,
     QCBOREncode_AddEncodedToMapN(&(me->cbor_encode_context), label, encoded);
 }
 
+static inline void
+ctoken_encode_a_add_cbor(struct ctoken_encode_ctx *me,
+                       struct q_useful_buf_c encoded)
+{
+    QCBOREncode_AddEncoded(&(me->cbor_encode_context), encoded);
+}
+
+
 
 static inline void
 attest_token_encode_open_array(struct ctoken_encode_ctx *me, int32_t label)
@@ -299,9 +339,21 @@ attest_token_encode_open_array(struct ctoken_encode_ctx *me, int32_t label)
     QCBOREncode_OpenArrayInMapN(&(me->cbor_encode_context), label);
 }
 
+static inline void
+ctoken_encode_a_open_array(struct ctoken_encode_ctx *me)
+{
+    QCBOREncode_OpenArray(&(me->cbor_encode_context));
+}
+
 
 static inline void
 attest_token_encode_close_array(struct ctoken_encode_ctx *me)
+{
+    QCBOREncode_CloseArray(&(me->cbor_encode_context));
+}
+
+static inline void
+ctoken_encode_close_array(struct ctoken_encode_ctx *me)
 {
     QCBOREncode_CloseArray(&(me->cbor_encode_context));
 }
