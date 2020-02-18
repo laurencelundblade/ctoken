@@ -16,6 +16,13 @@
 #include "qcbor.h"
 #include "t_cose_sign1_sign.h"
 
+#ifdef __cplusplus
+extern "C" {
+#ifdef 0
+} /* Keep editor indention formatting happy */
+#endif
+#endif
+
 
 /**
  * \file attest_token_encode.h
@@ -199,6 +206,52 @@ static void ctoken_encode_add_cbor(struct ctoken_encode_ctx *me,
 
 
 /**
+ * \brief Open an array.
+ *
+ * \param[in] me       Token creation context.
+ * \param[in] label    Integer label for new array.
+ *
+ * This must be matched by a ctoken_encode_close_array().
+ */
+static inline void
+ctoken_encode_open_array(struct ctoken_encode_ctx *me, int32_t label);
+
+
+/**
+ * \brief Close an array.
+ *
+ * \param[in] me       Token creation context.
+ *
+ * Close array opened by ctoken_encode_open_array().
+ */
+static inline void
+ctoken_encode_close_array(struct ctoken_encode_ctx *me);
+
+
+/**
+ * \brief Open an map.
+ *
+ * \param[in] me       Token creation context.
+ * \param[in] label    Integer label for new map.
+ *
+ * This must be matched by a ctoken_encode_close_map().
+ */
+static inline void
+ctoken_encode_open_map(struct ctoken_encode_ctx *me, int32_t label);
+
+
+/**
+ * \brief Close an array.
+ *
+ * \param[in] me       Token creation context.
+ *
+ * Close a map opened by ctoken_encode_open_map().
+ */
+static inline void
+ctoken_encode_close_map(struct ctoken_encode_ctx *me);
+
+
+/**
  * \brief Finish the token, complete the signing and get the result
  *
  * \param[in] me                Token creation context.
@@ -294,18 +347,31 @@ ctoken_encode_add_cbor(struct ctoken_encode_ctx *me,
 
 
 static inline void
-attest_token_encode_open_array(struct ctoken_encode_ctx *me, int32_t label)
+ctoken_encode_open_array(struct ctoken_encode_ctx *me, int32_t label)
 {
     QCBOREncode_OpenArrayInMapN(&(me->cbor_encode_context), label);
 }
 
 
 static inline void
-attest_token_encode_close_array(struct ctoken_encode_ctx *me)
+ctoken_encode_close_array(struct ctoken_encode_ctx *me)
 {
     QCBOREncode_CloseArray(&(me->cbor_encode_context));
 }
 
+
+static inline void
+ctoken_encode_open_map(struct ctoken_encode_ctx *me, int32_t label)
+{
+    QCBOREncode_OpenMapInMapN(&(me->cbor_encode_context), label);
+}
+
+
+static inline void
+ctoken_encode_close_map(struct ctoken_encode_ctx *me)
+{
+    QCBOREncode_CloseMap(&(me->cbor_encode_context));
+}
 
 #ifdef __cplusplus
 }
