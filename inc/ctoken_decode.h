@@ -419,5 +419,4 @@ ctoken_decode_get_error(struct ctoken_decode_ctx *me)
 }
 #endif
 
-
 #endif /* __CTOKEN_DECODE_H__ */

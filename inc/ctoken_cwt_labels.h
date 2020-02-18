@@ -13,6 +13,12 @@
 #ifndef cwt_labels_h
 #define cwt_labels_h
 
+#ifdef __cplusplus
+extern "C" {
+#ifdef 0
+} /* Keep editor indention formatting happy */
+#endif
+#endif
 
 /*
 
@@ -59,5 +65,9 @@ enum ctoken_cwt_cnf_methods_t {
     CTOKEN_CWT_CNF_Encrypted_Cose_Key = 2,
     CTOKEN_CWT_CNF_kid                = 3
 };
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* cwt_labels_h */

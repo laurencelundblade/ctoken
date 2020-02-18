@@ -16,6 +16,13 @@
 
 #include <stdint.h>
 
+#ifdef __cplusplus
+extern "C" {
+#ifdef 0
+} /* Keep editor indention formatting happy */
+#endif
+#endif
+
 /* These are temporary labels until the real ones are assigned by IANA */
 #define CTOKEN_EAT_LABEL_UEID -75009 // Same as PSA for now
 #define CTOKEN_EAT_LABEL_NONCE -75008 // Same as PSA for now
@@ -125,5 +132,8 @@ struct ctoken_eat_location_t {
 #define  eat_loc_heading    items[CTOKEN_EAT_LABEL_HEADING-1]
 #define  eat_loc_speed      items[CTOKEN_EAT_LABEL_SPEED-1]
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* eat_labels_h */

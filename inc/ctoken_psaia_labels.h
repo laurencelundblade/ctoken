@@ -17,6 +17,13 @@
 #include "q_useful_buf.h"
 
 
+#ifdef __cplusplus
+extern "C" {
+#ifdef 0
+} /* Keep editor indention formatting happy */
+#endif
+#endif
+
 /**
  * These labels are temporary and in the proprietary space for
  * CWT claims. These will be changed with they get officially
@@ -91,5 +98,9 @@ enum ctoken_psaia_item_index_t {
 #define IS_ITEM_FLAG_SET(item_index, item_flags)   (ITEM_FLAG(item_index) & (item_flags))
 
 // TODO: add the security lifecycle values.
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* psa_ia_labels_h */

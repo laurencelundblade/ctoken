@@ -18,6 +18,13 @@
 #include "ctoken_eat_labels.h"
 
 
+#ifdef __cplusplus
+extern "C" {
+#ifdef 0
+} /* Keep editor indention formatting happy */
+#endif
+#endif
+
 /**
  * \file ctoken_eat_encode.h
  *
@@ -278,5 +285,9 @@ ctoken_eat_encode_uptime(struct ctoken_encode_ctx  *me,
 {
     ctoken_encode_add_integer(me, CTOKEN_EAT_LABEL_UPTIME, uptime);
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* eat_encode_h */

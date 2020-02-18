@@ -19,6 +19,12 @@
 #include "ctoken_psaia_labels.h"
 
 
+#ifdef __cplusplus
+extern "C" {
+#ifdef 0
+} /* Keep editor indention formatting happy */
+#endif
+#endif
 
 
 /**
@@ -386,5 +392,9 @@ ctoken_psaia_decode_origination(struct ctoken_decode_ctx*me,
 {
     return ctoken_eat_decode_origination(me, origination);
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* psa_ia_decode_h */

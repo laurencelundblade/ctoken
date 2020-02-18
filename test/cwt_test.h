@@ -15,6 +15,19 @@
 
 #include <stdint.h>
 
+#ifdef __cplusplus
+extern "C" {
+#ifdef 0
+} /* Keep editor indention formatting happy */
+#endif
+#endif
+
+
 int32_t cwt_test(void);
+
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* cwt_test_h */

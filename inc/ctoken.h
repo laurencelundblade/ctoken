@@ -15,6 +15,9 @@
 
 #ifdef __cplusplus
 extern "C" {
+#ifdef 0
+} /* Keep editor indention formatting happy */
+#endif
 #endif
 
 

@@ -14,6 +14,15 @@
  @file run_tests.h
 */
 
+
+#ifdef __cplusplus
+extern "C" {
+#ifdef 0
+} /* Keep editor indention formatting happy */
+#endif
+#endif
+
+
 /**
  @brief Type for function to output a text string
 
@@ -66,4 +75,8 @@ int RunTestsCToken(const char    *szTestNames[],
  @param[in] pOutCtx      Context pointer passed to output function.
  */
 void PrintSizesCToken(OutputStringCB pfOutput, void *pOutCtx);
+
+#ifdef __cplusplus
+}
+#endif
 

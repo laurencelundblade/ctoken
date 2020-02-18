@@ -16,6 +16,14 @@
 #include "ctoken_cwt_labels.h"
 #include "ctoken_decode.h"
 
+
+#ifdef __cplusplus
+extern "C" {
+#ifdef 0
+} /* Keep editor indention formatting happy */
+#endif
+#endif
+
 // TODO: Make prototypes of these and document them
 
 static inline enum ctoken_err_t
@@ -71,5 +79,9 @@ ctoken_decode_cwt_cti(struct ctoken_decode_ctx *me,
 {
     return ctoken_decode_get_bstr(me, CTOKEN_CWT_LABEL_CTI,  cti);
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* cwt_decode_h */

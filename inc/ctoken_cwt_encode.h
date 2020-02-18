@@ -17,6 +17,7 @@
 #include "ctoken_cwt_labels.h"
 
 
+
 // TODO: Make prototypes of these and document them
 
 
@@ -69,6 +70,8 @@ static inline void ctoken_encode_cwt_cti(struct ctoken_encode_ctx *me,
     ctoken_encode_add_bstr(me, CTOKEN_CWT_LABEL_CTI, cti);
 }
 
-
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* cwt_encode_h */

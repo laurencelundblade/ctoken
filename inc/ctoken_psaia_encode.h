@@ -18,6 +18,13 @@
 #include "ctoken_eat_encode.h"
 
 
+#ifdef __cplusplus
+extern "C" {
+#ifdef 0
+} /* Keep editor indention formatting happy */
+#endif
+#endif
+
 /**
  * \brief Encode most of the PSA claims at once.
  *
@@ -300,4 +307,9 @@ ctoken_psaia_encode_client_id(struct ctoken_encode_ctx *me,
 {
     ctoken_encode_add_integer(me, EAT_CBOR_ARM_LABEL_CLIENT_ID, client_id);
 }
+
+#ifdef __cplusplus
+}
+#endif
+
 #endif /* psa_ia_encode_h */

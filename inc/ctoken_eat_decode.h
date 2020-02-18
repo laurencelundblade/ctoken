@@ -18,6 +18,13 @@
 #include "ctoken_decode.h"
 
 
+#ifdef __cplusplus
+extern "C" {
+#ifdef 0
+} /* Keep editor indention formatting happy */
+#endif
+#endif
+
 /**
  * \file ctoken_eat_decode.h
  *
@@ -351,5 +358,9 @@ ctoken_eat_decode_uptime(struct ctoken_decode_ctx  *me,
 {
     return ctoken_decode_get_uint(me, CTOKEN_EAT_LABEL_UPTIME, uptime);
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* eat_decode_h */
