@@ -24,13 +24,13 @@ extern "C" {
 /**
  * \file ctoken.h
  *
- * \brief Common definitions for ctoken encoding and decoding
+ * \brief Common definitions for ctoken encoding and decoding.
  *
  */
 
 
 /**
- Error codes returned from CBOR token creation.
+ * Error codes returned from CBOR token creation.
  */
 enum ctoken_err_t {
     /** Success */
@@ -70,34 +70,13 @@ enum ctoken_err_t {
     CTOKEN_ERR_TAMPERING_DETECTED,
     /** Verification key is not found or of wrong type. */
     CTOKEN_ERR_VERIFICATION_KEY,
-    /** No token was given or validated */
+    /** No token was given or validated. */
     CTOKEN_ERR_NO_VALID_TOKEN,
     /** Data item with label wasn't found. */
     CTOKEN_ERR_NOT_FOUND,
     /** SW Compoments absence not correctly indicated. */
     CTOKEN_ERR_SW_COMPONENTS_MISSING
 };
-
-
-
-/**
- * Request that the claims internally generated not be added to the
- * token.  This is a test mode that results in a static token that
- * never changes. Only the nonce is included. The nonce is under
- * the callers control unlike the other claims.
- */
-#define TOKEN_OPT_OMIT_CLAIMS        0x40000000
-
-
-/**
- * A special test mode where a proper signature is not produced. In
- * its place there is a concatenation of hashes of the payload to be
- * the same size as the signature. This works and can be used to
- * verify all of the SW stack except the public signature part. The
- * token has no security value in this mode because anyone can
- * replicate it. */
-#define TOKEN_OPT_SHORT_CIRCUIT_SIGN 0x80000000
-
 
 
 #ifdef __cplusplus
