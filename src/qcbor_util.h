@@ -12,13 +12,13 @@
 #define __QCBOR_UTILS_H__
 
 
-#include "qcbor.h"
-#include "q_useful_buf.h"
+#include "qcbor/qcbor_decode.h"
+#include "t_cose/q_useful_buf.h"
 #include "ctoken.h" /* For error codes */
 
 #ifdef __cplusplus
 extern "C" {
-#ifdef 0
+#if 0
 } /* Keep editor indention formatting happy */
 #endif
 #endif

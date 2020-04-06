@@ -9,8 +9,8 @@
  */
 
 #include "ctoken_encode.h"
-#include "qcbor.h"
-#include "t_cose_sign1_sign.h"
+#include "qcbor/qcbor_encode.h"
+#include "t_cose/t_cose_sign1_sign.h"
 
 
 /**

@@ -16,8 +16,8 @@
 #include "ctoken_cwt_encode.h"
 #include "ctoken_cwt_decode.h"
 
-#include "t_cose_common.h"
-#include "t_cose_sign1_sign.h"
+#include "t_cose/t_cose_common.h"
+#include "t_cose/t_cose_sign1_sign.h"
 
 
 int32_t cwt_test()

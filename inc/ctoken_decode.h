@@ -10,14 +10,14 @@
 #ifndef __CTOKEN_DECODE_H__
 #define __CTOKEN_DECODE_H__
 
-#include "q_useful_buf.h"
+#include "t_cose/q_useful_buf.h"
 #include <stdbool.h>
 #include "ctoken.h"
-#include "t_cose_sign1_verify.h"
+#include "t_cose/t_cose_sign1_verify.h"
 
 #ifdef __cplusplus
 extern "C" {
-#ifdef 0
+#if 0
 } /* Keep editor indention formatting happy */
 #endif
 #endif

@@ -14,12 +14,12 @@
 #define psa_ia_labels_h
 
 #include "ctoken_eat_labels.h"
-#include "q_useful_buf.h"
+#include "t_cose/q_useful_buf.h"
 
 
 #ifdef __cplusplus
 extern "C" {
-#ifdef 0
+#if 0
 } /* Keep editor indention formatting happy */
 #endif
 #endif

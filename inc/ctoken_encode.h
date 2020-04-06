@@ -13,12 +13,12 @@
 #define __CTOKEN_ENCODE_H__
 
 #include "ctoken.h"
-#include "qcbor.h"
-#include "t_cose_sign1_sign.h"
+#include "qcbor/qcbor_encode.h"
+#include "t_cose/t_cose_sign1_sign.h"
 
 #ifdef __cplusplus
 extern "C" {
-#ifdef 0
+#if 0
 } /* Keep editor indention formatting happy */
 #endif
 #endif

@@ -25,10 +25,10 @@
 #include "ctoken_eat_encode.h"
 #include "ctoken_eat_decode.h"
 
-#include "t_cose_common.h"
-#include "t_cose_sign1_sign.h"
-#include "t_cose_sign1_verify.h"
-#include "q_useful_buf.h"
+#include "t_cose/t_cose_common.h"
+#include "t_cose/t_cose_sign1_sign.h"
+#include "t_cose/t_cose_sign1_verify.h"
+#include "t_cose/q_useful_buf.h"
 
 #include <stdio.h>
 
