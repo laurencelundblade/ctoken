@@ -9,9 +9,9 @@
  */
 
 #include "ctoken_decode.h"
-#include "t_cose_sign1_verify.h"
-#include "q_useful_buf.h"
-#include "qcbor_util.h"
+#include "t_cose/t_cose_sign1_verify.h"
+#include "t_cose/q_useful_buf.h"
+#include "qcbor/qcbor_spiffy_decode.h"
 
 
 /**
@@ -103,6 +103,19 @@ static enum ctoken_err_t t_cose_verify_error_map[] = {
     CTOKEN_ERR_COSE_SIGN1_VALIDATION
 };
 
+
+
+static inline enum ctoken_err_t map_qcbor_error(QCBORError uErr)
+{
+    // TODO: make this better
+    if(uErr) {
+        return CTOKEN_ERR_GENERAL;
+    } else {
+        return CTOKEN_ERR_SUCCESS;
+    }
+}
+
+
 /**
 
  \brief Map t_cose errors into ctoken errors
@@ -163,19 +176,36 @@ ctoken_decode_validate_token(struct ctoken_decode_ctx *me,
 {
     enum t_cose_err_t t_cose_error;
     enum ctoken_err_t return_value;
+    QCBORError        qcbor_error;
+
+    t_cose_error = t_cose_sign1_verify(&(me->verify_context), token, &me->payload, NULL);
+    if(t_cose_error != T_COSE_SUCCESS) {
+        return_value = map_t_cose_errors(t_cose_error);
+        goto Done;
+    }
+
 
     /*
      * FIXME: check for CWT/EAT CBOR tag if requested
      */
 
-    t_cose_error = t_cose_sign1_verify(&(me->verify_context), token, &me->payload, NULL);
-    return_value = map_t_cose_errors(t_cose_error);
-    me->last_error = return_value;
+    QCBORDecode_Init(&(me->qcbor_decode_context), me->payload, 0);
+    QCBORDecode_EnterMap(&(me->qcbor_decode_context));
+    qcbor_error = QCBORDecode_GetError(&(me->qcbor_decode_context));
+    if(qcbor_error != QCBOR_SUCCESS) {
+        // TODO: better error conversion
+        return_value = CTOKEN_ERR_CBOR_STRUCTURE;
+        goto Done;
+    }
 
+    return_value = CTOKEN_ERR_SUCCESS;
+
+Done:
+    me->last_error = return_value;
     return return_value;
 }
 
-
+#if 0
 /*
  * Public function. See ctoken_decode.h
  */
@@ -194,6 +224,8 @@ ctoken_decode_get_map(struct ctoken_decode_ctx *me,
                                                 QCBOR_TYPE_MAP,
                                                 item);
 }
+#endif
+
 
 
 /*
@@ -205,7 +237,7 @@ ctoken_decode_get_bstr(struct ctoken_decode_ctx *me,
                              struct q_useful_buf_c  *claim)
 {
     enum ctoken_err_t return_value;
-    QCBORItem         item;
+    QCBORError qcbor_error;
 
     if(me->last_error != CTOKEN_ERR_SUCCESS) {
         return_value = me->last_error;
@@ -213,15 +245,10 @@ ctoken_decode_get_bstr(struct ctoken_decode_ctx *me,
         goto Done;
     }
 
-    return_value = qcbor_util_get_top_level_item_in_map(me->payload,
-                                                        label,
-                                                        QCBOR_TYPE_BYTE_STRING,
-                                                        &item);
-    if(return_value != CTOKEN_ERR_SUCCESS) {
-        goto Done;
-    }
+    QCBORDecode_GetBytesInMapN(&(me->qcbor_decode_context), label, claim);
+    qcbor_error = QCBORDecode_GetAndResetError(&(me->qcbor_decode_context));
 
-    *claim = item.val.string;
+    return_value = map_qcbor_error(qcbor_error);
 
 Done:
     return return_value;
@@ -237,7 +264,7 @@ ctoken_decode_get_tstr(struct ctoken_decode_ctx *me,
                        struct q_useful_buf_c        *claim)
 {
     enum ctoken_err_t return_value;
-    QCBORItem         item;
+    QCBORError qcbor_error;
 
     if(me->last_error != CTOKEN_ERR_SUCCESS) {
         return_value = me->last_error;
@@ -245,15 +272,10 @@ ctoken_decode_get_tstr(struct ctoken_decode_ctx *me,
         goto Done;
     }
 
-    return_value = qcbor_util_get_top_level_item_in_map(me->payload,
-                                                        label,
-                                                        QCBOR_TYPE_TEXT_STRING,
-                                                        &item);
-    if(return_value != CTOKEN_ERR_SUCCESS) {
-        goto Done;
-    }
+    QCBORDecode_GetTextInMapN(&(me->qcbor_decode_context), label, claim);
+    qcbor_error = QCBORDecode_GetAndResetError(&(me->qcbor_decode_context));
 
-    *claim = item.val.string;
+    return_value = map_qcbor_error(qcbor_error);
 
 Done:
     return return_value;
@@ -268,9 +290,8 @@ ctoken_decode_get_int(struct ctoken_decode_ctx *me,
                       int32_t                       label,
                       int64_t                      *integer)
 {
-    enum ctoken_err_t   return_value;
-    QCBORItem           item;
-    QCBORDecodeContext  decode_context;
+    enum ctoken_err_t return_value;
+    QCBORError qcbor_error;
 
     if(me->last_error != CTOKEN_ERR_SUCCESS) {
         return_value = me->last_error;
@@ -278,30 +299,10 @@ ctoken_decode_get_int(struct ctoken_decode_ctx *me,
         goto Done;
     }
 
-    QCBORDecode_Init(&decode_context, me->payload, 0);
+    QCBORDecode_GetInt64InMapN(&(me->qcbor_decode_context), label, integer);
+    qcbor_error = QCBORDecode_GetAndResetError(&(me->qcbor_decode_context));
 
-    return_value = qcbor_util_get_item_in_map(&decode_context,
-                                               label,
-                                              &item);
-    if(return_value != CTOKEN_ERR_SUCCESS) {
-        goto Done;
-    }
-
-    if(QCBORDecode_Finish(&decode_context)) {
-        return_value = CTOKEN_ERR_CBOR_STRUCTURE;
-    }
-
-    if(item.uDataType == QCBOR_TYPE_INT64) {
-        *integer = item.val.int64;
-    } else if(item.uDataType == QCBOR_TYPE_UINT64) {
-        if(item.val.uint64 < INT64_MAX) {
-            *integer = (int64_t)item.val.uint64;
-        } else {
-            return_value = CTOKEN_ERR_INTEGER_VALUE;
-        }
-    } else {
-        return_value = CTOKEN_ERR_CBOR_TYPE;
-    }
+    return_value = map_qcbor_error(qcbor_error);
 
 Done:
     return return_value;
@@ -316,9 +317,8 @@ ctoken_decode_get_uint(struct ctoken_decode_ctx *me,
                        int32_t                       label,
                        uint64_t                     *integer)
 {
-    enum ctoken_err_t   return_value;
-    QCBORItem           item;
-    QCBORDecodeContext  decode_context;
+    enum ctoken_err_t return_value;
+    QCBORError qcbor_error;
 
     if(me->last_error != CTOKEN_ERR_SUCCESS) {
         return_value = me->last_error;
@@ -326,30 +326,10 @@ ctoken_decode_get_uint(struct ctoken_decode_ctx *me,
         goto Done;
     }
 
-    QCBORDecode_Init(&decode_context, me->payload, 0);
+    QCBORDecode_GetUInt64InMapN(&(me->qcbor_decode_context), label, integer);
+    qcbor_error = QCBORDecode_GetAndResetError(&(me->qcbor_decode_context));
 
-    return_value = qcbor_util_get_item_in_map(&decode_context,
-                                             label,
-                                             &item);
-    if(return_value != 0) {
-        goto Done;
-    }
-
-    if(QCBORDecode_Finish(&decode_context)) {
-        return_value = CTOKEN_ERR_CBOR_STRUCTURE;
-    }
-
-    if(item.uDataType == QCBOR_TYPE_UINT64) {
-        *integer = item.val.uint64;
-    } else if(item.uDataType == QCBOR_TYPE_INT64) {
-        if(item.val.int64 >= 0) {
-            *integer = (uint64_t)item.val.int64;
-        } else {
-            return_value = CTOKEN_ERR_INTEGER_VALUE;
-        }
-    } else {
-        return_value = CTOKEN_ERR_CBOR_TYPE;
-    }
+    return_value = map_qcbor_error(qcbor_error);
 
 Done:
     return return_value;

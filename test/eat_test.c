@@ -88,6 +88,13 @@ int32_t basic_eat_test(void)
 
     ctoken_eat_encode_uptime(&encode_ctx, 886688);
 
+    ctoken_encode_open_submod(&encode_ctx, "a submodule");
+
+    ctoken_eat_encode_uptime(&encode_ctx, 5);
+
+    ctoken_encode_close_submod(&encode_ctx);
+
+
     /* --- Done adding the claims --- */
 
     /* Finsh up the token. This is when the signing happens. The pointer

@@ -10,10 +10,11 @@
 #ifndef __CTOKEN_DECODE_H__
 #define __CTOKEN_DECODE_H__
 
-#include "q_useful_buf.h"
+#include "t_cose/q_useful_buf.h"
 #include <stdbool.h>
 #include "ctoken.h"
-#include "t_cose_sign1_verify.h"
+#include "t_cose/t_cose_sign1_verify.h"
+#include "qcbor/qcbor_decode.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -98,6 +99,7 @@ struct ctoken_decode_ctx {
     struct q_useful_buf_c          payload;
     uint32_t                       options;
     enum ctoken_err_t              last_error;
+    QCBORDecodeContext             qcbor_decode_context;
 };
 
 

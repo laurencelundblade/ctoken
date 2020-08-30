@@ -9,8 +9,9 @@
  */
 
 #include "ctoken_encode.h"
-#include "qcbor.h"
-#include "t_cose_sign1_sign.h"
+#include "qcbor/qcbor.h"
+#include "t_cose/t_cose_sign1_sign.h"
+#include "ctoken_eat_labels.h"
 
 
 /**
@@ -109,48 +110,97 @@ Done:
     return return_value;
 }
 
-#ifdef THIS_CODE_IS_COMPLETED
-void attest_token_encode_open_submod(struct ctoken_encode_ctx *me,
-                                            char              *submod_name,
-                                            int                nConnectionType)
-{
-    if(me->submod_nest_level == 255) {
-        return; // TODO: error out properly (or set error)
-    } else if(me->submod_nest_level == 0) {
-        /* entering submods for the first time. */
-        QCBOREncode_OpenMapInMapN(&(me->cbor_enc_ctx), 888);
-    }
-    QCBOREncode_OpenMapInMap(&(me->cbor_enc_ctx), submod_name);
-    QCBOREncode_AddInt64ToMapN(&(me->cbor_enc_ctx), 77, nConnectionType);
-    me->submod_nest_level++; // TODO; check for overflow
-}
-
-static void attest_token_encode_close_submod(struct ctoken_encode_ctx *me)
-{
-    if(me->submod_nest_level == 0 || me->submod_nest_level == 255) {
-        // error
-    }
-    QCBOREncode_CloseMap(&(me->cbor_enc_ctx));
-    me->submod_nest_level--;
-    if(me->submod_nest_level == 0) {
-        /* Closed the last submod. Set to 255 to indicate no more submods
-         * can be added */
-        me->submod_nest_level = 255;
-    }
-}
-
-
-static void attest_token_encode_add_token(struct ctoken_encode_ctx *me,
-                                          char *submod_name,
-                                          int nConnectionType,
-                                          struct q_useful_buf_c token)
-{
-
-}
-#endif /*THIS_CODE_IS_COMPLETED */
 
 /*
- * Public function. See attest_token_decode.h
+
+ The submods must be added after all other claims are added, not because
+ they have to be at the end of an EAT, but because that is how this API
+ works. The implementation would be much more complex otherwise.
+
+ If there are multiple submods, they should be added one after another
+ at the end.
+
+ */
+
+static void start_submod_mode(struct ctoken_encode_ctx *me)
+{
+    if(me->in_submod_mode == 0) {
+        /* Go into submod mode. Once in submod mode, always in submod mode.
+         Only closes out in finish.
+         */
+        QCBOREncode_OpenMapInMapN(&(me->cbor_encode_context), CTOKEN_EAT_LABEL_SUBMODS);
+        me->in_submod_mode = 1;
+    }
+}
+
+static void end_submod_mode(struct ctoken_encode_ctx *me)
+{
+    if(me->in_submod_mode) {
+        /* Close the map that contains submods */
+        QCBOREncode_CloseMap(&(me->cbor_encode_context));
+    }
+}
+
+
+/*
+ * Public function. See ctoken_encode.h
+ */
+void ctoken_encode_open_submod(struct ctoken_encode_ctx *me,
+                              char                      *submod_name)
+{
+    if(me->error != CTOKEN_ERR_SUCCESS) {
+        return; // Do nothing if error occurred
+    }
+
+    start_submod_mode(me);
+
+    if(me->submod_nest_level >= CTOKEN_MAX_SUBMODS) {
+        me->error = CTOKEN_ERR_SUBMOD_NESTING_TOO_DEEP;
+        return;
+    }
+    me->submod_nest_level++;
+    QCBOREncode_OpenMapInMap(&(me->cbor_encode_context), submod_name);
+}
+
+
+/*
+ * Public function. See ctoken_encode.h
+ */
+void ctoken_encode_close_submod(struct ctoken_encode_ctx *me)
+{
+    if(me->error != CTOKEN_ERR_SUCCESS) {
+        return; // Do nothing if error occurred
+    }
+
+    if(me->submod_nest_level == 0) {
+        me->error = CTOKEN_ERR_NO_SUBMOD_OPEN;
+        return;
+    }
+    QCBOREncode_CloseMap(&(me->cbor_encode_context));
+    me->submod_nest_level--;
+
+}
+
+
+/*
+ * Public function. See ctoken_encode.h
+ */
+void ctoken_encode_add_token(struct ctoken_encode_ctx *me,
+                             char                     *submod_name,
+                             struct q_useful_buf_c     token)
+{
+    if(me->error != CTOKEN_ERR_SUCCESS) {
+        return; // Do nothing if error occurred
+    }
+
+    start_submod_mode(me);
+
+    QCBOREncode_AddBytesToMap(&(me->cbor_encode_context), submod_name, token);
+}
+
+
+/*
+ * Public function. See ctoken_encode.h
  */
 enum ctoken_err_t
 ctoken_encode_finish(struct ctoken_encode_ctx *me,
@@ -164,6 +214,14 @@ ctoken_encode_finish(struct ctoken_encode_ctx *me,
     QCBORError              qcbor_result;
     enum t_cose_err_t       cose_return_value;
 
+    if(me->error != CTOKEN_ERR_SUCCESS) {
+        return_value = me->error;
+        goto Done;
+    }
+
+    end_submod_mode(me);
+
+    /* Close the map that holds all the claims */
     QCBOREncode_CloseMap(&(me->cbor_encode_context));
 
     /* Finish off the cose signature. This does all the interesting work of

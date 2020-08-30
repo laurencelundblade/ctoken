@@ -13,8 +13,8 @@
 #define __CTOKEN_ENCODE_H__
 
 #include "ctoken.h"
-#include "qcbor.h"
-#include "t_cose_sign1_sign.h"
+#include "qcbor/qcbor_encode.h"
+#include "t_cose/t_cose_sign1_sign.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -59,7 +59,9 @@ struct ctoken_encode_ctx {
     /* Private data structure */
     QCBOREncodeContext           cbor_encode_context;
     uint32_t                     opt_flags;
+    uint8_t                      in_submod_mode;
     uint8_t                      submod_nest_level;
+    enum ctoken_err_t            error;
     struct t_cose_sign1_sign_ctx signer_ctx;
 };
 
@@ -241,7 +243,7 @@ ctoken_encode_open_map(struct ctoken_encode_ctx *me, int32_t label);
 
 
 /**
- * \brief Close an array.
+ * \brief Close a map.
  *
  * \param[in] me       Token creation context.
  *
@@ -249,6 +251,72 @@ ctoken_encode_open_map(struct ctoken_encode_ctx *me, int32_t label);
  */
 static inline void
 ctoken_encode_close_map(struct ctoken_encode_ctx *me);
+
+
+/**
+ * \brief Open a submod
+ *
+ * \param[in] me           Token creation context.
+ * \param[in] submod_name  String name of submod
+ *
+ * After this call, all claim additions will go into the named submodule until
+ * attest_token_encode_close_submod() is called.
+ *
+ * To start another non-nested submod, close all open submods and
+ * call this again.
+ *
+ * Submods may be nested
+ * up to CTOKEN_MAX_SUBMODS levels by calling this again (but the QCBOR
+ * nesting limit, QCBOR_MAX_ARRAY_NESTING may be encountered first).
+ *
+ * Submods may only be added at the end of token creation. All
+ * non-submod claims must be added before any call to attest_token_encode_open_submod()
+ * or attest_token_encode_add_token().
+ *
+ * If an error occurs, such as nesting too deep, it will be reported when
+ * ctoken_encode_finish() is called.
+ */
+void ctoken_encode_open_submod(struct ctoken_encode_ctx *me,
+                                     char                     *submod_name);
+
+
+/**
+ * \brief Close a submod
+ *
+ * \param[in] me           Token creation context.
+ *
+ * Closes the currently open submod.
+ *
+ * If an error occurs, such as no submod open, it will be reported when
+ * ctoken_encode_finish() is called.
+ */
+void ctoken_encode_close_submod(struct ctoken_encode_ctx *me);
+
+
+/**
+ * \brief Add a complete EAT token as a submodule.
+ *
+ * \param[in] me           Token creation context.
+ * \param[in] submod_name  String naming the submodule.
+ * \param[in] token        The full encoded token.
+ *
+ * A submodule can be a fully encoded and signed EAT token such as
+ * the completed_token returned from ctoken_encode_finish(). Use this
+ * call to add such a token.
+ *
+ * The contents of token are not checked by this call. The bytes
+ * are just added.
+ *
+ * Submods may only be added at the end of token creation. All
+ * non-submod claims must be added before any call to attest_token_encode_open_submod()
+ * or attest_token_encode_add_token().
+ *
+ * If an error occurs it will be reported when
+ * ctoken_encode_finish() is called.
+ */
+void ctoken_encode_add_token(struct ctoken_encode_ctx *me,
+                                   char                     *submod_name,
+                                   struct q_useful_buf_c     token);
 
 
 /**
@@ -289,6 +357,12 @@ ctoken_encode_init(struct ctoken_encode_ctx *me,
                    uint32_t token_opt_flags,
                    int32_t cose_alg_id)
 {
+    /*
+       me->in_submod_mode = 0
+       me->submod_nest_level = 0
+       me->error = CTOKEN_ERR_SUCCESS
+     */
+    memset(me, 0, sizeof(struct ctoken_encode_ctx));
     me->opt_flags = token_opt_flags;
     t_cose_sign1_sign_init(&(me->signer_ctx), t_cose_opt_flags, cose_alg_id);
 }

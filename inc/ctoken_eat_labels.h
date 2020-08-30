@@ -34,6 +34,9 @@ extern "C" {
 #define CTOKEN_EAT_LABEL_AGE 100007
 #define CTOKEN_EAT_LABEL_UPTIME 100008
 
+
+#define CTOKEN_EAT_LABEL_SUBMODS 100100 // Not really a claim, but most have a label
+
 /**
  * File: ctoken_eat_labels.h
  *

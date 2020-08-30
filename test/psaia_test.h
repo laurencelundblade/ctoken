@@ -12,7 +12,7 @@
 #define __PSAIA_TEST_H__
 
 #include <stdint.h>
-#include "q_useful_buf.h"
+#include "t_cose/q_useful_buf.h"
 
 #ifdef __cplusplus
 extern "C" {

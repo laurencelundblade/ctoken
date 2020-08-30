@@ -75,9 +75,16 @@ enum ctoken_err_t {
     /** Data item with label wasn't found. */
     CTOKEN_ERR_NOT_FOUND,
     /** SW Compoments absence not correctly indicated. */
-    CTOKEN_ERR_SW_COMPONENTS_MISSING
+    CTOKEN_ERR_SW_COMPONENTS_MISSING,
+    /** Trying to nest more than \ref CTOKEN_MAX_SUBMODS. */
+    CTOKEN_ERR_SUBMOD_NESTING_TOO_DEEP,
+    /** Trying to close a submod with no submods open. */
+    CTOKEN_ERR_NO_SUBMOD_OPEN,
+
 };
 
+
+#define CTOKEN_MAX_SUBMODS 255
 
 #ifdef __cplusplus
 }
