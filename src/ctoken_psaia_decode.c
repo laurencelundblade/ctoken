@@ -11,23 +11,31 @@
 
 #include "ctoken_psaia_decode.h"
 #include "qcbor/qcbor_spiffy_decode.h"
-\
+
 
 /*
  * Public function. See ctoken_psaia_decode.h
  */
 enum ctoken_err_t
-ctoken_psaia_decode_simple_claims(struct ctoken_decode_ctx *me,
+ctoken_psaia_decode_simple_claims(struct ctoken_decode_ctx            *me,
                                   struct ctoken_psaia_simple_claims_t *items)
 {
     int64_t            client_id_64;
     enum ctoken_err_t  return_value;
-    QCBORItem          list[NUMBER_OF_ITEMS+1];
+    QCBORItem          list[NUMBER_OF_ITEMS+1]; // This uses a lot of stack
+    QCBORError         qcbor_error;
+
+    if(me->last_error != CTOKEN_ERR_SUCCESS) {
+        return_value = me->last_error;
+        goto Done;
+    }
 
     /* Set all q_useful_bufs to NULL and flags to 0 */
     memset(items, 0, sizeof(struct ctoken_psaia_simple_claims_t));
 
-    /* Re use flags as array indexes because it works nicely */
+    /* Make the list of labels and types to get. Re use flags as array indexes
+     * because it works nicely.
+     */
     list[NONCE_FLAG].label.int64 = EAT_CBOR_ARM_LABEL_CHALLENGE;
     list[NONCE_FLAG].uLabelType  = QCBOR_TYPE_INT64;
     list[NONCE_FLAG].uDataType   = QCBOR_TYPE_BYTE_STRING;
@@ -67,16 +75,10 @@ ctoken_psaia_decode_simple_claims(struct ctoken_decode_ctx *me,
     list[NUMBER_OF_ITEMS].uLabelType  = QCBOR_TYPE_NONE;
 
 
-    if(me->last_error != CTOKEN_ERR_SUCCESS) {
-        return_value = me->last_error;
-        goto Done;
-    }
-
-    //
-    QCBORDecode_GetItemsInMap(&(me->qcbor_decode_context), list);
-    // TODO: error check
-
-    if(return_value != CTOKEN_ERR_SUCCESS) {
+    /* Get all the items in one CPU-efficient pass. */
+    qcbor_error = QCBORDecode_GetItemsInMap(&(me->qcbor_decode_context), list);
+    if(qcbor_error != QCBOR_SUCCESS) {
+        return_value = CTOKEN_ERR_GENERAL; // TODO: error mapping
         goto Done;
     }
 
@@ -86,41 +88,42 @@ ctoken_psaia_decode_simple_claims(struct ctoken_decode_ctx *me,
         items->item_flags |= CLAIM_PRESENT_BIT(NONCE_FLAG);
     }
 
-    /* ---- UEID -------*/
+    /* ---- UEID ---- */
     if(list[UEID_FLAG].uDataType != QCBOR_TYPE_NONE) {
         items->ueid = list[UEID_FLAG].val.string;
         items->item_flags |= CLAIM_PRESENT_BIT(UEID_FLAG);
     }
 
-    /* ---- BOOT SEED -------*/
+    /* ---- BOOT SEED ---- */
     if(list[BOOT_SEED_FLAG].uDataType != QCBOR_TYPE_NONE) {
         items->boot_seed = list[BOOT_SEED_FLAG].val.string;
         items->item_flags |= CLAIM_PRESENT_BIT(BOOT_SEED_FLAG);
     }
 
-    /* ---- HW VERSION -------*/
+    /* ---- HW VERSION ---- */
     if(list[HW_VERSION_FLAG].uDataType != QCBOR_TYPE_NONE) {
         items->hw_version = list[HW_VERSION_FLAG].val.string;
         items->item_flags |= CLAIM_PRESENT_BIT(HW_VERSION_FLAG);
 
     }
 
-    /* ----IMPLEMENTATION ID -------*/
+    /* ----IMPLEMENTATION ID ---- */
     if(list[IMPLEMENTATION_ID_FLAG].uDataType != QCBOR_TYPE_NONE) {
         items->implementation_id = list[IMPLEMENTATION_ID_FLAG].val.string;
         items->item_flags |= CLAIM_PRESENT_BIT(IMPLEMENTATION_ID_FLAG);
     }
 
-    /* ----CLIENT ID -------*/
+    /* ----CLIENT ID ---- */
     if(list[CLIENT_ID_FLAG].uDataType != QCBOR_TYPE_NONE) {
         client_id_64 = list[CLIENT_ID_FLAG].val.int64;
         if(client_id_64 < INT32_MAX || client_id_64 > INT32_MIN) {
             items->client_id = (int32_t)client_id_64;
             items->item_flags |= CLAIM_PRESENT_BIT(CLIENT_ID_FLAG);
         }
+        // TODO: error on larger client ID?
     }
 
-    /* ----SECURITY LIFECYCLE -------*/
+    /* ----SECURITY LIFECYCLE ---- */
     if(list[SECURITY_LIFECYCLE_FLAG].uDataType != QCBOR_TYPE_NONE) {
         if(list[SECURITY_LIFECYCLE_FLAG].val.int64 < UINT32_MAX) {
             items->security_lifecycle = (uint32_t)list[SECURITY_LIFECYCLE_FLAG].val.int64;
@@ -128,17 +131,19 @@ ctoken_psaia_decode_simple_claims(struct ctoken_decode_ctx *me,
         }
     }
 
-    /* ---- PROFILE_DEFINITION -------*/
+    /* ---- PROFILE_DEFINITION ---- */
     if(list[PROFILE_DEFINITION_FLAG].uDataType != QCBOR_TYPE_NONE) {
         items->profile_definition = list[PROFILE_DEFINITION_FLAG].val.string;
         items->item_flags |= CLAIM_PRESENT_BIT(PROFILE_DEFINITION_FLAG);
     }
 
-    /* ---- ORIGINATION -------*/
+    /* ---- ORIGINATION ---- */
     if(list[ORIGINATION_FLAG].uDataType != QCBOR_TYPE_NONE) {
         items->origination = list[ORIGINATION_FLAG].val.string;
         items->item_flags |= CLAIM_PRESENT_BIT(ORIGINATION_FLAG);
     }
+
+    return_value = CTOKEN_ERR_SUCCESS;
 
 Done:
     return return_value;
@@ -157,40 +162,53 @@ Done:
  */
 enum ctoken_err_t
 ctoken_psaia_decode_num_sw_components(struct ctoken_decode_ctx *me,
-                                   uint32_t *num_sw_components)
+                                      uint32_t                 *num_sw_components)
 {
     enum ctoken_err_t return_value;
-    QCBORItem               item;
+    QCBORItem         item;
+    QCBORError        qcbor_error;
 
     if(me->last_error != CTOKEN_ERR_SUCCESS) {
         return_value = me->last_error;
         goto Done;
     }
 
-    QCBORDecode_GetItemInMapN(&(me->qcbor_decode_context), EAT_CBOR_ARM_LABEL_SW_COMPONENTS, QCBOR_TYPE_ARRAY, &item);
-    // TODO: error check
+    // TODO: test all the error conditions and qcbor error returns below
 
-    if(return_value != CTOKEN_ERR_SUCCESS) {
-        if(return_value != CTOKEN_ERR_NOT_FOUND) {
+    QCBORDecode_GetItemInMapN(&(me->qcbor_decode_context),
+                              EAT_CBOR_ARM_LABEL_SW_COMPONENTS,
+                              QCBOR_TYPE_ARRAY,
+                              &item);
+    qcbor_error = QCBORDecode_GetError(&(me->qcbor_decode_context));
+
+    if(qcbor_error != QCBOR_SUCCESS) {
+        if(qcbor_error != QCBOR_ERR_NOT_FOUND) {
             /* Something very wrong. Bail out passing on the return_value */
+            return_value = CTOKEN_ERR_CBOR_STRUCTURE; // TODO: right error code?
             goto Done;
         } else {
             /* Now decide if it was intentionally left out. */
-            QCBORDecode_GetItemInMapN(&(me->qcbor_decode_context), EAT_CBOR_ARM_LABEL_NO_SW_COMPONENTS, QCBOR_TYPE_INT64, &item);
-            // TODO: error check
+            QCBORDecode_GetItemInMapN(&(me->qcbor_decode_context),
+                                      EAT_CBOR_ARM_LABEL_NO_SW_COMPONENTS,
+                                      QCBOR_TYPE_INT64,
+                                      &item);
+            qcbor_error = QCBORDecode_GetError(&(me->qcbor_decode_context));
 
-            if(return_value == CTOKEN_ERR_SUCCESS) {
+            if(qcbor_error == QCBOR_SUCCESS) {
                 if(item.val.int64 == NO_SW_COMPONENT_FIXED_VALUE) {
                     /* Successful omission of SW components. Pass on the
                      * success return_value */
                     *num_sw_components = 0;
+                    return_value = CTOKEN_ERR_SUCCESS;
                 } else {
                     /* Indicator for no SW components malformed */
                     return_value = CTOKEN_ERR_SW_COMPONENTS_MISSING;
                 }
-            } else if(return_value == CTOKEN_ERR_NOT_FOUND) {
+            } else if(qcbor_error == QCBOR_ERR_NOT_FOUND) {
                 /* Should have been an indicator for no SW components */
                 return_value = CTOKEN_ERR_SW_COMPONENTS_MISSING;
+            } else {
+                return_value = CTOKEN_ERR_CBOR_STRUCTURE; // TODO: right error?
             }
         }
     } else {
@@ -202,6 +220,7 @@ ctoken_psaia_decode_num_sw_components(struct ctoken_decode_ctx *me,
             /* SUCESSS! Pass on the success return_value */
             /* Note that this assumes the array is definite length */
             *num_sw_components = item.val.uCount;
+            return_value = CTOKEN_ERR_SUCCESS;
         }
     }
 
@@ -222,12 +241,12 @@ Done:
  *
  */
 static inline enum ctoken_err_t
-decode_sw_component(QCBORDecodeContext               *decode_context,
-                    const QCBORItem                  *sw_component_item,
+decode_sw_component(QCBORDecodeContext                *decode_context,
+                    const QCBORItem                   *sw_component_item,
                     struct ctoken_psaia_sw_component_t *sw_component)
 {
-    enum ctoken_err_t return_value;
-    QCBORItem list[8];
+    enum ctoken_err_t  return_value;
+    QCBORItem          list[SW_NUMBER_OF_ITEMS+1];
 
     QCBORDecode_EnterMap(decode_context);
 
@@ -258,7 +277,10 @@ decode_sw_component(QCBORDecodeContext               *decode_context,
     list[SW_MEASUREMENT_DESC_FLAG+1].uLabelType  = QCBOR_TYPE_NONE;
 
     QCBORDecode_GetItemsInMap(decode_context, list);
-    // TODO: error code
+    if(QCBORDecode_GetError(decode_context) != QCBOR_SUCCESS) {
+        return_value = CTOKEN_ERR_CBOR_STRUCTURE; // TODO: right error?
+        goto Done;
+    }
 
     memset(sw_component, 0, sizeof(struct ctoken_psaia_sw_component_t));
 
@@ -277,6 +299,7 @@ decode_sw_component(QCBORDecodeContext               *decode_context,
             sw_component->epoch = (uint32_t)list[SW_EPOCH_FLAG].val.int64;
             sw_component->item_flags |= CLAIM_PRESENT_BIT(SW_EPOCH_FLAG);
         }
+        // TODO: error here?
     }
 
     if(list[SW_VERSION_FLAG].uDataType != QCBOR_TYPE_NONE) {
@@ -294,6 +317,8 @@ decode_sw_component(QCBORDecodeContext               *decode_context,
         sw_component->item_flags |= CLAIM_PRESENT_BIT(SW_MEASUREMENT_DESC_FLAG);
     }
 
+    return_value = CTOKEN_ERR_SUCCESS;
+
 Done:
     return return_value;
 }
@@ -303,31 +328,29 @@ Done:
  * Public function.  See ctoken_psaia_decode.h
  */
 enum ctoken_err_t
-ctoken_psaia_decode_sw_component(struct ctoken_decode_ctx          *me,
-                                 uint32_t                           requested_index,
+ctoken_psaia_decode_sw_component(struct ctoken_decode_ctx           *me,
+                                 uint32_t                            requested_index,
                                  struct ctoken_psaia_sw_component_t *sw_components)
 {
-    enum ctoken_err_t return_value;
-    QCBORDecodeContext      decode_context;
-    QCBORItem               sw_component_item;
+    enum ctoken_err_t    return_value;
+    QCBORDecodeContext   decode_context;
+    QCBORItem            sw_component_item;
 
     if(me->last_error != CTOKEN_ERR_SUCCESS) {
         return_value = me->last_error;
         goto Done;
     }
 
-    QCBORDecode_EnterArrayFromMapN(&(me->qcbor_decode_context),EAT_CBOR_ARM_LABEL_SW_COMPONENTS);
+    QCBORDecode_EnterArrayFromMapN(&(me->qcbor_decode_context),
+                                   EAT_CBOR_ARM_LABEL_SW_COMPONENTS);
 
-    // TODO: error handling
-    if(return_value != CTOKEN_ERR_SUCCESS) {
-        goto Done;
-    }
-
-    // Skip over the SW components we are not interested in
+    /* Skip to the SW component index requested */
     for(int i = 0; i < requested_index; i++) {
         QCBORDecode_EnterMap(&(me->qcbor_decode_context));
         QCBORDecode_ExitMap(&(me->qcbor_decode_context));
     }
+
+    /* Let error check for the above happen in decode_sw_component */
 
     return_value = decode_sw_component(&decode_context,
                                        &sw_component_item,

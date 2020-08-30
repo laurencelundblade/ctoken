@@ -75,6 +75,7 @@ struct ctoken_psaia_simple_claims_t {
 
 /** Label for bits in \c item_flags in \ref
  attest_token_iat_simple_t */
+// TODO: prefix these names
 enum ctoken_psaia_item_index_t {
     NONCE_FLAG =              0,
     UEID_FLAG  =              1,

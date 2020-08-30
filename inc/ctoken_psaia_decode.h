@@ -227,6 +227,7 @@ enum attest_token_sw_index_t {
     SW_VERSION_FLAG = 3,
     SW_SIGNER_ID_FLAG = 5,
     SW_MEASUREMENT_DESC_FLAG = 6,
+    SW_NUMBER_OF_ITEMS = 7
 };
 
 /**

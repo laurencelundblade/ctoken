@@ -99,8 +99,8 @@ int32_t psaia_basic_test()
     }
 
     if(psaia_claims.item_flags != (ITEM_FLAG(NONCE_FLAG) |
-                                  ITEM_FLAG(UEID_FLAG) |
-                                  ITEM_FLAG(ORIGINATION_FLAG))) {
+                                   ITEM_FLAG(UEID_FLAG) |
+                                   ITEM_FLAG(ORIGINATION_FLAG))) {
         return 400;
     }
 

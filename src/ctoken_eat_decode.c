@@ -14,7 +14,6 @@
 #include "qcbor/qcbor_spiffy_decode.h"
 
 
-
 /*
  * Public function. See ctoken_eat_encode.h
  */
@@ -40,11 +39,14 @@ ctoken_eat_decode_boot_state(struct ctoken_decode_ctx *me,
         goto Done;
     }
 
-    QCBORDecode_EnterArrayFromMapN(&(me->qcbor_decode_context), CTOKEN_EAT_LABEL_LOCATION);
+    QCBORDecode_EnterArrayFromMapN(&(me->qcbor_decode_context),
+                                   CTOKEN_EAT_LABEL_BOOT_STATE);
     // TODO: error check here maybe
 
     QCBORDecode_GetBool(&(me->qcbor_decode_context), secure_boot_enabled);
     QCBORDecode_GetInt64(&(me->qcbor_decode_context), &boot_state);
+
+    QCBORDecode_ExitArray(&(me->qcbor_decode_context));
 
     if(boot_state < EAT_DL_NOT_REPORTED ||
        boot_state > EAT_DL_FULL_PERMANENT_DISABLE) {
@@ -78,8 +80,9 @@ ctoken_eat_decode_location(struct ctoken_decode_ctx     *me,
         goto Done;
     }
 
-    QCBORDecode_EnterMapFromMapN(&(me->qcbor_decode_context), CTOKEN_EAT_LABEL_LOCATION);
-    // TODO: error check here maybe
+    QCBORDecode_EnterMapFromMapN(&(me->qcbor_decode_context),
+                                 CTOKEN_EAT_LABEL_LOCATION);
+    // TODO: probably need error here to indicate claim is not present
 
     for(label = CTOKEN_EAT_LABEL_LATITUDE; label < NUM_LOCATION_ITEMS; label++) {
         QCBORDecode_GetDoubleInMapN(&(me->qcbor_decode_context), label, &d);
@@ -91,6 +94,9 @@ ctoken_eat_decode_location(struct ctoken_decode_ctx     *me,
     }
 
     QCBORDecode_ExitMap(&(me->qcbor_decode_context));
+    if(QCBORDecode_GetError(&(me->qcbor_decode_context)) != QCBOR_SUCCESS) {
+        return_value = CTOKEN_ERR_CBOR_STRUCTURE;
+    }
 
 Done:
     me->last_error = return_value;

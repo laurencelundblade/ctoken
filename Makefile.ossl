@@ -14,8 +14,8 @@
 
 # ---- QCBOR location ----
 # Adjust this to the location of QCBOR in your build environment
-QCBOR_INC= -I ../../QCBOR/master/inc
-QCBOR_LIB=../../QCBOR/master/libqcbor.a
+QCBOR_INC= -I ../../QCBOR/SpiffyDecode/inc
+QCBOR_LIB=../../QCBOR/SpiffyDecode/libqcbor.a
 
 # ---- t_cose location ----
 # Adjust this to the location of t_cose in your build environment
@@ -41,7 +41,7 @@ INC=-I inc -I test  -I src
 ALL_INC=$(CRYPTO_INC) $(QCBOR_INC) $(T_COSE_INC) $(INC) 
 CFLAGS=$(ALL_INC) $(C_OPTS) $(TEST_CONFIG_OPTS) $(CRYPTO_CONFIG_OPTS)
 
-SRC_OBJ=src/ctoken_encode.o src/ctoken_decode.o src/qcbor_util.o \
+SRC_OBJ=src/ctoken_encode.o src/ctoken_decode.o \
         src/ctoken_cwt_encode.o src/ctoken_cwt_decode.o \
         src/ctoken_eat_encode.o src/ctoken_eat_decode.o \
         src/ctoken_psaia_encode.o src/ctoken_psaia_decode.o
@@ -70,9 +70,8 @@ PUBLIC_INTERFACE=inc/ctoken_encode.h inc/ctoken_decode.h \
                  inc/ctoken_cwt_decode.h inc/ctoken_cwt_labels.h inc/ctoken_cwt_encode.h
 
 # ---- source dependecies -----
-src/qcbor_util.o:	src/qcbor_util.h
 src/ctoken_encode.o:	inc/ctoken_encode.h
-src/ctoken_decode.o:	inc/ctoken_decode.h src/qcbor_util.h
+src/ctoken_decode.o:	inc/ctoken_decode.h 
 src/ctoken_cwt_encode.o:	inc/ctoken_cwt_encode.h
 src/ctoken_cwt_decode.o:	inc/ctoken_cwt_decode.h
 src/ctoken_eat_encode.o:	inc/ctoken_eat_encode.h
