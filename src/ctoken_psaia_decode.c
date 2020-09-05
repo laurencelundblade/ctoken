@@ -76,7 +76,8 @@ ctoken_psaia_decode_simple_claims(struct ctoken_decode_ctx            *me,
 
 
     /* Get all the items in one CPU-efficient pass. */
-    qcbor_error = QCBORDecode_GetItemsInMap(&(me->qcbor_decode_context), list);
+    QCBORDecode_GetItemsInMap(&(me->qcbor_decode_context), list);
+    qcbor_error = QCBORDecode_GetError(&(me->qcbor_decode_context));
     if(qcbor_error != QCBOR_SUCCESS) {
         return_value = CTOKEN_ERR_GENERAL; // TODO: error mapping
         goto Done;
