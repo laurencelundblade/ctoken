@@ -183,7 +183,7 @@ ctoken_psaia_decode_num_sw_components(struct ctoken_decode_ctx *me,
     qcbor_error = QCBORDecode_GetError(&(me->qcbor_decode_context));
 
     if(qcbor_error != QCBOR_SUCCESS) {
-        if(qcbor_error != QCBOR_ERR_NOT_FOUND) {
+        if(qcbor_error != QCBOR_ERR_LABEL_NOT_FOUND) {
             /* Something very wrong. Bail out passing on the return_value */
             return_value = CTOKEN_ERR_CBOR_STRUCTURE; // TODO: right error code?
             goto Done;
@@ -205,7 +205,7 @@ ctoken_psaia_decode_num_sw_components(struct ctoken_decode_ctx *me,
                     /* Indicator for no SW components malformed */
                     return_value = CTOKEN_ERR_SW_COMPONENTS_MISSING;
                 }
-            } else if(qcbor_error == QCBOR_ERR_NOT_FOUND) {
+            } else if(qcbor_error == QCBOR_ERR_LABEL_NOT_FOUND) {
                 /* Should have been an indicator for no SW components */
                 return_value = CTOKEN_ERR_SW_COMPONENTS_MISSING;
             } else {
@@ -248,6 +248,8 @@ decode_sw_component(QCBORDecodeContext                *decode_context,
 {
     enum ctoken_err_t  return_value;
     QCBORItem          list[SW_NUMBER_OF_ITEMS+1];
+
+    (void)sw_component_item; // TODO: figure out what to do with this.
 
     QCBORDecode_EnterMap(decode_context);
 

@@ -245,7 +245,7 @@ ctoken_decode_get_bstr(struct ctoken_decode_ctx *me,
         goto Done;
     }
 
-    QCBORDecode_GetBytesInMapN(&(me->qcbor_decode_context), label, claim);
+    QCBORDecode_GetByteStringInMapN(&(me->qcbor_decode_context), label, claim);
     qcbor_error = QCBORDecode_GetAndResetError(&(me->qcbor_decode_context));
 
     return_value = map_qcbor_error(qcbor_error);
@@ -272,7 +272,7 @@ ctoken_decode_get_tstr(struct ctoken_decode_ctx *me,
         goto Done;
     }
 
-    QCBORDecode_GetTextInMapN(&(me->qcbor_decode_context), label, claim);
+    QCBORDecode_GetTextStringInMapN(&(me->qcbor_decode_context), label, claim);
     qcbor_error = QCBORDecode_GetAndResetError(&(me->qcbor_decode_context));
 
     return_value = map_qcbor_error(qcbor_error);

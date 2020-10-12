@@ -19,8 +19,8 @@ QCBOR_LIB=../../QCBOR/SpiffyDecode/libqcbor.a
 
 # ---- t_cose location ----
 # Adjust this to the location of t_cose in your build environment
-T_COSE_INC= -I ../../t_cose/master/inc
-T_COSE_LIB=../../t_cose/master/libt_cose.a
+T_COSE_INC= -I ../../t_cose/SpiffyDecode/inc
+T_COSE_LIB=../../t_cose/SpiffyDecode/libt_cose.a
 
 # ---- crypto configuration -----
 # Set up for OpenSSL. This may have to be adjusted for your build environment.
@@ -59,7 +59,7 @@ ctoken_test: main.o $(TEST_OBJ) libctoken.a
 
 
 eat_example_ossl:	examples/eat_example_ossl.o libctoken.a
-	cc -o $@ $^ $(QCBOR_LIB) $(CRYPTO_LIB) $(T_COSE_LIB)
+	cc -dead_strip -o $@ $^ $(QCBOR_LIB) $(CRYPTO_LIB) $(T_COSE_LIB)
 
 clean:
 	rm -f $(SRC_OBJ) $(TEST_OBJ) $(CRYPTO_OBJ) eat_example_ossl t_cose_test libctoken.a main.o examples/eat_example_ossl.o
