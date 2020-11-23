@@ -280,25 +280,64 @@ ctoken_eat_decode_uptime(struct ctoken_decode_ctx  *context,
 
 
 
-#ifdef SUBMODS_ARE_IMPLEMENTED
 
-// Prototypes for the planned submods impementation
-enum ctoken_err_t
-ctoken_decode_eat_get_num_submods(struct ctoken_decode_context *me,
-                                  uint8_t *num_submods);
 
 enum ctoken_err_t
-ctoken_decode_eat_enter_submod(struct ctoken_decode_context *me,
-                                     uint8_t submod_index,
-                                     struct q_useful_buf_c *name,
-                                     int *connection_type);
+ctoken_decode_eat_get_num_submods(struct ctoken_decode_ctx *context,
+                                  uint32_t *num_submods);
+
+/*
+ error if submod is a token
+ */
+enum ctoken_err_t
+ctoken_eat_decode_enter_nth_submod(struct ctoken_decode_ctx *context,
+                                   uint32_t                  submod_index,
+                                   struct q_useful_buf_c    *name);
+
+/*
+error if submod is a token
+*/
+enum ctoken_err_t
+ctoken_eat_decode_enter_submod_sz(struct ctoken_decode_ctx *context,
+                                  const char               *name);
+
+/*
+error if submod is a token
+*/
+enum ctoken_err_t
+ctoken_eat_decode_enter_submod_n(struct ctoken_decode_ctx *context,
+                                 int64_t               submod_name);
 
 enum ctoken_err_t
-ctoken_decode_eat_leave_submod(struct ctoken_decode_context *me);
-
-#endif
+ctoken_eat_decode_exit_submod(struct ctoken_decode_ctx *me);
 
 
+/*
+error if submod is not a token
+*/
+enum ctoken_err_t
+ctoken_eat_decode_get_nth_submod(struct ctoken_decode_ctx *context,
+                                 uint32_t                  submod_index,
+                                 enum ctoken_type         *type,
+                                 struct q_useful_buf_c    *token);
+
+/*
+error if submod is not a token
+*/
+enum ctoken_err_t
+ctoken_eat_decode_get_submod_sz(struct ctoken_decode_ctx *context,
+                                 const char              *name,
+                                 enum ctoken_type        *type,
+                                 struct q_useful_buf_c   *token);
+
+/*
+error if submod is not a token
+*/
+enum ctoken_err_t
+ctoken_eat_decode_get_submod_n(struct ctoken_decode_ctx *context,
+                                 uint32_t                name,
+                                 enum ctoken_type       *type,
+                                 struct q_useful_buf_c  *token);
 
 
 /* --------------------------------------------------------------------------
@@ -358,6 +397,10 @@ ctoken_eat_decode_uptime(struct ctoken_decode_ctx  *me,
 {
     return ctoken_decode_get_uint(me, CTOKEN_EAT_LABEL_UPTIME, uptime);
 }
+
+
+
+
 
 #ifdef __cplusplus
 }

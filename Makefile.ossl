@@ -24,8 +24,10 @@ T_COSE_LIB=../../t_cose/SpiffyDecode/libt_cose.a
 
 # ---- crypto configuration -----
 # Set up for OpenSSL. This may have to be adjusted for your build environment.
-CRYPTO_INC=-I ../../openssl/openssl-1.1.1b/include/openssl -I ../../openssl/openssl-1.1.1b/include
-CRYPTO_LIB=../../openssl/openssl-1.1.1b/libcrypto.a
+CRYPTO_INC=-I /usr/local/include 
+#../../openssl/openssl-1.1.1b/include/openssl -I ../../openssl/openssl-1.1.1b/include
+CRYPTO_LIB=-lcrypto
+#../../openssl/openssl-1.1.1b/libcrypto.a
 
 # ---- compiler configuration -----
 C_OPTS=-Os -Wall -pedantic-errors -Wextra -Wshadow -Wparentheses -xc -std=c99

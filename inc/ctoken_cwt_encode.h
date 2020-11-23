@@ -37,7 +37,7 @@ extern "C" {
  * the error state is entered. It is returned later when ctoken_encode_finish()
  * is called.
  */
-static inline void ctoken_encode_cwt_issuer(struct ctoken_encode_ctx *context,
+static void ctoken_encode_cwt_issuer(struct ctoken_encode_ctx *context,
                                             struct q_useful_buf_c issuer);
 
 
@@ -53,7 +53,7 @@ static inline void ctoken_encode_cwt_issuer(struct ctoken_encode_ctx *context,
  * the error state is entered. It is returned later when ctoken_encode_finish()
  * is called.
  */
-static inline void ctoken_encode_cwt_subject(struct ctoken_encode_ctx *context,
+static void ctoken_encode_cwt_subject(struct ctoken_encode_ctx *context,
                                              struct q_useful_buf_c subject);
 
 
@@ -70,7 +70,7 @@ static inline void ctoken_encode_cwt_subject(struct ctoken_encode_ctx *context,
  * the error state is entered. It is returned later when ctoken_encode_finish()
  * is called.
  */
-static inline void ctoken_encode_cwt_audience(struct ctoken_encode_ctx *context,
+static void ctoken_encode_cwt_audience(struct ctoken_encode_ctx *context,
                                               struct q_useful_buf_c audience);
 
 
@@ -90,7 +90,7 @@ static inline void ctoken_encode_cwt_audience(struct ctoken_encode_ctx *context,
  * the error state is entered. It is returned later when ctoken_encode_finish()
  * is called.
  */
-static inline void ctoken_encode_cwt_expiration(struct ctoken_encode_ctx *context,
+static void ctoken_encode_cwt_expiration(struct ctoken_encode_ctx *context,
                                                 int64_t expiration);
 
 
@@ -110,7 +110,7 @@ static inline void ctoken_encode_cwt_expiration(struct ctoken_encode_ctx *contex
  * the error state is entered. It is returned later when ctoken_encode_finish()
  * is called.
  */
-static inline void ctoken_encode_cwt_not_before(struct ctoken_encode_ctx *context,
+static void ctoken_encode_cwt_not_before(struct ctoken_encode_ctx *context,
                                                 int64_t not_before);
 
 
@@ -132,7 +132,7 @@ static inline void ctoken_encode_cwt_not_before(struct ctoken_encode_ctx *contex
  * the error state is entered. It is returned later when ctoken_encode_finish()
  * is called.
  */
-static inline void ctoken_encode_cwt_iat(struct ctoken_encode_ctx *context,
+static void ctoken_encode_cwt_iat(struct ctoken_encode_ctx *context,
                                          int64_t iat);
 
 
@@ -148,7 +148,7 @@ static inline void ctoken_encode_cwt_iat(struct ctoken_encode_ctx *context,
  * the error state is entered. It is returned later when ctoken_encode_finish()
  * is called.
  */
-static inline void ctoken_encode_cwt_cti(struct ctoken_encode_ctx *context,
+static void ctoken_encode_cwt_cti(struct ctoken_encode_ctx *context,
                                          struct q_useful_buf_c cti);
 
 

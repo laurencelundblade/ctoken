@@ -76,15 +76,25 @@ enum ctoken_err_t {
     CTOKEN_ERR_NOT_FOUND,
     /** SW Compoments absence not correctly indicated. */
     CTOKEN_ERR_SW_COMPONENTS_MISSING,
-    /** Trying to nest more than \ref CTOKEN_MAX_SUBMODS. */
+    /** Trying to nest more than \ref CTOKEN_MAX_SUBMOD_NESTING. */
     CTOKEN_ERR_SUBMOD_NESTING_TOO_DEEP,
     /** Trying to close a submod with no submods open. */
     CTOKEN_ERR_NO_SUBMOD_OPEN,
+    /** When decoding, something wrong with the token format other than CBOR not well formed. */
+    CTOKEN_ERR_TOKEN_FORMAT,
+    /** Can't start submodule section because one is already started, or one was started and completed for this submodule.*/
+    CTOKEN_CANT_START_SUBMOD_SECTION,
+    /** Trying to end a submod section with no submod section started. */
+    CTOKEN_ERR_NO_SUBMOD_SECTION_STARTED,
+    /** Attempting to make a submod or add a token without starting a submod section */
+    CTOKEN_ERR_CANT_MAKE_SUBMOD_IN_SUBMOD
 
 };
 
 
-#define CTOKEN_MAX_SUBMODS 255
+// TODO: Test that -3 is right; might need to divide by two
+/** The maximum nesting depth for submodules. */
+#define CTOKEN_MAX_SUBMOD_NESTING  QCBOR_MAX_ARRAY_NESTING - 3
 
 #ifdef __cplusplus
 }

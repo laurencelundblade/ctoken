@@ -43,6 +43,12 @@ extern "C" {
  *   formatting the COSE signed output.
  */
 
+enum ctoken_encode_nest_state {
+     SUBMODS_NO = 0,
+     SUBMODS_IN_SECTION,
+     SUBMODS_IN_SECTION_AND_SUBMOD,
+     SUBMODS_SECTION_DONE
+};
 
 /**
  * The context for creating a CBOR token.  The caller of
@@ -57,19 +63,32 @@ extern "C" {
  */
 struct ctoken_encode_ctx {
     /* Private data structure */
-    QCBOREncodeContext           cbor_encode_context;
-    uint32_t                     opt_flags;
-    uint8_t                      in_submod_mode;
-    uint8_t                      submod_nest_level;
-    enum ctoken_err_t            error;
-    struct t_cose_sign1_sign_ctx signer_ctx;
+    QCBOREncodeContext              cbor_encode_context;
+    uint32_t                        opt_flags;
+    enum ctoken_encode_nest_state   submod_level_state[CTOKEN_MAX_SUBMOD_NESTING];
+    /* NULL means at the top level. */
+    enum ctoken_encode_nest_state  *current_level;
+    enum ctoken_err_t               error;
+    struct t_cose_sign1_sign_ctx    signer_ctx;
 };
+
+
+
+/*
+TODO:
+
+ - not in section
+ - in section
+ - in section and in submod
+
+ */
+
 
 
 /**
  * \brief Initialize a token creation context.
  *
- * \param[in] me                The token creation context to be initialized.
+ * \param[in] context                The token creation context to be initialized.
  * \param[in] token_opt_flags   Flags to select different custom options,
  *                              for example \ref TOKEN_OPT_OMIT_CLAIMS.
  * \param[in] t_cose_opt_flags  Option flags passed on to t_cose.
@@ -82,7 +101,7 @@ struct ctoken_encode_ctx {
  *
  */
 static void
-ctoken_encode_init(struct ctoken_encode_ctx *me,
+ctoken_encode_init(struct ctoken_encode_ctx *context,
                    uint32_t                  t_cose_opt_flags,
                    uint32_t                  token_opt_flags,
                    int32_t                   cose_alg_id);
@@ -92,7 +111,7 @@ ctoken_encode_init(struct ctoken_encode_ctx *me,
  * \brief Set the signing key.
  *
  *
- * \param[in] me           The token creation context.
+ * \param[in] context           The token creation context.
  * \param[in] signing_key  The signing key to use or \ref T_COSE_NULL_KEY.
  * \param[in] kid          COSE kid (key ID) parameter or \c NULL_Q_USEFUL_BUF_C.
  *
@@ -108,7 +127,7 @@ ctoken_encode_init(struct ctoken_encode_ctx *me,
  * by t_cose_sign1_verify().
  */
 static void
-ctoken_encode_set_key(struct ctoken_encode_ctx *me,
+ctoken_encode_set_key(struct ctoken_encode_ctx *context,
                       struct t_cose_key         signing_key,
                       struct q_useful_buf_c     kid);
 
@@ -116,7 +135,7 @@ ctoken_encode_set_key(struct ctoken_encode_ctx *me,
 /**
  * \brief Give output buffer and start token creation
  *
- * \param[in] me          The token creation context.
+ * \param[in] context          The token creation context.
  * \param[in] out_buffer  The pointer and length of buffer to write token to.
  *
  * \returns               0 on success or error.
@@ -135,7 +154,7 @@ ctoken_encode_set_key(struct ctoken_encode_ctx *me,
  * is taken into account.
  */
 enum ctoken_err_t
-ctoken_encode_start(struct ctoken_encode_ctx *me,
+ctoken_encode_start(struct ctoken_encode_ctx *context,
                     const struct q_useful_buf out_buffer);
 
 
@@ -143,7 +162,7 @@ ctoken_encode_start(struct ctoken_encode_ctx *me,
 /**
  * \brief Get a copy of the CBOR encoding context
  *
- * \param[in] me     The token creation context.
+ * \param[in] context     The token creation context.
  *
  * \return The CBOR encoding context
  *
@@ -155,46 +174,46 @@ ctoken_encode_start(struct ctoken_encode_ctx *me,
  * QCBOREncode_Finish() should not be closed on this context.
  */
 static QCBOREncodeContext *
-ctoken_encode_borrow_cbor_cntxt(struct ctoken_encode_ctx *me);
+ctoken_encode_borrow_cbor_cntxt(struct ctoken_encode_ctx *context);
 
 
 /**
  * \brief Add a 64-bit signed integer claim
  *
- * \param[in] me     Token creation context.
+ * \param[in] context     Token creation context.
  * \param[in] label  Integer label for claim.
  * \param[in] value  The signed integer claim data.
  */
-static void ctoken_encode_add_integer(struct ctoken_encode_ctx *me,
-                                      int32_t label,
-                                      int64_t value);
+static void ctoken_encode_add_integer(struct ctoken_encode_ctx *context,
+                                      int32_t                   label,
+                                      int64_t                   value);
 
 /**
  * \brief Add a binary string claim
  *
- * \param[in] me     Token creation context.
+ * \param[in] context     Token creation context.
  * \param[in] label  Integer label for claim.
  * \param[in] value  The binary claim data.
  */
-static void ctoken_encode_add_bstr(struct ctoken_encode_ctx *me,
-                                   int32_t label,
-                                   struct q_useful_buf_c value);
+static void ctoken_encode_add_bstr(struct ctoken_encode_ctx *context,
+                                   int32_t                   label,
+                                   struct q_useful_buf_c     value);
 
 /**
  * \brief Add a text string claim
  *
- * \param[in] me     Token creation context.
+ * \param[in] context     Token creation context.
  * \param[in] label  Integer label for claim.
  * \param[in] value  The text claim data.
  */
-static void ctoken_encode_add_tstr(struct ctoken_encode_ctx *me,
-                                   int32_t label,
-                                   struct q_useful_buf_c value);
+static void ctoken_encode_add_tstr(struct ctoken_encode_ctx *context,
+                                   int32_t                   label,
+                                   struct q_useful_buf_c     value);
 
 /**
  * \brief Add some already-encoded CBOR to payload
  *
- * \param[in] me       Token creation context.
+ * \param[in] context       Token creation context.
  * \param[in] label    Integer label for claim.
  * \param[in] encoded  The already-encoded CBOR.
  *
@@ -202,127 +221,61 @@ static void ctoken_encode_add_tstr(struct ctoken_encode_ctx *me,
  * type. It cannot be a partial map or array. It can be nested maps
  * and arrays, but they must all be complete.
  */
-static void ctoken_encode_add_cbor(struct ctoken_encode_ctx *me,
-                                   int32_t label,
-                                   struct q_useful_buf_c encoded);
+static void ctoken_encode_add_cbor(struct ctoken_encode_ctx *context,
+                                   int32_t                   label,
+                                   struct q_useful_buf_c     encoded);
 
 
 /**
  * \brief Open an array.
  *
- * \param[in] me       Token creation context.
+ * \param[in] context       Token creation context.
  * \param[in] label    Integer label for new array.
  *
  * This must be matched by a ctoken_encode_close_array().
  */
 static inline void
-ctoken_encode_open_array(struct ctoken_encode_ctx *me, int32_t label);
+ctoken_encode_open_array(struct ctoken_encode_ctx *context, int32_t label);
 
 
 /**
  * \brief Close an array.
  *
- * \param[in] me       Token creation context.
+ * \param[in] context       Token creation context.
  *
  * Close array opened by ctoken_encode_open_array().
  */
 static inline void
-ctoken_encode_close_array(struct ctoken_encode_ctx *me);
+ctoken_encode_close_array(struct ctoken_encode_ctx *context);
 
 
 /**
  * \brief Open an map.
  *
- * \param[in] me       Token creation context.
+ * \param[in] context       Token creation context.
  * \param[in] label    Integer label for new map.
  *
  * This must be matched by a ctoken_encode_close_map().
  */
 static inline void
-ctoken_encode_open_map(struct ctoken_encode_ctx *me, int32_t label);
+ctoken_encode_open_map(struct ctoken_encode_ctx *context, int32_t label);
 
 
 /**
  * \brief Close a map.
  *
- * \param[in] me       Token creation context.
+ * \param[in] context       Token creation context.
  *
  * Close a map opened by ctoken_encode_open_map().
  */
 static inline void
-ctoken_encode_close_map(struct ctoken_encode_ctx *me);
-
-
-/**
- * \brief Open a submod
- *
- * \param[in] me           Token creation context.
- * \param[in] submod_name  String name of submod
- *
- * After this call, all claim additions will go into the named submodule until
- * attest_token_encode_close_submod() is called.
- *
- * To start another non-nested submod, close all open submods and
- * call this again.
- *
- * Submods may be nested
- * up to CTOKEN_MAX_SUBMODS levels by calling this again (but the QCBOR
- * nesting limit, QCBOR_MAX_ARRAY_NESTING may be encountered first).
- *
- * Submods may only be added at the end of token creation. All
- * non-submod claims must be added before any call to attest_token_encode_open_submod()
- * or attest_token_encode_add_token().
- *
- * If an error occurs, such as nesting too deep, it will be reported when
- * ctoken_encode_finish() is called.
- */
-void ctoken_encode_open_submod(struct ctoken_encode_ctx *me,
-                                     char                     *submod_name);
-
-
-/**
- * \brief Close a submod
- *
- * \param[in] me           Token creation context.
- *
- * Closes the currently open submod.
- *
- * If an error occurs, such as no submod open, it will be reported when
- * ctoken_encode_finish() is called.
- */
-void ctoken_encode_close_submod(struct ctoken_encode_ctx *me);
-
-
-/**
- * \brief Add a complete EAT token as a submodule.
- *
- * \param[in] me           Token creation context.
- * \param[in] submod_name  String naming the submodule.
- * \param[in] token        The full encoded token.
- *
- * A submodule can be a fully encoded and signed EAT token such as
- * the completed_token returned from ctoken_encode_finish(). Use this
- * call to add such a token.
- *
- * The contents of token are not checked by this call. The bytes
- * are just added.
- *
- * Submods may only be added at the end of token creation. All
- * non-submod claims must be added before any call to attest_token_encode_open_submod()
- * or attest_token_encode_add_token().
- *
- * If an error occurs it will be reported when
- * ctoken_encode_finish() is called.
- */
-void ctoken_encode_add_token(struct ctoken_encode_ctx *me,
-                                   char                     *submod_name,
-                                   struct q_useful_buf_c     token);
+ctoken_encode_close_map(struct ctoken_encode_ctx *context);
 
 
 /**
  * \brief Finish the token, complete the signing and get the result
  *
- * \param[in] me                Token creation context.
+ * \param[in] context                Token creation context.
  * \param[out] completed_token  Pointer and length to completed token.
  *
  * \return                      One of the \ref ctoken_err_t errors.
@@ -332,7 +285,7 @@ void ctoken_encode_add_token(struct ctoken_encode_ctx *me,
  * formatting of the token is completed.
  */
 enum ctoken_err_t
-ctoken_encode_finish(struct ctoken_encode_ctx *me,
+ctoken_encode_finish(struct ctoken_encode_ctx *context,
                      struct q_useful_buf_c    *completed_token);
 
 
@@ -344,8 +297,8 @@ ctoken_encode_finish(struct ctoken_encode_ctx *me,
 
 static inline void
 ctoken_encode_set_key(struct ctoken_encode_ctx *me,
-                      struct t_cose_key signing_key,
-                      struct q_useful_buf_c key_id)
+                      struct t_cose_key        signing_key,
+                      struct q_useful_buf_c    key_id)
 {
     t_cose_sign1_set_signing_key(&(me->signer_ctx), signing_key, key_id);
 }
@@ -353,9 +306,9 @@ ctoken_encode_set_key(struct ctoken_encode_ctx *me,
 
 static inline void
 ctoken_encode_init(struct ctoken_encode_ctx *me,
-                   uint32_t t_cose_opt_flags,
-                   uint32_t token_opt_flags,
-                   int32_t cose_alg_id)
+                   uint32_t                 t_cose_opt_flags,
+                   uint32_t                 token_opt_flags,
+                   int32_t                  cose_alg_id)
 {
     /*
        me->in_submod_mode = 0

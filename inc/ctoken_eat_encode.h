@@ -14,7 +14,7 @@
 #ifndef eat_encode_h
 #define eat_encode_h
 
-#include "ctoken_cwt_encode.h"
+#include "ctoken_cwt_encode.h" /* EAT is a type of CWT */
 #include "ctoken_eat_labels.h"
 
 
@@ -39,6 +39,45 @@ extern "C" {
  */
 
 
+
+static void
+ctoken_eat_encode_init(struct ctoken_encode_ctx *me,
+                       uint32_t                  t_cose_opt_flags,
+                       uint32_t                  token_opt_flags,
+                       int32_t                   cose_alg_id);
+
+
+
+/**
+ * \brief Set the signing key.
+ *
+ *
+ * \param[in] me           The token creation context.
+ * \param[in] signing_key  The signing key to use or \ref T_COSE_NULL_KEY.
+ * \param[in] kid          COSE kid (key ID) parameter or \c NULL_Q_USEFUL_BUF_C.
+ *
+ * This needs to be called to set the signing key to use. The \c kid
+ * may be omitted by giving \c NULL_Q_USEFUL_BUF_C.
+ *
+ * If short-circuit signing is used,
+ * \ref T_COSE_OPT_SHORT_CIRCUIT_SIG, then this does not need to be
+ * called. If it is called the \c kid given will be used, but the \c
+ * signing_key is never used. When the \c kid is given with a
+ * short-circuit signature, the internally fixed kid for short circuit
+ * will not be used and this \c COSE_Sign1 message can not be verified
+ * by t_cose_sign1_verify().
+ */
+static void
+ctoken_eat_encode_set_key(struct ctoken_encode_ctx *me,
+                          struct t_cose_key         signing_key,
+                          struct q_useful_buf_c     kid);
+
+
+
+static enum ctoken_err_t
+ctoken_eat_encode_start(struct ctoken_encode_ctx  *me,
+                        const struct q_useful_buf out_buffer);
+
 /**
  * \brief  Encode the nonce claim.
  *
@@ -51,7 +90,7 @@ extern "C" {
  * the error state is entered. It is returned later when ctoken_encode_finish()
  * is called.
  */
-static inline void
+static void
 ctoken_eat_encode_nonce(struct ctoken_encode_ctx *context,
                         struct q_useful_buf_c     nonce);
 
@@ -71,7 +110,7 @@ ctoken_eat_encode_nonce(struct ctoken_encode_ctx *context,
  * the error state is entered. It is returned later when ctoken_encode_finish()
  * is called.
  */
-static inline void
+static void
 ctoken_eat_encode_ueid(struct ctoken_encode_ctx *context,
                        struct q_useful_buf_c     ueid);
 
@@ -90,7 +129,7 @@ ctoken_eat_encode_ueid(struct ctoken_encode_ctx *context,
  * the error state is entered. It is returned later when ctoken_encode_finish()
  * is called.
  */
-static inline void
+static void
 ctoken_eat_encode_oemid(struct ctoken_encode_ctx *context,
                         struct q_useful_buf_c     oemid);
 
@@ -110,7 +149,7 @@ ctoken_eat_encode_oemid(struct ctoken_encode_ctx *context,
  * the error state is entered. It is returned later when ctoken_encode_finish()
  * is called.
  */
-static inline void
+static void
 ctoken_eat_encode_origination(struct ctoken_encode_ctx *context,
                               struct q_useful_buf_c     origination);
 
@@ -130,7 +169,7 @@ ctoken_eat_encode_origination(struct ctoken_encode_ctx *context,
  * the error state is entered. It is returned later when ctoken_encode_finish()
  * is called.
  */
-static inline void
+static void
 ctoken_eat_encode_security_level(struct ctoken_encode_ctx        *context,
                                  enum ctoken_eat_security_level_t security_level);
 
@@ -187,7 +226,7 @@ ctoken_eat_encode_location(struct ctoken_encode_ctx           *context,
  * the error state is entered. It is returned later when ctoken_encode_finish()
  * is called.
  */
-static inline void
+static void
 ctoken_eat_encode_age(struct ctoken_encode_ctx  *context,
                       uint64_t                   age);
 
@@ -206,30 +245,167 @@ ctoken_eat_encode_age(struct ctoken_encode_ctx  *context,
  * the error state is entered. It is returned later when ctoken_encode_finish()
  * is called.
  */
-static inline void
+static void
 ctoken_eat_encode_uptime(struct ctoken_encode_ctx  *context,
                          uint64_t                    uptime);
 
 
-#ifdef SUBMODS_ARE_IMPLEMENTED
+/*
 
-// Prototypes for the planned submods impementation
-static void ctoken_eat_encode_open_submod(struct attest_token_encode_ctx *me,
-                                            char *submod_name,
-                                            int nConnectionType);
+ start_submods
+ enter_submod
+ enter_submod -- error
+ exit_submod
+ enter_submod
+ end_submods
 
-static void ctoken_eat_encode_close_submod(struct attest_token_encode_ctx *me);
+ enter_submod -- error
+
+ enter_submod
+ exit_submod
+ enter_submod
+ enter_submod -- nests
+ exit_submod
+ exit_submod
+ add_encoded_submod
 
 
-static void ctoken_eat_encode_add_token(struct attest_token_encode_ctx *me,
-                                          char *submod_name,
-                                          int nConnectionType,
-                                          struct q_useful_buf_c token);
-#endif
+
+ */
+
+void ctoken_eat_encode_start_submod_section(struct ctoken_encode_ctx *context);
+
+
+void ctoken_eat_encode_end_submod_section(struct ctoken_encode_ctx *context);
+
+
+
+/**
+ * \brief  Start encoding claims in a sub module.
+ *
+ * \param[in] context  Encoding context
+ * \param [in] submod_name  Text string naming sub module.
+ *
+ * Initiates the creation of a sub module. All claims added after this
+ * call until the a call to ctoken_eat_encode_close_submod() will
+ * go into the named submodule.
+ *
+ * Submodules can nest to a depth of \ref CTOKEN_MAX_SUBMOD_NESTING. To
+ * nest one submodule inside another, simply call this again
+ * before calling ctoken_eat_encode_close_submod().
+ *
+ * All submodule go into a special map at the top level
+ * designated to hold them by the label TODO: xxxx.
+ * When the first submodule is opened, this map is
+ * created. When the last submodule is closed, this
+ * map is closed. Thus, encoding of all the submodules
+ * must be done together and can't be intermixed with
+ * other top-level claims.
+ *
+ * If an error occurs, such as nesting too deep, it will be reported when
+ * ctoken_encode_finish() is called.
+ */
+void ctoken_eat_encode_open_submod(struct ctoken_encode_ctx *context,
+                                   const char               *submod_name);
+
+
+/**
+ * \brief  End encoding claims in a sub module.
+ *
+ * \param[in] context  Encoding context
+ *
+ * Close out the current submodule.
+ *
+ * All submodules opened, must be closed for a token to be valid.
+ *
+ * If an error occurs, such as no submod open, it will be reported when
+ * ctoken_encode_finish() is called.
+ */
+void ctoken_eat_encode_close_submod(struct ctoken_encode_ctx *context);
+
+
+/**
+ * \brief Add a complete EAT token as a submodule.
+ *
+ * \param[in] context           Token creation context.
+ * \param[in] type                  Whether added token is CBOR format or JSON format.
+ * \param[in] submod_name  String naming the submodule.
+ * \param[in] token               The full encoded token.
+ *
+ * A submodule can be a fully encoded and signed EAT token such as
+ * the completed_token returned from ctoken_encode_finish(). Use this
+ * call to add such a token.
+ *
+ * The added token may be CBOR/COSE/CWT format or JSON/JOSE/JWT format.
+ * Indicate which with the \c type parameter.
+ *
+ * The contents of token are not checked by this call. The bytes
+ * are just added.
+ *
+ * Submods may only be added at the end of token creation. All
+ * non-submod claims must be added before any call to attest_token_encode_open_submod()
+ * or attest_token_encode_add_token().
+ *
+ * If an error occurs it will be reported when
+ * ctoken_encode_finish() is called.
+ */
+void ctoken_eat_encode_add_token(struct ctoken_encode_ctx *context,
+                                 enum ctoken_type          type,
+                                 const char               *submod_name,
+                                 struct q_useful_buf_c     token);
+
+
+
+/**
+ * \brief Finish the token, complete the signing and get the result
+ *
+ * \param[in] me                Token creation context.
+ * \param[out] completed_token  Pointer and length to completed token.
+ *
+ * \return                      One of the \ref ctoken_err_t errors.
+ *
+ * This completes the token after the payload has been added. When
+ * this is called the signing algorithm is run and the final
+ * formatting of the token is completed.
+ */
+static enum ctoken_err_t
+ctoken_eat_encode_finish(struct ctoken_encode_ctx *me,
+                         struct q_useful_buf_c    *completed_token);
+
+
+
 
 /* --------------------------------------------------------------------------
  *       Inline implementations
  * --------------------------------------------------------------------------*/
+
+static inline void
+ctoken_eat_encode_init(struct ctoken_encode_ctx *me,
+                       uint32_t                  t_cose_opt_flags,
+                       uint32_t                  token_opt_flags,
+                       int32_t                   cose_alg_id)
+{
+    ctoken_encode_init(me, t_cose_opt_flags, token_opt_flags, cose_alg_id);
+}
+
+
+static inline void
+ctoken_eat_encode_set_key(struct ctoken_encode_ctx *me,
+                          struct t_cose_key         signing_key,
+                          struct q_useful_buf_c     kid)
+{
+    ctoken_encode_set_key(me, signing_key, kid);
+}
+
+
+static inline enum ctoken_err_t
+ctoken_eat_encode_start(struct ctoken_encode_ctx  *me,
+                        const struct q_useful_buf  out_buffer)
+{
+    return ctoken_encode_start(me, out_buffer);
+}
+
+
 static inline void
 ctoken_eat_encode_nonce(struct ctoken_encode_ctx *me,
                         struct q_useful_buf_c     nonce)
@@ -284,6 +460,16 @@ ctoken_eat_encode_uptime(struct ctoken_encode_ctx  *me,
                          uint64_t                   uptime)
 {
     ctoken_encode_add_integer(me, CTOKEN_EAT_LABEL_UPTIME, uptime);
+}
+
+
+
+
+static inline enum ctoken_err_t
+ctoken_eat_encode_finish(struct ctoken_encode_ctx *me,
+                         struct q_useful_buf_c    *completed_token)
+{
+    return ctoken_encode_finish(me, completed_token);
 }
 
 #ifdef __cplusplus

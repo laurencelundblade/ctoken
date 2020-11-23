@@ -251,7 +251,7 @@ decode_sw_component(QCBORDecodeContext                *decode_context,
 
     (void)sw_component_item; // TODO: figure out what to do with this.
 
-    QCBORDecode_EnterMap(decode_context);
+    QCBORDecode_EnterMap(decode_context, NULL);
 
     list[SW_MEASUREMENT_TYPE_FLAG].label.int64 = EAT_CBOR_SW_COMPONENT_MEASUREMENT_TYPE;
     list[SW_MEASUREMENT_TYPE_FLAG].uLabelType  = QCBOR_TYPE_INT64;
@@ -349,7 +349,7 @@ ctoken_psaia_decode_sw_component(struct ctoken_decode_ctx           *me,
 
     /* Skip to the SW component index requested */
     for(int i = 0; i < requested_index; i++) {
-        QCBORDecode_EnterMap(&(me->qcbor_decode_context));
+        QCBORDecode_EnterMap(&(me->qcbor_decode_context), NULL);
         QCBORDecode_ExitMap(&(me->qcbor_decode_context));
     }
 

@@ -64,8 +64,7 @@ int32_t cwt_test()
     int64_t expiration;
     /* Set up to verify and decode the token */
 
-    /* Initialize the decoder / verifier context. No options are set
-     * so two 0's are passed
+    /* Initialize the decoder / verifier context. 
      */
     ctoken_decode_init(&decode_context, T_COSE_OPT_ALLOW_SHORT_CIRCUIT, 0);
 

@@ -112,7 +112,7 @@ enum ctoken_eat_debug_level_t {
 
 
 /**
- * Holds a location (e.g. a GPS position).
+ * Holds a geographic location (e.g. a GPS position).
  */
 struct ctoken_eat_location_t {
     /** Array of doubles to old latitude, longitude... indexed
@@ -134,6 +134,22 @@ struct ctoken_eat_location_t {
 #define  eat_loc_altitude_accuracy items[CTOKEN_EAT_LABEL_ALTITUDE_ACCURACY-1]
 #define  eat_loc_heading    items[CTOKEN_EAT_LABEL_HEADING-1]
 #define  eat_loc_speed      items[CTOKEN_EAT_LABEL_SPEED-1]
+
+
+/** The type of a submodule that is a token. */
+enum ctoken_type {
+    /** The submodule token is a CWT as defined by RFC 8392. It may be
+     * a CWT tag or CWT protocol message. It may be signed and/or encrypted.
+     * It may not be a UCCS per the EAT draft.
+     */
+    CTOKEN_TYPE_CWT,
+
+    /** The submodule token is a JWT as defined by RFC 7519. It must not be
+     * an unsecured JWT per the EAT draft.
+     */
+    CTOKEN_TYPE_JSON
+};
+
 
 #ifdef __cplusplus
 }

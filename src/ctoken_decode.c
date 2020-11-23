@@ -190,7 +190,7 @@ ctoken_decode_validate_token(struct ctoken_decode_ctx *me,
      */
 
     QCBORDecode_Init(&(me->qcbor_decode_context), me->payload, 0);
-    QCBORDecode_EnterMap(&(me->qcbor_decode_context));
+    QCBORDecode_EnterMap(&(me->qcbor_decode_context), NULL);
     qcbor_error = QCBORDecode_GetError(&(me->qcbor_decode_context));
     if(qcbor_error != QCBOR_SUCCESS) {
         // TODO: better error conversion
@@ -206,6 +206,7 @@ Done:
 }
 
 #if 0
+// TODO: fix this
 /*
  * Public function. See ctoken_decode.h
  */

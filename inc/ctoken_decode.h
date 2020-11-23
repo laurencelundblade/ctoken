@@ -100,6 +100,7 @@ struct ctoken_decode_ctx {
     uint32_t                       options;
     enum ctoken_err_t              last_error;
     QCBORDecodeContext             qcbor_decode_context;
+    uint8_t                        in_submods;
 };
 
 
@@ -115,8 +116,8 @@ struct ctoken_decode_ctx {
  * be used again by calling this on it again.
  **/
 void ctoken_decode_init(struct ctoken_decode_ctx *me,
-                        uint32_t t_cose_options,
-                        uint32_t token_options);
+                        uint32_t                  t_cose_options,
+                        uint32_t                  token_options);
 
 
 /**
@@ -392,7 +393,6 @@ enum ctoken_err_t
 ctoken_decode_get_uint(struct ctoken_decode_ctx *me,
                        int32_t label,
                        uint64_t *claim);
-
 
 
 

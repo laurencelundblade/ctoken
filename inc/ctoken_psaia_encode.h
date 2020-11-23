@@ -59,7 +59,7 @@ void ctoken_psaia_encode_simple_claims(struct ctoken_encode_ctx *context,
  * the error state is entered. It is returned later when ctoken_encode_finish()
  * is called.
  */
-static inline void
+static void
 ctoken_psaia_encode_nonce(struct ctoken_encode_ctx *context,
                           struct q_useful_buf_c nonce);
 
@@ -80,7 +80,7 @@ ctoken_psaia_encode_nonce(struct ctoken_encode_ctx *context,
  * the error state is entered. It is returned later when ctoken_encode_finish()
  * is called.
  */
-static inline void
+static void
 ctoken_psaia_encode_boot_seed(struct ctoken_encode_ctx *context,
                               struct q_useful_buf_c boot_seed);
 
@@ -99,7 +99,7 @@ ctoken_psaia_encode_boot_seed(struct ctoken_encode_ctx *context,
  * the error state is entered. It is returned later when ctoken_encode_finish()
  * is called.
  */
-static inline void
+static void
 ctoken_psaia_encode_ueid(struct ctoken_encode_ctx *context,
                          struct q_useful_buf_c ueid);
 
