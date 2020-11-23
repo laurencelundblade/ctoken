@@ -23,19 +23,23 @@ extern "C" {
 #endif
 #endif
 
-/* These are temporary labels until the real ones are assigned by IANA */
-#define CTOKEN_EAT_LABEL_UEID -75009 // Same as PSA for now
-#define CTOKEN_EAT_LABEL_NONCE -75008 // Same as PSA for now
-#define CTOKEN_EAT_LABEL_OEMID  100002 // Same as PSA for now
-#define CTOKEN_EAT_LABEL_ORIGINATION  -75010 // Same as PSA for now
-#define CTOKEN_EAT_LABEL_SECURITY_LEVEL 100004
-#define CTOKEN_EAT_LABEL_BOOT_STATE 100005
-#define CTOKEN_EAT_LABEL_LOCATION 100006
-#define CTOKEN_EAT_LABEL_AGE 100007
-#define CTOKEN_EAT_LABEL_UPTIME 100008
+/* These are temporary labels until the real ones are assigned by IANA.
+ * This is probably sometime in 2021 or 2022 when the EAT draft
+ * becomes an RFC. Some are the same as defined in https://tools.ietf.org/id/draft-tschofenig-rats-psa-token-05.html,
+ * which has also defined some temporary labels.
+ */
+#define CTOKEN_EAT_LABEL_UEID -75009 // Same as PSA
+#define CTOKEN_EAT_LABEL_NONCE -75008 // Same as PSA
+#define CTOKEN_EAT_LABEL_OEMID  -76001
+#define CTOKEN_EAT_LABEL_ORIGINATION  -75010 // Same as PSA
+#define CTOKEN_EAT_LABEL_SECURITY_LEVEL -76002
+#define CTOKEN_EAT_LABEL_BOOT_STATE -76003
+#define CTOKEN_EAT_LABEL_LOCATION -76004
+#define CTOKEN_EAT_LABEL_AGE -76005
+#define CTOKEN_EAT_LABEL_UPTIME -76006
 
 
-#define CTOKEN_EAT_LABEL_SUBMODS 100100 // Not really a claim, but most have a label
+#define CTOKEN_EAT_LABEL_SUBMODS -76000 // Not really a claim, but most have a label
 
 /**
  * File: ctoken_eat_labels.h
