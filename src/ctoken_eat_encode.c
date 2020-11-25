@@ -70,6 +70,8 @@ void ctoken_eat_encode_start_submod_section(struct ctoken_encode_ctx *me)
     } else if(me->current_level >= end) {
         me->error = CTOKEN_ERR_SUBMOD_NESTING_TOO_DEEP;
         return;
+
+        // TODO: allow this to be called only once per level
     } else {
         if(*me->current_level != SUBMODS_IN_SECTION_AND_SUBMOD) {
             me->error = CTOKEN_CANT_START_SUBMOD_SECTION;

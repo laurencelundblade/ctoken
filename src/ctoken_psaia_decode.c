@@ -348,7 +348,7 @@ ctoken_psaia_decode_sw_component(struct ctoken_decode_ctx           *me,
                                    EAT_CBOR_ARM_LABEL_SW_COMPONENTS);
 
     /* Skip to the SW component index requested */
-    for(int i = 0; i < requested_index; i++) {
+    for(uint32_t i = 0; i < requested_index; i++) {
         QCBORDecode_EnterMap(&(me->qcbor_decode_context), NULL);
         QCBORDecode_ExitMap(&(me->qcbor_decode_context));
     }

@@ -25,6 +25,7 @@ extern "C" {
 #endif
 #endif
 
+
 /**
  * \file ctoken_eat_encode.h
  *
@@ -39,18 +40,30 @@ extern "C" {
  */
 
 
-
+/**
+ * \brief Initialize a token creation context.
+ *
+ * \param[in] context                The token creation context to be initialized.
+ * \param[in] token_opt_flags   Flags to select different custom options,
+ *                              for example \ref TOKEN_OPT_OMIT_CLAIMS.
+ * \param[in] t_cose_opt_flags  Option flags passed on to t_cose.
+ * \param[in] cose_alg_id       The algorithm to sign with. The IDs are
+ *                              defined in [COSE (RFC 8152)]
+ *                              (https://tools.ietf.org/html/rfc8152) or
+ *                              in the [IANA COSE Registry]
+ *                              (https://www.iana.org/assignments/cose/cose.xhtml).
+ *                              See T_COSE_ALGORITHM_XXX in t_cose_common.h.
+ *
+ */
 static void
-ctoken_eat_encode_init(struct ctoken_encode_ctx *me,
+ctoken_eat_encode_init(struct ctoken_encode_ctx *context,
                        uint32_t                  t_cose_opt_flags,
                        uint32_t                  token_opt_flags,
                        int32_t                   cose_alg_id);
 
 
-
 /**
  * \brief Set the signing key.
- *
  *
  * \param[in] me           The token creation context.
  * \param[in] signing_key  The signing key to use or \ref T_COSE_NULL_KEY.
@@ -73,10 +86,31 @@ ctoken_eat_encode_set_key(struct ctoken_encode_ctx *me,
                           struct q_useful_buf_c     kid);
 
 
+/**
+ * \brief Give output buffer and start token creation
+ *
+ * \param[in] context          The token creation context.
+ * \param[in] out_buffer  The pointer and length of buffer to write token to.
+ *
+ * \returns               0 on success or error.
 
+ * The size of the buffer in \c out_buffer->len
+ * determines the size of the token that can be created. It must be
+ * able to hold the final encoded and signed token. The data encoding
+ * overhead is just that of CBOR. The signing overhead depends on the
+ * signing key size. It is about 150 bytes for 256-bit ECDSA.
+ *
+ * If \c out_buffer->ptr is \c NULL and \c out_buffer_ptr->len is
+ * large like \c UINT32_MAX no token will be created but the length of
+ * the token that would be created will be in \c completed_token as
+ * returned by ctoken_encode_finish(). None of the cryptographic
+ * functions run during this, but the sizes of what they would output
+ * is taken into account.
+ */
 static enum ctoken_err_t
-ctoken_eat_encode_start(struct ctoken_encode_ctx  *me,
+ctoken_eat_encode_start(struct ctoken_encode_ctx  *context,
                         const struct q_useful_buf out_buffer);
+
 
 /**
  * \brief  Encode the nonce claim.
@@ -250,34 +284,32 @@ ctoken_eat_encode_uptime(struct ctoken_encode_ctx  *context,
                          uint64_t                    uptime);
 
 
-/*
 
- start_submods
- enter_submod
- enter_submod -- error
- exit_submod
- enter_submod
- end_submods
-
- enter_submod -- error
-
- enter_submod
- exit_submod
- enter_submod
- enter_submod -- nests
- exit_submod
- exit_submod
- add_encoded_submod
-
-
-
+/**
+ * \brief  Start encoding submodules.
+ *
+ * \param[in] context  Encoding context.
+ *
+ * This must be called to start the submodules section before calling
+ * ctoken_eat_encode_open_submod() or ctoken_eat_encode_add_token().
+ * There is only one submodules section, so this can only be called once.
+ * All submodules must be added together.
+ *
+ * When all submodules have been added, then ctoken_eat_encode_end_submod_section()
+ * must be called to close out the submodules section.
  */
-
 void ctoken_eat_encode_start_submod_section(struct ctoken_encode_ctx *context);
 
 
+/**
+ * \brief  End encoding submodules.
+ *
+ * \param[in] context  Encoding context.
+ *
+ * Close out the submodules section after calling ctoken_eat_encode_start_submod_section() and
+ * adding all submodules that are to be added.
+ */
 void ctoken_eat_encode_end_submod_section(struct ctoken_encode_ctx *context);
-
 
 
 /**
@@ -290,17 +322,13 @@ void ctoken_eat_encode_end_submod_section(struct ctoken_encode_ctx *context);
  * call until the a call to ctoken_eat_encode_close_submod() will
  * go into the named submodule.
  *
+ * ctoken_eat_encode_start_submod_section() must be called before this
+ * is called to open the submodules section. ctoken_eat_encode_end_submod_section()
+ * must be called at some point after this is called.
+ *
  * Submodules can nest to a depth of \ref CTOKEN_MAX_SUBMOD_NESTING. To
  * nest one submodule inside another, simply call this again
  * before calling ctoken_eat_encode_close_submod().
- *
- * All submodule go into a special map at the top level
- * designated to hold them by the label TODO: xxxx.
- * When the first submodule is opened, this map is
- * created. When the last submodule is closed, this
- * map is closed. Thus, encoding of all the submodules
- * must be done together and can't be intermixed with
- * other top-level claims.
  *
  * If an error occurs, such as nesting too deep, it will be reported when
  * ctoken_encode_finish() is called.
@@ -342,9 +370,9 @@ void ctoken_eat_encode_close_submod(struct ctoken_encode_ctx *context);
  * The contents of token are not checked by this call. The bytes
  * are just added.
  *
- * Submods may only be added at the end of token creation. All
- * non-submod claims must be added before any call to attest_token_encode_open_submod()
- * or attest_token_encode_add_token().
+ * ctoken_eat_encode_start_submod_section() must be called before this
+ * is called to open the submodules section. ctoken_eat_encode_end_submod_section()
+ * must be called at some point after this is called.
  *
  * If an error occurs it will be reported when
  * ctoken_encode_finish() is called.
