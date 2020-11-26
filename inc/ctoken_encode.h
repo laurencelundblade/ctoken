@@ -17,6 +17,7 @@
 #include "t_cose/t_cose_sign1_sign.h"
 
 #include "ctoken_cwt_labels.h"
+#include "ctoken_eat_labels.h"
 
 
 #ifdef __cplusplus
@@ -416,6 +417,280 @@ static void ctoken_encode_cwt_cti(struct ctoken_encode_ctx *context,
                                          struct q_useful_buf_c cti);
 
 
+
+/**
+ * \brief  Encode the EAT nonce claim.
+ *
+ * \param[in] context  The encoding context to output to.
+ * \paran[in] nonce    Pointer and length of nonce to output.
+ *
+ * This outputs the nonce claim.
+ *
+ * If there is an error like insufficient space in the output buffer,
+ * the error state is entered. It is returned later when ctoken_encode_finish()
+ * is called.
+ */
+static void
+ctoken_encode_nonce(struct ctoken_encode_ctx *context,
+                        struct q_useful_buf_c     nonce);
+
+
+/**
+ * \brief  Encode the EAT UEID claim.
+ *
+ * \param[in] context  The encoding context to output to.
+ * \paran[in] ueid     Pointer and length of UEID to output.
+ *
+ * This outputs the UEID claim.
+ *
+ * The UEID is the Universal Entity ID, an opaque binary blob that uniquely
+ * identifies the device.
+ *
+ * If there is an error like insufficient space in the output buffer,
+ * the error state is entered. It is returned later when ctoken_encode_finish()
+ * is called.
+ */
+static void
+ctoken_encode_ueid(struct ctoken_encode_ctx *context,
+                       struct q_useful_buf_c     ueid);
+
+
+/**
+ * \brief  Encode the EAT OEM ID (oemid) claim.
+ *
+ * \param[in] context  The encoding context to output to.
+ * \paran[in] oemid     Pointer and length of OEM ID to output.
+ *
+ * This outputs the OEM ID claim.
+ *
+ * The OEMID is an opaque binary blob that identifies the manufacturer.
+ *
+ * If there is an error like insufficient space in the output buffer,
+ * the error state is entered. It is returned later when ctoken_encode_finish()
+ * is called.
+ */
+static void
+ctoken_encode_eat_oemid(struct ctoken_encode_ctx *context,
+                        struct q_useful_buf_c     oemid);
+
+
+/**
+ * \brief  Encode the EAT origination claim.
+ *
+ * \param[in] context       The encoding context to output to.
+ * \paran[in] origination   Pointer and length of origination claim to output.
+ *
+ * This outputs the origination claim.
+ *
+ * This describes the part of the device that created the token. It
+ * is a text string or a URI.
+ *
+ * If there is an error like insufficient space in the output buffer,
+ * the error state is entered. It is returned later when ctoken_encode_finish()
+ * is called.
+ */
+static void
+ctoken_encode_eat_origination(struct ctoken_encode_ctx *context,
+                              struct q_useful_buf_c     origination);
+
+
+/**
+ * \brief  Encode the security level claim.
+ *
+ * \param[in] context         The encoding context to output to.
+ * \paran[in] security_level  The security level enum to output.
+ *
+ * This outputs the security level claim.
+ *
+ * The security level gives a rough indication of how security
+ * the HW and SW are.  See \ref ctoken_eat_security_level_t.
+ *
+ * If there is an error like insufficient space in the output buffer,
+ * the error state is entered. It is returned later when ctoken_encode_finish()
+ * is called.
+ */
+static void
+ctoken_encode_eat_security_level(struct ctoken_encode_ctx        *context,
+                                 enum ctoken_eat_security_level_t security_level);
+
+
+
+/**
+ * \brief  Encode the EAT debug and boot state claim.
+ *
+ * \param[in] context              The encoding context to output to.
+ * \paran[in] secure_boot_enabled  This is \c true if secure boot
+ *                                 is enabled or \c false it no.
+ * \param[out] debug_state         See \ref ctoken_eat_debug_level_t for
+ *                                 the different debug states.
+ *
+ * This outputs the debug and boot state claim.
+ *
+ * If there is an error like insufficient space in the output buffer,
+ * the error state is entered. It is returned later when ctoken_encode_finish()
+ * is called.
+ */
+void
+ctoken_encode_boot_state(struct ctoken_encode_ctx     *context,
+                             bool                          secure_boot_enabled,
+                             enum ctoken_eat_debug_level_t debug_state);
+
+
+/**
+ * \brief Encode an EAT location claims
+ *
+ * \param[in] context   ctoken encode context to output to.
+ * \param[in] location  The location to output.
+ *
+ * Only the location fields indicated as present in \c item_flags
+ * will be output.
+ */
+void
+ctoken_encode_location(struct ctoken_encode_ctx           *context,
+                           const struct ctoken_eat_location_t *location);
+
+
+/**
+ * \brief  Encode the EAT age claim.
+ *
+ * \param[in] context         The encoding context to output to.
+ * \paran[in] age             The age in seconds of the token.
+ *
+ * This outputs the age claim.
+ *
+ * If the other claims in token were obtained previously and held
+ * until token creation, this gives their age in seconds in the epoch
+ * (January 1, 1970).
+ *
+ * If there is an error like insufficient space in the output buffer,
+ * the error state is entered. It is returned later when ctoken_encode_finish()
+ * is called.
+ */
+static void
+ctoken_encode_eat_age(struct ctoken_encode_ctx  *context,
+                      uint64_t                   age);
+
+
+/**
+ * \brief  Encode the EAT uptime claim.
+ *
+ * \param[in] context         The encoding context to output to.
+ * \paran[in] uptime          The time in seconds since the system started.
+ *
+ * This outputs the uptime claim.
+ *
+ * This is the time in seconds since the device booted or started.
+ *
+ * If there is an error like insufficient space in the output buffer,
+ * the error state is entered. It is returned later when ctoken_encode_finish()
+ * is called.
+ */
+static void
+ctoken_encode_eat_uptime(struct ctoken_encode_ctx  *context,
+                         uint64_t                    uptime);
+
+
+
+/**
+ * \brief  Start encoding EAT submodules.
+ *
+ * \param[in] context  Encoding context.
+ *
+ * This must be called to start the submodules section before calling
+ * ctoken_eat_encode_open_submod() or ctoken_eat_encode_add_token().
+ * There is only one submodules section, so this can only be called once.
+ * All submodules must be added together.
+ *
+ * When all submodules have been added, then ctoken_eat_encode_end_submod_section()
+ * must be called to close out the submodules section.
+ */
+void ctoken_encode_start_submod_section(struct ctoken_encode_ctx *context);
+
+
+/**
+ * \brief  End encoding EAT submodules.
+ *
+ * \param[in] context  Encoding context.
+ *
+ * Close out the submodules section after calling ctoken_eat_encode_start_submod_section() and
+ * adding all submodules that are to be added.
+ */
+void ctoken_encode_end_submod_section(struct ctoken_encode_ctx *context);
+
+
+/**
+ * \brief  Start encoding claims in an EAT submodule.
+ *
+ * \param[in] context  Encoding context
+ * \param [in] submod_name  Text string naming sub module.
+ *
+ * Initiates the creation of a sub module. All claims added after this
+ * call until the a call to ctoken_eat_encode_close_submod() will
+ * go into the named submodule.
+ *
+ * ctoken_eat_encode_start_submod_section() must be called before this
+ * is called to open the submodules section. ctoken_eat_encode_end_submod_section()
+ * must be called at some point after this is called.
+ *
+ * Submodules can nest to a depth of \ref CTOKEN_MAX_SUBMOD_NESTING. To
+ * nest one submodule inside another, simply call this again
+ * before calling ctoken_eat_encode_close_submod().
+ *
+ * If an error occurs, such as nesting too deep, it will be reported when
+ * ctoken_encode_finish() is called.
+ */
+void ctoken_encode_open_submod(struct ctoken_encode_ctx *context,
+                                   const char               *submod_name);
+
+
+/**
+ * \brief  End encoding claims in an EAT submodule.
+ *
+ * \param[in] context  Encoding context
+ *
+ * Close out the current submodule.
+ *
+ * All submodules opened, must be closed for a token to be valid.
+ *
+ * If an error occurs, such as no submod open, it will be reported when
+ * ctoken_encode_finish() is called.
+ */
+void ctoken_encode_close_submod(struct ctoken_encode_ctx *context);
+
+
+/**
+ * \brief Add a complete EAT token as a submodule.
+ *
+ * \param[in] context           Token creation context.
+ * \param[in] type                  Whether added token is CBOR format or JSON format.
+ * \param[in] submod_name  String naming the submodule.
+ * \param[in] token               The full encoded token.
+ *
+ * A submodule can be a fully encoded and signed EAT token such as
+ * the completed_token returned from ctoken_encode_finish(). Use this
+ * call to add such a token.
+ *
+ * The added token may be CBOR/COSE/CWT format or JSON/JOSE/JWT format.
+ * Indicate which with the \c type parameter.
+ *
+ * The contents of token are not checked by this call. The bytes
+ * are just added.
+ *
+ * ctoken_eat_encode_start_submod_section() must be called before this
+ * is called to open the submodules section. ctoken_eat_encode_end_submod_section()
+ * must be called at some point after this is called.
+ *
+ * If an error occurs it will be reported when
+ * ctoken_encode_finish() is called.
+ */
+void ctoken_encode_add_token(struct ctoken_encode_ctx *context,
+                                 enum ctoken_type          type,
+                                 const char               *submod_name,
+                                 struct q_useful_buf_c     token);
+
+
+
+
 /**
  * \brief Finish the token, complete the signing and get the result
  *
@@ -590,6 +865,64 @@ static inline void ctoken_encode_cwt_cti(struct ctoken_encode_ctx *me,
 {
     ctoken_encode_add_bstr(me, CTOKEN_CWT_LABEL_CTI, cti);
 }
+
+
+static inline void
+ctoken_encode_nonce(struct ctoken_encode_ctx *me,
+                        struct q_useful_buf_c     nonce)
+{
+    ctoken_encode_add_bstr(me, CTOKEN_EAT_LABEL_NONCE, nonce);
+}
+
+
+static inline void
+ctoken_encode_ueid(struct ctoken_encode_ctx *me,
+                       struct q_useful_buf_c     ueid)
+{
+    ctoken_encode_add_bstr(me, CTOKEN_EAT_LABEL_UEID, ueid);
+}
+
+
+static inline void
+ctoken_encode_eat_oemid(struct ctoken_encode_ctx *me,
+                        struct q_useful_buf_c     oemid)
+{
+    ctoken_encode_add_bstr(me, CTOKEN_EAT_LABEL_OEMID, oemid);
+}
+
+
+
+static inline void
+ctoken_encode_eat_origination(struct ctoken_encode_ctx *me,
+                              struct q_useful_buf_c origination)
+{
+    ctoken_encode_add_tstr(me, CTOKEN_EAT_LABEL_ORIGINATION, origination);
+}
+
+static inline void
+ctoken_encode_eat_security_level(struct ctoken_encode_ctx *me,
+                                 enum ctoken_eat_security_level_t security_level)
+{
+    ctoken_encode_add_integer(me,
+                              CTOKEN_EAT_LABEL_SECURITY_LEVEL,
+                              (int64_t)security_level);
+}
+
+static inline void
+ctoken_encode_eat_age(struct ctoken_encode_ctx  *me,
+                      uint64_t                   age)
+{
+    ctoken_encode_add_integer(me, CTOKEN_EAT_LABEL_AGE, age);
+}
+
+
+static inline void
+ctoken_encode_eat_uptime(struct ctoken_encode_ctx  *me,
+                         uint64_t                   uptime)
+{
+    ctoken_encode_add_integer(me, CTOKEN_EAT_LABEL_UPTIME, uptime);
+}
+
 
 #ifdef __cplusplus
 }

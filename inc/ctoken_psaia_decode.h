@@ -15,7 +15,6 @@
 #define psa_ia_decode_h
 
 #include "ctoken_decode.h"
-#include "ctoken_eat_decode.h"
 #include "ctoken_psaia_labels.h"
 
 
@@ -305,7 +304,7 @@ static inline enum ctoken_err_t
 attest_token_decode_psa_ia_nonce(struct ctoken_decode_ctx *me,
                                  struct q_useful_buf_c *nonce)
 {
-    return ctoken_eat_decode_nonce(me, nonce);
+    return ctoken_decode_nonce(me, nonce);
 }
 
 
@@ -391,7 +390,7 @@ static inline enum ctoken_err_t
 ctoken_psaia_decode_origination(struct ctoken_decode_ctx*me,
                                 struct q_useful_buf_c *origination)
 {
-    return ctoken_eat_decode_origination(me, origination);
+    return ctoken_decode_origination(me, origination);
 }
 
 #ifdef __cplusplus

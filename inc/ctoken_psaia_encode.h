@@ -15,7 +15,7 @@
 #define psa_ia_encode_h
 
 #include "ctoken_psaia_labels.h"
-#include "ctoken_eat_encode.h"
+#include "ctoken_encode.h"
 
 
 #ifdef __cplusplus
@@ -244,7 +244,7 @@ static inline void
 ctoken_psaia_encode_nonce(struct ctoken_encode_ctx *me,
                           struct q_useful_buf_c nonce)
 {
-    ctoken_eat_encode_nonce(me, nonce);
+    ctoken_encode_nonce(me, nonce);
 }
 
 
@@ -260,7 +260,7 @@ static inline void
 ctoken_psaia_encode_ueid(struct ctoken_encode_ctx *me,
                          struct q_useful_buf_c ueid)
 {
-    ctoken_eat_encode_ueid(me, ueid);
+    ctoken_encode_ueid(me, ueid);
 }
 
 
@@ -282,7 +282,7 @@ static inline void
 ctoken_psaia_encode_origination(struct ctoken_encode_ctx *me,
                                 struct q_useful_buf_c origination)
 {
-    ctoken_eat_encode_origination(me, origination);
+    ctoken_encode_eat_origination(me, origination);
 }
 
 static inline void
