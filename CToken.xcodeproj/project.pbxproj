@@ -14,14 +14,10 @@
 		0F3AF35223E5463300A60561 /* ctoken_psaia_encode.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F3AF35123E5463300A60561 /* ctoken_psaia_encode.c */; };
 		0F3AF35523E5474700A60561 /* ctoken_eat_encode.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F3AF35423E5474700A60561 /* ctoken_eat_encode.c */; };
 		0F3AF36123E57DAC00A60561 /* ctoken_eat_decode.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F3AF35F23E57DAC00A60561 /* ctoken_eat_decode.c */; };
-		0F3AF36223E57DAC00A60561 /* ctoken_cwt_encode.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F3AF36023E57DAC00A60561 /* ctoken_cwt_encode.c */; };
-		0F3AF36523E57E8C00A60561 /* ctoken_cwt_decode.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F3AF36423E57E8C00A60561 /* ctoken_cwt_decode.c */; };
 		0F3AF36C23EE522A00A60561 /* libt_cose.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0F3AF36B23EE522A00A60561 /* libt_cose.a */; };
 		0F3AF36E23EF5B6600A60561 /* libcrypto.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0F3AF36D23EF5B6600A60561 /* libcrypto.a */; };
 		0F3AF37123EF5C4700A60561 /* cwt_test.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F3AF37023EF5C4700A60561 /* cwt_test.c */; };
 		0F3AF37A23F1BB5600A60561 /* ctoken_psaia_encode.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F3AF35123E5463300A60561 /* ctoken_psaia_encode.c */; };
-		0F3AF37B23F1BB5600A60561 /* ctoken_cwt_encode.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F3AF36023E57DAC00A60561 /* ctoken_cwt_encode.c */; };
-		0F3AF37C23F1BB5600A60561 /* ctoken_cwt_decode.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F3AF36423E57E8C00A60561 /* ctoken_cwt_decode.c */; };
 		0F3AF37F23F1BB5600A60561 /* ctoken_eat_encode.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F3AF35423E5474700A60561 /* ctoken_eat_encode.c */; };
 		0F3AF38023F1BB5600A60561 /* ctoken_eat_decode.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F3AF35F23E57DAC00A60561 /* ctoken_eat_decode.c */; };
 		0F3AF38123F1BB5600A60561 /* ctoken_psaia_decode.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F3AF34B23E53BCF00A60561 /* ctoken_psaia_decode.c */; };
@@ -34,8 +30,6 @@
 		0FBE2D8823F5D9C800A31C46 /* eat_test.c in Sources */ = {isa = PBXBuildFile; fileRef = 0FBE2D8723F5D9C800A31C46 /* eat_test.c */; };
 		0FBE2D8923F976BF00A31C46 /* psaia_test.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F3AF34223E5008100A60561 /* psaia_test.c */; };
 		0FBE2D8C23FA147600A31C46 /* ctoken_psaia_encode.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F3AF35123E5463300A60561 /* ctoken_psaia_encode.c */; };
-		0FBE2D8D23FA147600A31C46 /* ctoken_cwt_encode.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F3AF36023E57DAC00A60561 /* ctoken_cwt_encode.c */; };
-		0FBE2D8E23FA147600A31C46 /* ctoken_cwt_decode.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F3AF36423E57E8C00A60561 /* ctoken_cwt_decode.c */; };
 		0FBE2D8F23FA147600A31C46 /* ctoken_eat_encode.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F3AF35423E5474700A60561 /* ctoken_eat_encode.c */; };
 		0FBE2D9023FA147600A31C46 /* ctoken_eat_decode.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F3AF35F23E57DAC00A60561 /* ctoken_eat_decode.c */; };
 		0FBE2D9123FA147600A31C46 /* ctoken_psaia_decode.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F3AF34B23E53BCF00A60561 /* ctoken_psaia_decode.c */; };
@@ -106,17 +100,13 @@
 		0F3AF35B23E57D5A00A60561 /* ctoken_psaia_encode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ctoken_psaia_encode.h; path = inc/ctoken_psaia_encode.h; sourceTree = "<group>"; };
 		0F3AF35C23E57D5A00A60561 /* ctoken_eat_encode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ctoken_eat_encode.h; path = inc/ctoken_eat_encode.h; sourceTree = "<group>"; };
 		0F3AF35D23E57D5B00A60561 /* ctoken_eat_decode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ctoken_eat_decode.h; path = inc/ctoken_eat_decode.h; sourceTree = "<group>"; };
-		0F3AF35E23E57D5B00A60561 /* ctoken_cwt_encode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ctoken_cwt_encode.h; path = inc/ctoken_cwt_encode.h; sourceTree = "<group>"; };
 		0F3AF35F23E57DAC00A60561 /* ctoken_eat_decode.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = ctoken_eat_decode.c; path = src/ctoken_eat_decode.c; sourceTree = SOURCE_ROOT; };
-		0F3AF36023E57DAC00A60561 /* ctoken_cwt_encode.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = ctoken_cwt_encode.c; path = src/ctoken_cwt_encode.c; sourceTree = SOURCE_ROOT; };
-		0F3AF36423E57E8C00A60561 /* ctoken_cwt_decode.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = ctoken_cwt_decode.c; path = src/ctoken_cwt_decode.c; sourceTree = SOURCE_ROOT; };
 		0F3AF36623E585C000A60561 /* ctoken_eat_labels.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ctoken_eat_labels.h; path = inc/ctoken_eat_labels.h; sourceTree = "<group>"; };
 		0F3AF36723E83B0200A60561 /* ctoken_psaia_labels.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ctoken_psaia_labels.h; path = inc/ctoken_psaia_labels.h; sourceTree = "<group>"; };
 		0F3AF36B23EE522A00A60561 /* libt_cose.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libt_cose.a; path = ../../t_cose/master/libt_cose.a; sourceTree = "<group>"; };
 		0F3AF36D23EF5B6600A60561 /* libcrypto.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcrypto.a; path = "../../openssl/openssl-1.1.1b/libcrypto.a"; sourceTree = "<group>"; };
 		0F3AF36F23EF5C4700A60561 /* cwt_test.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = cwt_test.h; path = test/cwt_test.h; sourceTree = "<group>"; };
 		0F3AF37023EF5C4700A60561 /* cwt_test.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = cwt_test.c; path = test/cwt_test.c; sourceTree = "<group>"; };
-		0F3AF37223EF731000A60561 /* ctoken_cwt_decode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ctoken_cwt_decode.h; path = inc/ctoken_cwt_decode.h; sourceTree = "<group>"; };
 		0F3AF37323F0567A00A60561 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		0F3AF37523F1BACE00A60561 /* eat_example_ossl.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = eat_example_ossl.c; sourceTree = "<group>"; };
 		0F3AF38E23F1BB5600A60561 /* OSSL Example */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "OSSL Example"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -215,8 +205,6 @@
 			children = (
 				0F3AF32D23E4FD6C00A60561 /* ctoken_encode.c */,
 				0F3AF32E23E4FD6C00A60561 /* ctoken_decode.c */,
-				0F3AF36023E57DAC00A60561 /* ctoken_cwt_encode.c */,
-				0F3AF36423E57E8C00A60561 /* ctoken_cwt_decode.c */,
 				0F3AF35423E5474700A60561 /* ctoken_eat_encode.c */,
 				0F3AF35F23E57DAC00A60561 /* ctoken_eat_decode.c */,
 				0F3AF35123E5463300A60561 /* ctoken_psaia_encode.c */,
@@ -233,8 +221,6 @@
 				0F3AF33623E4FD8D00A60561 /* ctoken_encode.h */,
 				0F3AF33523E4FD8D00A60561 /* ctoken_decode.h */,
 				0F3AF35923E57C8900A60561 /* ctoken_cwt_labels.h */,
-				0F3AF35E23E57D5B00A60561 /* ctoken_cwt_encode.h */,
-				0F3AF37223EF731000A60561 /* ctoken_cwt_decode.h */,
 				0F3AF36623E585C000A60561 /* ctoken_eat_labels.h */,
 				0F3AF35C23E57D5A00A60561 /* ctoken_eat_encode.h */,
 				0F3AF35D23E57D5B00A60561 /* ctoken_eat_decode.h */,
@@ -408,9 +394,7 @@
 				0F3AF35223E5463300A60561 /* ctoken_psaia_encode.c in Sources */,
 				E76A6E5A25662EDA00DEBB41 /* qcbor_encode.c in Sources */,
 				E76A6E5B25662EDA00DEBB41 /* ieee754.c in Sources */,
-				0F3AF36223E57DAC00A60561 /* ctoken_cwt_encode.c in Sources */,
 				E76A6E5D25662EDA00DEBB41 /* qcbor_err_to_str.c in Sources */,
-				0F3AF36523E57E8C00A60561 /* ctoken_cwt_decode.c in Sources */,
 				0F3AF34823E5008200A60561 /* run_tests.c in Sources */,
 				0F3AF35523E5474700A60561 /* ctoken_eat_encode.c in Sources */,
 				0FBE2D8923F976BF00A31C46 /* psaia_test.c in Sources */,
@@ -429,8 +413,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				0F3AF37A23F1BB5600A60561 /* ctoken_psaia_encode.c in Sources */,
-				0F3AF37B23F1BB5600A60561 /* ctoken_cwt_encode.c in Sources */,
-				0F3AF37C23F1BB5600A60561 /* ctoken_cwt_decode.c in Sources */,
 				0F3AF37F23F1BB5600A60561 /* ctoken_eat_encode.c in Sources */,
 				0F3AF38023F1BB5600A60561 /* ctoken_eat_decode.c in Sources */,
 				0F3AF38123F1BB5600A60561 /* ctoken_psaia_decode.c in Sources */,
@@ -446,8 +428,6 @@
 			files = (
 				0FBE2DA123FA14A000A31C46 /* eat_example_psa.c in Sources */,
 				0FBE2D8C23FA147600A31C46 /* ctoken_psaia_encode.c in Sources */,
-				0FBE2D8D23FA147600A31C46 /* ctoken_cwt_encode.c in Sources */,
-				0FBE2D8E23FA147600A31C46 /* ctoken_cwt_decode.c in Sources */,
 				0FBE2D8F23FA147600A31C46 /* ctoken_eat_encode.c in Sources */,
 				0FBE2D9023FA147600A31C46 /* ctoken_eat_decode.c in Sources */,
 				0FBE2D9123FA147600A31C46 /* ctoken_psaia_decode.c in Sources */,

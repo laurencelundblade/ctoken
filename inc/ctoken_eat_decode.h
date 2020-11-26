@@ -13,7 +13,6 @@
 #ifndef eat_decode_h
 #define eat_decode_h
 
-#include "ctoken_cwt_decode.h"
 #include "ctoken_eat_labels.h"
 #include "ctoken_decode.h"
 

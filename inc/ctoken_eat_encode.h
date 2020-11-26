@@ -14,8 +14,8 @@
 #ifndef eat_encode_h
 #define eat_encode_h
 
-#include "ctoken_cwt_encode.h" /* EAT is a type of CWT */
 #include "ctoken_eat_labels.h"
+#include "ctoken_encode.h"
 
 
 #ifdef __cplusplus

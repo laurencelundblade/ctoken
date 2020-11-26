@@ -16,6 +16,8 @@
 #include "t_cose/t_cose_sign1_verify.h"
 #include "qcbor/qcbor_decode.h"
 
+#include "ctoken_cwt_labels.h"
+
 #ifdef __cplusplus
 extern "C" {
 #ifdef 0
@@ -396,6 +398,229 @@ ctoken_decode_get_uint(struct ctoken_decode_ctx *me,
 
 
 
+
+/**
+ * \brief Decode the CWT issuer.
+ *
+ * \param[in] context  The decoding context to decode from.
+ * \param[out] issuer  Place to put pointer and length of the issuer claim.
+ *
+ * \retval CTOKEN_ERR_CBOR_STRUCTURE
+ *         General structure of the token is incorrect, for example
+ *         the top level is not a map or some map wasn't closed.
+ *
+ * \retval CTOKEN_ERR_CBOR_NOT_WELL_FORMED
+ *         CBOR syntax is wrong and it is not decodable.
+ *
+ * \retval CTOKEN_ERR_CBOR_TYPE
+ *         Returned if the claim is not a text string.
+ *
+ * \retval CTOKEN_ERR_NOT_FOUND
+ *         Data item for \c label was not found in token.
+ *
+ *  The principle that created the token. It is a text string or a URI as described in
+ *  [RFC 8392](https://tools.ietf.org/html/rfc8392#section-3.1.1)
+ * and [RFC 7519] (https://tools.ietf.org/html/rfc7519#section-4.1.1).
+ */
+static inline enum ctoken_err_t
+ctoken_decode_cwt_issuer(struct ctoken_decode_ctx *context,
+                         struct q_useful_buf_c *issuer);
+
+
+/**
+ * \brief Decode the CWT subject claim.
+ *
+ * \param[in] context   The decoding context to decode from.
+ * \param[out] subject  Place to put pointer and length of the subject claim.
+ *
+ * \retval CTOKEN_ERR_CBOR_STRUCTURE
+ *         General structure of the token is incorrect, for example
+ *         the top level is not a map or some map wasn't closed.
+ *
+ * \retval CTOKEN_ERR_CBOR_NOT_WELL_FORMED
+ *         CBOR syntax is wrong and it is not decodable.
+ *
+ * \retval CTOKEN_ERR_CBOR_TYPE
+ *         Returned if the claim is not a text string.
+ *
+ * \retval CTOKEN_ERR_NOT_FOUND
+ *         Data item for \c label was not found in token.
+ *
+ * Identifies the subject of the token. It is a text string or URI as described in
+ * [RFC 8392](https://tools.ietf.org/html/rfc8392#section-3.1.2)
+ * and [RFC 7519] (https://tools.ietf.org/html/rfc7519#section-4.1.2).
+ */
+static inline enum ctoken_err_t
+ctoken_decode_cwt_subject(struct ctoken_decode_ctx *context,
+                          struct q_useful_buf_c *subject);
+
+
+/**
+ * \brief Decode the CWT audience claim.
+ *
+ * \param[in] context    The decoding context to decode from.
+ * \param[out] audience  Place to put pointer and length of the audience claim.
+ *
+ * \retval CTOKEN_ERR_CBOR_STRUCTURE
+ *         General structure of the token is incorrect, for example
+ *         the top level is not a map or some map wasn't closed.
+ *
+ * \retval CTOKEN_ERR_CBOR_NOT_WELL_FORMED
+ *         CBOR syntax is wrong and it is not decodable.
+ *
+ * \retval CTOKEN_ERR_CBOR_TYPE
+ *         Returned if the claim is not a text string.
+ *
+ * \retval CTOKEN_ERR_NOT_FOUND
+ *         Data item for \c label was not found in token.
+ *
+ * This identifies the recipient for which the token is intended. It is
+ * a text string or URI as
+ * described in [RFC 8392](https://tools.ietf.org/html/rfc8392#section-3.1.3)
+ * and [RFC 7519] (https://tools.ietf.org/html/rfc7519#section-4.1.3).
+ */
+static inline enum ctoken_err_t
+ctoken_decode_cwt_audience(struct ctoken_decode_ctx *context,
+                           struct q_useful_buf_c *audience);
+
+
+/**
+ * \brief Decode the CWT expiration claim.
+ *
+ * \param[in] context      The decoding context to decode from.
+ * \param[out] expiration  Place to return expiration claim.
+ *
+ * \retval CTOKEN_ERR_CBOR_STRUCTURE
+ *         General structure of the token is incorrect, for example
+ *         the top level is not a map or some map wasn't closed.
+ *
+ * \retval CTOKEN_ERR_CBOR_NOT_WELL_FORMED
+ *         CBOR syntax is wrong and it is not decodable.
+ *
+ * \retval CTOKEN_ERR_CBOR_TYPE
+ *         Returned if the claim is not an integer.
+ *
+ * \retval CTOKEN_ERR_NOT_FOUND
+ *         Data item for \c label was not found in token.
+ *
+ * The time format is that described as Epoch Time in CBOR, RFC 7049, the
+ * number of seconds since Jan 1, 1970.
+ *
+ * This implementation only supports int64_t time, not floating point,
+ * even though the specification allows floating point.
+ *
+ * Details are described in
+ * [RFC 8392](https://tools.ietf.org/html/rfc8392#section-3.1.4)
+ * and [RFC 7519] (https://tools.ietf.org/html/rfc7519#section-4.1.4).
+ */
+static inline enum ctoken_err_t
+ctoken_decode_cwt_expiration(struct ctoken_decode_ctx *context,
+                             int64_t *expiration);
+
+
+/**
+ * \brief Decode the CWT not-before claim.
+ *
+ * \param[in] context      The decoding context to decode from.
+ * \param[out] not_before  Place to return the not-before claim.
+ *
+ * \retval CTOKEN_ERR_CBOR_STRUCTURE
+ *         General structure of the token is incorrect, for example
+ *         the top level is not a map or some map wasn't closed.
+ *
+ * \retval CTOKEN_ERR_CBOR_NOT_WELL_FORMED
+ *         CBOR syntax is wrong and it is not decodable.
+ *
+ * \retval CTOKEN_ERR_CBOR_TYPE
+ *         Returned if the claim is not an integer.
+ *
+ * \retval CTOKEN_ERR_NOT_FOUND
+ *         Data item for \c label was not found in token.
+ *
+ * The time format is that described as Epoch Time in CBOR, RFC 7049, the
+ * number of seconds since Jan 1, 1970.
+ *
+ * This implementation only supports int64_t time, not floating point,
+ * even though the specification allows floating point.
+ *
+ * Details are described in
+ * [RFC 8392](https://tools.ietf.org/html/rfc8392#section-3.1.5)
+ * and [RFC 7519] (https://tools.ietf.org/html/rfc7519#section-4.1.5).
+ */
+static inline enum ctoken_err_t
+ctoken_decode_cwt_not_before(struct ctoken_decode_ctx *context,
+                             int64_t *not_before);
+
+
+/**
+ * \brief Decode the CWT and EAT issued-at claim.
+ *
+ * \param[in] context  The decoding context to decode from.
+ * \param[out] iat     Place to put pointer and length of the issued-at claim.
+ *
+ * \retval CTOKEN_ERR_CBOR_STRUCTURE
+ *         General structure of the token is incorrect, for example
+ *         the top level is not a map or some map wasn't closed.
+ *
+ * \retval CTOKEN_ERR_CBOR_NOT_WELL_FORMED
+ *         CBOR syntax is wrong and it is not decodable.
+ *
+ * \retval CTOKEN_ERR_CBOR_TYPE
+ *         Returned if the claim is not a byte string.
+ *
+ * \retval CTOKEN_ERR_NOT_FOUND
+ *         Data item for \c label was not an integer.
+ *
+ * The time at which the token was issued at.
+ *
+ * The time format is that described as Epoch Time in CBOR, RFC 7049, the
+ * number of seconds since Jan 1, 1970.
+ *
+ * This implementation only supports int64_t time, not floating point,
+ * even though the specification allows floating point.
+ *
+ * Details are described in
+ * [RFC 8392](https://tools.ietf.org/html/rfc8392#section-3.1.6)
+ * and [RFC 7519] (https://tools.ietf.org/html/rfc7519#section-4.1.6).
+ * This claim is also used by (EAT)[https://tools.ietf.org/html/draft-ietf-rats-eat-04].
+ */
+static inline enum ctoken_err_t
+ctoken_decode_cwt_iat(struct ctoken_decode_ctx *context,
+                      int64_t *iat);
+
+
+/**
+ * \brief Decode the CWT and EAT ID claim.
+ *
+ * \param[in] context  The decoding context to decode from.
+ * \param[out] cti     Place to put pointer and length of the CWT ID claim.
+ *
+ * \retval CTOKEN_ERR_CBOR_STRUCTURE
+ *         General structure of the token is incorrect, for example
+ *         the top level is not a map or some map wasn't closed.
+ *
+ * \retval CTOKEN_ERR_CBOR_NOT_WELL_FORMED
+ *         CBOR syntax is wrong and it is not decodable.
+ *
+ * \retval CTOKEN_ERR_CBOR_TYPE
+ *         Returned if the claim is not a byte string.
+ *
+ * \retval CTOKEN_ERR_NOT_FOUND
+ *         Data item for \c label was not found in token.
+ *
+ * This is a byte string that uniquely identifies the token.
+ *
+ * [RFC 8392](https://tools.ietf.org/html/rfc8392#section-3.1.7)
+ * and [RFC 7519] (https://tools.ietf.org/html/rfc7519#section-4.1.7).
+ * This claim is also used by (EAT)[https://tools.ietf.org/html/draft-ietf-rats-eat-04].
+ */
+static inline enum ctoken_err_t
+ctoken_decode_cwt_cti(struct ctoken_decode_ctx *context,
+                      struct q_useful_buf_c *cti);
+
+
+
+
 /* ====================================================================
  *   Inline Implementations
  *   Typically, these are small and called only once.
@@ -416,6 +641,60 @@ ctoken_decode_get_error(struct ctoken_decode_ctx *me)
     return me->last_error;
 }
 
+
+static inline enum ctoken_err_t
+ctoken_decode_cwt_issuer(struct ctoken_decode_ctx *me,
+                         struct q_useful_buf_c *issuer)
+{
+    return ctoken_decode_get_tstr(me, CTOKEN_CWT_LABEL_ISSUER, issuer);
+}
+
+
+static inline enum ctoken_err_t
+ctoken_decode_cwt_subject(struct ctoken_decode_ctx *me,
+                          struct q_useful_buf_c *subject)
+{
+    return ctoken_decode_get_tstr(me, CTOKEN_CWT_LABEL_SUBJECT, subject);
+}
+
+
+static inline enum ctoken_err_t
+ctoken_decode_cwt_audience(struct ctoken_decode_ctx *me,
+                           struct q_useful_buf_c *audience)
+{
+    return ctoken_decode_get_tstr(me, CTOKEN_CWT_LABEL_AUDIENCE, audience);
+}
+
+
+static inline enum ctoken_err_t
+ctoken_decode_cwt_expiration(struct ctoken_decode_ctx *me,
+                             int64_t *expiration)
+{
+    return ctoken_decode_get_int(me, CTOKEN_CWT_LABEL_EXPIRATION, expiration);
+}
+
+static inline enum ctoken_err_t
+ctoken_decode_cwt_not_before(struct ctoken_decode_ctx *me,
+                             int64_t *not_before)
+{
+    return ctoken_decode_get_int(me, CTOKEN_CWT_LABEL_NOT_BEFORE, not_before);
+}
+
+
+static inline enum ctoken_err_t
+ctoken_decode_cwt_iat(struct ctoken_decode_ctx *me,
+                      int64_t *iat)
+{
+    return ctoken_decode_get_int(me, CTOKEN_CWT_LABEL_NOT_BEFORE, iat);
+}
+
+
+static inline enum ctoken_err_t
+ctoken_decode_cwt_cti(struct ctoken_decode_ctx *me,
+                      struct q_useful_buf_c *cti)
+{
+    return ctoken_decode_get_bstr(me, CTOKEN_CWT_LABEL_CTI,  cti);
+}
 
 #ifdef __cplusplus
 }

@@ -11,8 +11,8 @@
  */
 
 
+#include "ctoken_encode.h"
 #include "ctoken_eat_encode.h"
-
 
 /*
  * Public function. See ctoken_eat_encode.h
