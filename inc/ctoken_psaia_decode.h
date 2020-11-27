@@ -59,22 +59,6 @@ ctoken_psaia_decode_simple_claims(struct ctoken_decode_ctx *me,
 
 
 /**
- \brief Get the nonce out of the token.
- *
- * \param[in]  me     The token decoder context.
- * \param[out] nonce  Returned pointer and length of nonce.
- *
- * \return An error from \ref CTOKEN_ERR_t.
- *
- * The nonce is a byte string. The nonce is also known as the
- * challenge.
- */
-static inline enum ctoken_err_t
-ctoken_psaia_decode_nonce(struct ctoken_decode_ctx *me,
-                              struct q_useful_buf_c *nonce);
-
-
-/**
  * \brief Get the boot seed out of the token.
  *
  * \param[in]  me         The token decoder context.
@@ -87,22 +71,6 @@ ctoken_psaia_decode_nonce(struct ctoken_decode_ctx *me,
 static enum ctoken_err_t
 ctoken_psaia_decode_boot_seed(struct ctoken_decode_ctx *me,
                               struct q_useful_buf_c *boot_seed);
-
-
-/**
- * \brief Get the UEID out of the token.
- *
- * \param[in]  me    The token decoder context.
- * \param[out] ueid  Returned pointer and length of ueid.
- *
- * \return An error from \ref CTOKEN_ERR_t.
- *
- * The UEID is a byte string.
- */
-static inline enum ctoken_err_t
-ctoken_psaia_decode_ueid(struct ctoken_decode_ctx *me,
-                         struct q_useful_buf_c *ueid);
-
 
 
 /**
@@ -299,13 +267,6 @@ ctoken_psaia_decode_sw_component(struct ctoken_decode_ctx *me,
 /* --------------------------------------------------------------------------
  *       Inline implementations
  * --------------------------------------------------------------------------*/
-
-static inline enum ctoken_err_t
-attest_token_decode_psa_ia_nonce(struct ctoken_decode_ctx *me,
-                                 struct q_useful_buf_c *nonce)
-{
-    return ctoken_decode_nonce(me, nonce);
-}
 
 
 static inline enum ctoken_err_t

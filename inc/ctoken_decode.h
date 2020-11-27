@@ -148,8 +148,7 @@ void ctoken_decode_init(struct ctoken_decode_ctx *me,
  */
 static inline void
 ctoken_decode_set_verification_key(struct ctoken_decode_ctx *me,
-                                   struct t_cose_key verification_key);
-
+                                   struct t_cose_key         verification_key);
 
 
 /**
@@ -173,8 +172,8 @@ ctoken_decode_set_verification_key(struct ctoken_decode_ctx *me,
  */
 enum ctoken_err_t
 ctoken_decode_get_kid(struct ctoken_decode_ctx *me,
-                      struct q_useful_buf_c token,
-                      struct q_useful_buf_c *kid);
+                      struct q_useful_buf_c     token,
+                      struct q_useful_buf_c    *kid);
 
 
 /**
@@ -213,7 +212,7 @@ ctoken_decode_get_kid(struct ctoken_decode_ctx *me,
  */
 enum ctoken_err_t
 ctoken_decode_validate_token(struct ctoken_decode_ctx *me,
-                             struct q_useful_buf_c token);
+                             struct q_useful_buf_c     token);
 
 
 /**
@@ -277,9 +276,9 @@ ctoken_decode_get_payload(struct ctoken_decode_ctx *me,
  * be set.
  */
 enum ctoken_err_t
-ctoken_decode_get_bstr(struct ctoken_decode_ctx    *me,
-                       int32_t                label,
-                       struct q_useful_buf_c *claim);
+ctoken_decode_get_bstr(struct ctoken_decode_ctx  *me,
+                       int32_t                    label,
+                       struct q_useful_buf_c     *claim);
 
 
 /**
@@ -313,8 +312,8 @@ ctoken_decode_get_bstr(struct ctoken_decode_ctx    *me,
  */
 enum ctoken_err_t
 ctoken_decode_get_tstr(struct ctoken_decode_ctx *me,
-                       int32_t label,
-                       struct q_useful_buf_c *claim);
+                       int32_t                   label,
+                       struct q_useful_buf_c    *claim);
 
 
 /**
@@ -354,8 +353,8 @@ ctoken_decode_get_tstr(struct ctoken_decode_ctx *me,
  */
 enum ctoken_err_t
 ctoken_decode_get_int(struct ctoken_decode_ctx *me,
-                      int32_t label,
-                      int64_t *claim);
+                      int32_t                   label,
+                      int64_t                  *claim);
 
 
 /**
@@ -394,8 +393,8 @@ ctoken_decode_get_int(struct ctoken_decode_ctx *me,
  */
 enum ctoken_err_t
 ctoken_decode_get_uint(struct ctoken_decode_ctx *me,
-                       int32_t label,
-                       uint64_t *claim);
+                       int32_t                  label,
+                       uint64_t                *claim);
 
 
 
@@ -424,8 +423,8 @@ ctoken_decode_get_uint(struct ctoken_decode_ctx *me,
  * and [RFC 7519] (https://tools.ietf.org/html/rfc7519#section-4.1.1).
  */
 static inline enum ctoken_err_t
-ctoken_decode_cwt_issuer(struct ctoken_decode_ctx *context,
-                         struct q_useful_buf_c *issuer);
+ctoken_decode_issuer(struct ctoken_decode_ctx *context,
+                     struct q_useful_buf_c    *issuer);
 
 
 /**
@@ -452,8 +451,8 @@ ctoken_decode_cwt_issuer(struct ctoken_decode_ctx *context,
  * and [RFC 7519] (https://tools.ietf.org/html/rfc7519#section-4.1.2).
  */
 static inline enum ctoken_err_t
-ctoken_decode_cwt_subject(struct ctoken_decode_ctx *context,
-                          struct q_useful_buf_c *subject);
+ctoken_decode_subject(struct ctoken_decode_ctx *context,
+                      struct q_useful_buf_c    *subject);
 
 
 /**
@@ -481,8 +480,8 @@ ctoken_decode_cwt_subject(struct ctoken_decode_ctx *context,
  * and [RFC 7519] (https://tools.ietf.org/html/rfc7519#section-4.1.3).
  */
 static inline enum ctoken_err_t
-ctoken_decode_cwt_audience(struct ctoken_decode_ctx *context,
-                           struct q_useful_buf_c *audience);
+ctoken_decode_audience(struct ctoken_decode_ctx *context,
+                       struct q_useful_buf_c    *audience);
 
 
 /**
@@ -515,8 +514,8 @@ ctoken_decode_cwt_audience(struct ctoken_decode_ctx *context,
  * and [RFC 7519] (https://tools.ietf.org/html/rfc7519#section-4.1.4).
  */
 static inline enum ctoken_err_t
-ctoken_decode_cwt_expiration(struct ctoken_decode_ctx *context,
-                             int64_t *expiration);
+ctoken_decode_expiration(struct ctoken_decode_ctx *context,
+                         int64_t                  *expiration);
 
 
 /**
@@ -549,8 +548,8 @@ ctoken_decode_cwt_expiration(struct ctoken_decode_ctx *context,
  * and [RFC 7519] (https://tools.ietf.org/html/rfc7519#section-4.1.5).
  */
 static inline enum ctoken_err_t
-ctoken_decode_cwt_not_before(struct ctoken_decode_ctx *context,
-                             int64_t *not_before);
+ctoken_decode_not_before(struct ctoken_decode_ctx *context,
+                         int64_t                  *not_before);
 
 
 /**
@@ -586,8 +585,8 @@ ctoken_decode_cwt_not_before(struct ctoken_decode_ctx *context,
  * This claim is also used by (EAT)[https://tools.ietf.org/html/draft-ietf-rats-eat-04].
  */
 static inline enum ctoken_err_t
-ctoken_decode_cwt_iat(struct ctoken_decode_ctx *context,
-                      int64_t *iat);
+ctoken_decode_iat(struct ctoken_decode_ctx *context,
+                  int64_t                  *iat);
 
 
 /**
@@ -616,9 +615,8 @@ ctoken_decode_cwt_iat(struct ctoken_decode_ctx *context,
  * This claim is also used by (EAT)[https://tools.ietf.org/html/draft-ietf-rats-eat-04].
  */
 static inline enum ctoken_err_t
-ctoken_decode_cwt_cti(struct ctoken_decode_ctx *context,
-                      struct q_useful_buf_c *cti);
-
+ctoken_decode_cti(struct ctoken_decode_ctx *context,
+                  struct q_useful_buf_c    *cti);
 
 
 /**
@@ -644,7 +642,7 @@ ctoken_decode_cwt_cti(struct ctoken_decode_ctx *context,
  */
 static inline enum ctoken_err_t
 ctoken_decode_nonce(struct ctoken_decode_ctx *context,
-                        struct q_useful_buf_c    *nonce);
+                    struct q_useful_buf_c    *nonce);
 
 
 /**
@@ -673,7 +671,7 @@ ctoken_decode_nonce(struct ctoken_decode_ctx *context,
  */
 static inline enum ctoken_err_t
 ctoken_decode_ueid(struct ctoken_decode_ctx *context,
-                       struct q_useful_buf_c    *ueid);
+                   struct q_useful_buf_c    *ueid);
 
 
 /**
@@ -701,7 +699,7 @@ ctoken_decode_ueid(struct ctoken_decode_ctx *context,
  */
 static inline enum ctoken_err_t
 ctoken_decode_oemid(struct ctoken_decode_ctx *context,
-                        struct q_useful_buf_c    *oemid);
+                    struct q_useful_buf_c    *oemid);
 
 
 /**
@@ -730,7 +728,7 @@ ctoken_decode_oemid(struct ctoken_decode_ctx *context,
  */
 static inline enum ctoken_err_t
 ctoken_decode_origination(struct ctoken_decode_ctx *context,
-                              struct q_useful_buf_c    *origination);
+                          struct q_useful_buf_c    *origination);
 
 
 /**
@@ -759,7 +757,7 @@ ctoken_decode_origination(struct ctoken_decode_ctx *context,
  */
 static inline enum ctoken_err_t
 ctoken_decode_security_level(struct ctoken_decode_ctx         *context,
-                                 enum ctoken_eat_security_level_t *security_level);
+                             enum ctoken_eat_security_level_t *security_level);
 
 
 /**
@@ -813,7 +811,7 @@ ctoken_eat_decode_boot_state(struct ctoken_decode_ctx *context,
  */
 enum ctoken_err_t
 ctoken_decode_location(struct ctoken_decode_ctx     *context,
-                           struct ctoken_eat_location_t *location);
+                       struct ctoken_eat_location_t *location);
 
 
 /**
@@ -834,15 +832,15 @@ ctoken_decode_location(struct ctoken_decode_ctx     *context,
  */
 static inline enum ctoken_err_t
 ctoken_decode_age(struct ctoken_decode_ctx  *context,
-                      uint64_t                   *age);
+                  uint64_t                  *age);
 
 
 
 /**
  * \brief  Decode the uptime claim.
  *
- * \param[in] context         The decoding context to output to.
- * \paran[in] uptime          The uptime in seconds since boot or restart.
+ * \param[in] context         The decoding context.
+ * \param[in] uptime          The uptime in seconds since boot or restart.
  *
  * This decodes the uptime claim.
  *
@@ -853,55 +851,117 @@ ctoken_decode_age(struct ctoken_decode_ctx  *context,
  * is called.
  */
 static inline enum ctoken_err_t
-ctoken_decode_uptime(struct ctoken_decode_ctx  *context,
-                         uint64_t                   *uptime);
+ctoken_decode_uptime(struct ctoken_decode_ctx *context,
+                     uint64_t                 *uptime);
 
 
 
-
-
+/**
+ * \brief Get the number of submodules.
+ *
+ * \param[in] context         The decoding context.
+ * \param[out] num_submods     The returned number of submodules.
+ *
+ * \returns A ctoken error code
+ *
+ * This returns the number of submolues at the current submodule nesting level.
+ */
 enum ctoken_err_t
 ctoken_decode_get_num_submods(struct ctoken_decode_ctx *context,
-                                  uint32_t *num_submods);
+                              uint32_t                 *num_submods);
 
-/*
- error if submod is a token
+/**
+ * \brief Enter the nth submodule.
+ *
+ * \param[in] context         The decoding context.
+ * \param[in] submod_index     Index of the submodule to enter.
+ * \param[out] name                  The returned string name of the submodule.
+ *
+ * \returns A ctoken error code
+ *
+ * After this call, all claims fetched will be from the submodule that was entered.
+ * This, and the other functions to enter submodules, may be called multiple
+ * times to enter nested submodules.
+ *
+ * The \c name parameter may be NULL if the submodule name is not of interest.
  */
 enum ctoken_err_t
 ctoken_decode_enter_nth_submod(struct ctoken_decode_ctx *context,
-                                   uint32_t                  submod_index,
-                                   struct q_useful_buf_c    *name);
+                               uint32_t                  submod_index,
+                               struct q_useful_buf_c    *name);
 
-/*
-error if submod is a token
-*/
+
+/**
+ * \brief Enter a submodule by name.
+ *
+ * \param[in] context         The decoding context.
+ * \param[in] name     The name of the submodule to enter.
+ *
+ * \returns A ctoken error code
+ *
+ * After this call, all claims fetched will be from the submodule that was entered.
+ * This, and the other functions to enter submodules, may be called multiple
+ * times to enter nested submodules.
+ */
 enum ctoken_err_t
 ctoken_decode_enter_submod_sz(struct ctoken_decode_ctx *context,
-                                  const char               *name);
+                              const char               *name);
 
 /*
 error if submod is a token
 */
 enum ctoken_err_t
 ctoken_eat_decode_enter_submod_n(struct ctoken_decode_ctx *context,
-                                 int64_t               submod_name);
+                                 int64_t                   submod_name);
 
+/**
+ * \brief Exit one submodule level
+ *
+ * \param[in] context         The decoding context.
+ *
+ * \returns A ctoken error code
+ *
+ * Pop up one level of submodule nesting.
+ */
 enum ctoken_err_t
-ctoken_decode_exit_submod(struct ctoken_decode_ctx *me);
+ctoken_decode_exit_submod(struct ctoken_decode_ctx *context);
 
 
-/*
-error if submod is not a token
-*/
+/**
+ * \brief Enter the nth submodule.
+ *
+ * \param[in] context         The decoding context.
+ * \param[in] submod_index     Index of the submodule to fetch.
+ * \param[out] type                  The type of the nested token returned.
+ * \param[out] token           Pointer and length of the token returned.
+ *
+ * \returns A ctoken error code
+ *
+ * A submodule may be a signed and secured token. Such submodules are
+ * returned as a byte or text string. To process these that are in CWT format,
+ * create a new instance of the ctoken decoder, set up the verification keys
+ * and process it like the superior token it came from. JWT format tokens
+ * must be processed by a JWT token decoder.
+ */
 enum ctoken_err_t
 ctoken_eat_decode_get_nth_submod(struct ctoken_decode_ctx *context,
                                  uint32_t                  submod_index,
                                  enum ctoken_type         *type,
                                  struct q_useful_buf_c    *token);
 
-/*
-error if submod is not a token
-*/
+
+/**
+ * \brief Enter the nth submodule.
+ *
+ * \param[in] context         The decoding context.
+ * \param[in] name     Index of the submodule to fetch.
+ * \param[out] type                  The type of the nested token returned.
+ * \param[out] token           Pointer and length of the token returned.
+ *
+ * \returns A ctoken error code
+ *
+ * See ctoken_eat_decode_get_nth_submod() for discussion on the token returned.
+ */
 enum ctoken_err_t
 ctoken_eat_decode_get_submod_sz(struct ctoken_decode_ctx *context,
                                  const char              *name,
@@ -912,21 +972,22 @@ ctoken_eat_decode_get_submod_sz(struct ctoken_decode_ctx *context,
 error if submod is not a token
 */
 enum ctoken_err_t
-ctoken_decode_get_submod_n(struct ctoken_decode_ctx *context,
+ctoken_decode_get_submod_n(struct ctoken_decode_ctx     *context,
                                  uint32_t                name,
                                  enum ctoken_type       *type,
                                  struct q_useful_buf_c  *token);
 
+
+
 /* ====================================================================
  *   Inline Implementations
- *   Typically, these are small and called only once.
  * ==================================================================== */
 
 
 static inline void
 ctoken_decode_set_verification_key(struct ctoken_decode_ctx *me,
-                                   struct t_cose_key verification_key) {
-
+                                   struct t_cose_key         verification_key)
+{
     t_cose_sign1_set_verification_key(&(me->verify_context), verification_key);
 }
 
@@ -939,55 +1000,55 @@ ctoken_decode_get_error(struct ctoken_decode_ctx *me)
 
 
 static inline enum ctoken_err_t
-ctoken_decode_cwt_issuer(struct ctoken_decode_ctx *me,
-                         struct q_useful_buf_c *issuer)
+ctoken_decode_issuer(struct ctoken_decode_ctx *me,
+                     struct q_useful_buf_c    *issuer)
 {
     return ctoken_decode_get_tstr(me, CTOKEN_CWT_LABEL_ISSUER, issuer);
 }
 
 
 static inline enum ctoken_err_t
-ctoken_decode_cwt_subject(struct ctoken_decode_ctx *me,
-                          struct q_useful_buf_c *subject)
+ctoken_decode_subject(struct ctoken_decode_ctx *me,
+                      struct q_useful_buf_c    *subject)
 {
     return ctoken_decode_get_tstr(me, CTOKEN_CWT_LABEL_SUBJECT, subject);
 }
 
 
 static inline enum ctoken_err_t
-ctoken_decode_cwt_audience(struct ctoken_decode_ctx *me,
-                           struct q_useful_buf_c *audience)
+ctoken_decode_audience(struct ctoken_decode_ctx *me,
+                       struct q_useful_buf_c    *audience)
 {
     return ctoken_decode_get_tstr(me, CTOKEN_CWT_LABEL_AUDIENCE, audience);
 }
 
 
 static inline enum ctoken_err_t
-ctoken_decode_cwt_expiration(struct ctoken_decode_ctx *me,
-                             int64_t *expiration)
+ctoken_decode_expiration(struct ctoken_decode_ctx *me,
+                         int64_t                  *expiration)
 {
     return ctoken_decode_get_int(me, CTOKEN_CWT_LABEL_EXPIRATION, expiration);
 }
 
 static inline enum ctoken_err_t
-ctoken_decode_cwt_not_before(struct ctoken_decode_ctx *me,
-                             int64_t *not_before)
+ctoken_decode_not_before(struct ctoken_decode_ctx *me,
+                         int64_t                  *not_before)
 {
     return ctoken_decode_get_int(me, CTOKEN_CWT_LABEL_NOT_BEFORE, not_before);
 }
 
 
 static inline enum ctoken_err_t
-ctoken_decode_cwt_iat(struct ctoken_decode_ctx *me,
-                      int64_t *iat)
+ctoken_decode_iat(struct ctoken_decode_ctx *me,
+                  int64_t                  *iat)
 {
     return ctoken_decode_get_int(me, CTOKEN_CWT_LABEL_NOT_BEFORE, iat);
 }
 
 
 static inline enum ctoken_err_t
-ctoken_decode_cwt_cti(struct ctoken_decode_ctx *me,
-                      struct q_useful_buf_c *cti)
+ctoken_decode_cti(struct ctoken_decode_ctx *me,
+                  struct q_useful_buf_c    *cti)
 {
     return ctoken_decode_get_bstr(me, CTOKEN_CWT_LABEL_CTI,  cti);
 }
@@ -995,7 +1056,7 @@ ctoken_decode_cwt_cti(struct ctoken_decode_ctx *me,
 
 static inline enum ctoken_err_t
 ctoken_decode_nonce(struct ctoken_decode_ctx *me,
-                        struct q_useful_buf_c    *nonce)
+                    struct q_useful_buf_c    *nonce)
 {
     return ctoken_decode_get_bstr(me, CTOKEN_EAT_LABEL_NONCE, nonce);
 }
@@ -1003,7 +1064,7 @@ ctoken_decode_nonce(struct ctoken_decode_ctx *me,
 
 static inline enum ctoken_err_t
 ctoken_decode_ueid(struct ctoken_decode_ctx *me,
-                       struct q_useful_buf_c    *ueid)
+                   struct q_useful_buf_c    *ueid)
 {
     return ctoken_decode_get_bstr(me, CTOKEN_EAT_LABEL_UEID, ueid);
 }
@@ -1011,7 +1072,7 @@ ctoken_decode_ueid(struct ctoken_decode_ctx *me,
 
 static inline enum ctoken_err_t
 ctoken_decode_oemid(struct ctoken_decode_ctx *me,
-                        struct q_useful_buf_c        *oemid)
+                    struct q_useful_buf_c    *oemid)
 {
     return ctoken_decode_get_bstr(me, CTOKEN_EAT_LABEL_OEMID, oemid);
 }
@@ -1019,7 +1080,7 @@ ctoken_decode_oemid(struct ctoken_decode_ctx *me,
 
 static inline enum ctoken_err_t
 ctoken_decode_origination(struct ctoken_decode_ctx *me,
-                              struct q_useful_buf_c    *origination)
+                          struct q_useful_buf_c    *origination)
 {
     return ctoken_decode_get_tstr(me, CTOKEN_EAT_LABEL_ORIGINATION, origination);
 }
@@ -1027,22 +1088,22 @@ ctoken_decode_origination(struct ctoken_decode_ctx *me,
 
 static inline enum ctoken_err_t
 ctoken_decode_security_level(struct ctoken_decode_ctx         *me,
-                                 enum ctoken_eat_security_level_t *security_level)
+                             enum ctoken_eat_security_level_t *security_level)
 {
     return ctoken_decode_get_int(me, CTOKEN_EAT_LABEL_SECURITY_LEVEL, (int64_t *)security_level);
 }
 
 static inline enum ctoken_err_t
-ctoken_decode_age(struct ctoken_decode_ctx  *me,
-                      uint64_t                   *age)
+ctoken_decode_age(struct ctoken_decode_ctx *me,
+                  uint64_t                 *age)
 {
     return ctoken_decode_get_uint(me, CTOKEN_EAT_LABEL_AGE, age);
 }
 
 
 static inline enum ctoken_err_t
-ctoken_decode_uptime(struct ctoken_decode_ctx  *me,
-                         uint64_t                   *uptime)
+ctoken_decode_uptime(struct ctoken_decode_ctx *me,
+                     uint64_t                 *uptime)
 {
     return ctoken_decode_get_uint(me, CTOKEN_EAT_LABEL_UPTIME, uptime);
 }

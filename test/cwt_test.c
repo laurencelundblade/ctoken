@@ -47,7 +47,7 @@ int32_t cwt_test()
 
     /* --- Add the claims --- */
 
-    ctoken_encode_cwt_expiration(&encode_ctx, 9999);
+    ctoken_encode_expiration(&encode_ctx, 9999);
 
     /* --- Done adding the claims --- */
 
@@ -78,7 +78,7 @@ int32_t cwt_test()
     }
 
     /* Get the expiration and see that it is what was expected */
-    result = ctoken_decode_cwt_expiration(&decode_context, &expiration);
+    result = ctoken_decode_expiration(&decode_context, &expiration);
     if(result) {
         return 400 +(int32_t)result;
     }

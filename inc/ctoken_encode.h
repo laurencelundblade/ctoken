@@ -36,7 +36,7 @@ extern "C" {
  * The context and functions here are the way to create an attestation
  * token. The steps are roughly:
  *
- *   -# Create and initialize an ctoken_encode_ctx indicating the
+ *   -# Create and initialize a ctoken_encode_ctx indicating the
  *   options, key and such using ctoken_encode_init(), ctoken_encode_set_key(),
  *   and ctoken_encode_start().
  *
@@ -154,24 +154,6 @@ ctoken_encode_start(struct ctoken_encode_ctx *context,
 
 
 /**
- * \brief Get a copy of the CBOR encoding context
- *
- * \param[in] context     The token creation context.
- *
- * \return The CBOR encoding context
- *
- * Allows the caller to encode CBOR right into the output buffer using
- * any of the \c QCBOREncode_AddXXXX() methods. Anything added here
- * will be part of the claims that gets hashed. This can be used to
- * make complex CBOR structures. All open arrays and maps must be
- * close before calling any other \c ctoken methods.  \c
- * QCBOREncode_Finish() should not be closed on this context.
- */
-static QCBOREncodeContext *
-ctoken_encode_borrow_cbor_cntxt(struct ctoken_encode_ctx *context);
-
-
-/**
  * \brief Add a 64-bit signed integer claim
  *
  * \param[in] context     Token creation context.
@@ -181,6 +163,7 @@ ctoken_encode_borrow_cbor_cntxt(struct ctoken_encode_ctx *context);
 static void ctoken_encode_add_integer(struct ctoken_encode_ctx *context,
                                       int32_t                   label,
                                       int64_t                   value);
+
 
 /**
  * \brief Add a binary string claim
@@ -193,6 +176,7 @@ static void ctoken_encode_add_bstr(struct ctoken_encode_ctx *context,
                                    int32_t                   label,
                                    struct q_useful_buf_c     value);
 
+
 /**
  * \brief Add a text string claim
  *
@@ -203,6 +187,7 @@ static void ctoken_encode_add_bstr(struct ctoken_encode_ctx *context,
 static void ctoken_encode_add_tstr(struct ctoken_encode_ctx *context,
                                    int32_t                   label,
                                    struct q_useful_buf_c     value);
+
 
 /**
  * \brief Add some already-encoded CBOR to payload
@@ -266,6 +251,23 @@ static inline void
 ctoken_encode_close_map(struct ctoken_encode_ctx *context);
 
 
+/**
+ * \brief Get a copy of the CBOR encoding context
+ *
+ * \param[in] context     The token creation context.
+ *
+ * \return The CBOR encoding context
+ *
+ * Allows the caller to encode CBOR right into the output buffer using
+ * any of the \c QCBOREncode_AddXXXX() methods. Anything added here
+ * will be part of the claims that gets hashed. This can be used to
+ * make complex CBOR structures. All open arrays and maps must be
+ * close before calling any other \c ctoken methods.  \c
+ * QCBOREncode_Finish() should not be closed on this context.
+ */
+static QCBOREncodeContext *
+ctoken_encode_borrow_cbor_cntxt(struct ctoken_encode_ctx *context);
+
 
 /**
  * \brief Encode the CWT issuer in to the token.
@@ -281,7 +283,7 @@ ctoken_encode_close_map(struct ctoken_encode_ctx *context);
  * the error state is entered. It is returned later when ctoken_encode_finish()
  * is called.
  */
-static void ctoken_encode_cwt_issuer(struct ctoken_encode_ctx *context,
+static void ctoken_encode_issuer(struct ctoken_encode_ctx *context,
                                             struct q_useful_buf_c issuer);
 
 
@@ -299,7 +301,7 @@ static void ctoken_encode_cwt_issuer(struct ctoken_encode_ctx *context,
  * the error state is entered. It is returned later when ctoken_encode_finish()
  * is called.
  */
-static void ctoken_encode_cwt_subject(struct ctoken_encode_ctx *context,
+static void ctoken_encode_subject(struct ctoken_encode_ctx *context,
                                       struct q_useful_buf_c subject);
 
 
@@ -318,7 +320,7 @@ static void ctoken_encode_cwt_subject(struct ctoken_encode_ctx *context,
  * the error state is entered. It is returned later when ctoken_encode_finish()
  * is called.
  */
-static void ctoken_encode_cwt_audience(struct ctoken_encode_ctx *context,
+static void ctoken_encode_audience(struct ctoken_encode_ctx *context,
                                        struct q_useful_buf_c audience);
 
 
@@ -342,7 +344,7 @@ static void ctoken_encode_cwt_audience(struct ctoken_encode_ctx *context,
  * the error state is entered. It is returned later when ctoken_encode_finish()
  * is called.
  */
-static void ctoken_encode_cwt_expiration(struct ctoken_encode_ctx *context,
+static void ctoken_encode_expiration(struct ctoken_encode_ctx *context,
                                                 int64_t expiration);
 
 
@@ -366,7 +368,7 @@ static void ctoken_encode_cwt_expiration(struct ctoken_encode_ctx *context,
  * the error state is entered. It is returned later when ctoken_encode_finish()
  * is called.
  */
-static void ctoken_encode_cwt_not_before(struct ctoken_encode_ctx *context,
+static void ctoken_encode_not_before(struct ctoken_encode_ctx *context,
                                                 int64_t not_before);
 
 
@@ -393,7 +395,7 @@ static void ctoken_encode_cwt_not_before(struct ctoken_encode_ctx *context,
  * the error state is entered. It is returned later when ctoken_encode_finish()
  * is called.
  */
-static void ctoken_encode_cwt_iat(struct ctoken_encode_ctx *context,
+static void ctoken_encode_iat(struct ctoken_encode_ctx *context,
                                          int64_t iat);
 
 
@@ -413,7 +415,7 @@ static void ctoken_encode_cwt_iat(struct ctoken_encode_ctx *context,
  * the error state is entered. It is returned later when ctoken_encode_finish()
  * is called.
  */
-static void ctoken_encode_cwt_cti(struct ctoken_encode_ctx *context,
+static void ctoken_encode_cti(struct ctoken_encode_ctx *context,
                                          struct q_useful_buf_c cti);
 
 
@@ -590,7 +592,6 @@ ctoken_encode_eat_uptime(struct ctoken_encode_ctx  *context,
                          uint64_t                    uptime);
 
 
-
 /**
  * \brief  Start encoding EAT submodules.
  *
@@ -687,8 +688,6 @@ void ctoken_encode_add_token(struct ctoken_encode_ctx *context,
                                  enum ctoken_type          type,
                                  const char               *submod_name,
                                  struct q_useful_buf_c     token);
-
-
 
 
 /**
@@ -820,47 +819,47 @@ ctoken_encode_close_map(struct ctoken_encode_ctx *me)
 }
 
 
-static inline void ctoken_encode_cwt_issuer(struct ctoken_encode_ctx *me,
+static inline void ctoken_encode_issuer(struct ctoken_encode_ctx *me,
                                             struct q_useful_buf_c issuer)
 {
     ctoken_encode_add_tstr(me, CTOKEN_CWT_LABEL_ISSUER, issuer);
 }
 
-static inline void ctoken_encode_cwt_subject(struct ctoken_encode_ctx *me,
+static inline void ctoken_encode_subject(struct ctoken_encode_ctx *me,
                                              struct q_useful_buf_c subject)
 {
     ctoken_encode_add_tstr(me, CTOKEN_CWT_LABEL_SUBJECT, subject);
 }
 
-static inline void ctoken_encode_cwt_audience(struct ctoken_encode_ctx *me,
+static inline void ctoken_encode_audience(struct ctoken_encode_ctx *me,
                                               struct q_useful_buf_c audience)
 {
     ctoken_encode_add_tstr(me, CTOKEN_CWT_LABEL_AUDIENCE, audience);
 }
 
 
-static inline void ctoken_encode_cwt_expiration(struct ctoken_encode_ctx *me,
+static inline void ctoken_encode_expiration(struct ctoken_encode_ctx *me,
                                                 int64_t expiration)
 {
     ctoken_encode_add_integer(me, CTOKEN_CWT_LABEL_EXPIRATION, expiration);
 }
 
 
-static inline void ctoken_encode_cwt_not_before(struct ctoken_encode_ctx *me,
+static inline void ctoken_encode_not_before(struct ctoken_encode_ctx *me,
                                                int64_t not_before)
 {
     ctoken_encode_add_integer(me, CTOKEN_CWT_LABEL_NOT_BEFORE, not_before);
 }
 
 
-static inline void ctoken_encode_cwt_iat(struct ctoken_encode_ctx *me,
+static inline void ctoken_encode_iat(struct ctoken_encode_ctx *me,
                                          int64_t iat)
 {
     ctoken_encode_add_integer(me, CTOKEN_CWT_LABEL_IAT, iat);
 }
 
 
-static inline void ctoken_encode_cwt_cti(struct ctoken_encode_ctx *me,
+static inline void ctoken_encode_cti(struct ctoken_encode_ctx *me,
                                          struct q_useful_buf_c cti)
 {
     ctoken_encode_add_bstr(me, CTOKEN_CWT_LABEL_CTI, cti);
