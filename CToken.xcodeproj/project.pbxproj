@@ -547,6 +547,11 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
+				HEADER_SEARCH_PATHS = (
+					../../QCBOR/master/inc,
+					/usr/local/include,
+				);
+				"LIBRARY_SEARCH_PATHS[arch=*]" = /usr/local/lib;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -555,6 +560,10 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
+				HEADER_SEARCH_PATHS = (
+					../../QCBOR/master/inc,
+					/usr/local/include,
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
