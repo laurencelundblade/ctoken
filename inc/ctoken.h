@@ -87,7 +87,9 @@ enum ctoken_err_t {
     /** Trying to end a submod section with no submod section started. */
     CTOKEN_ERR_NO_SUBMOD_SECTION_STARTED,
     /** Attempting to make a submod or add a token without starting a submod section */
-    CTOKEN_ERR_CANT_MAKE_SUBMOD_IN_SUBMOD
+    CTOKEN_ERR_CANT_MAKE_SUBMOD_IN_SUBMOD,
+    /** All submodules and submodule sections were not closed out. */
+    CTOKEN_ERR_SUBMODS_NOT_CLOSED
 
 };
 

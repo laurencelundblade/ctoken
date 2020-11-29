@@ -29,6 +29,9 @@ int32_t basic_eat_test(void);
 int32_t submods_test(void);
 
 
+int32_t submods_errors_test(void);
+
+
 #ifdef __cplusplus
 }
 #endif

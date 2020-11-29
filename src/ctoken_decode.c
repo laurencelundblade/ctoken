@@ -43,8 +43,8 @@
  * Public function. See ctoken_decode.h
  */
 void ctoken_decode_init(struct ctoken_decode_ctx *me,
-                              uint32_t                t_cose_options,
-                              uint32_t                options)
+                        uint32_t                  t_cose_options,
+                        uint32_t                  options)
 {
     memset(me, 0, sizeof(struct ctoken_decode_ctx));
     me->options    = options;
@@ -234,8 +234,8 @@ ctoken_decode_get_map(struct ctoken_decode_ctx *me,
  */
 enum ctoken_err_t
 ctoken_decode_get_bstr(struct ctoken_decode_ctx *me,
-                             int32_t                 label,
-                             struct q_useful_buf_c  *claim)
+                       int32_t                 label,
+                       struct q_useful_buf_c  *claim)
 {
     enum ctoken_err_t return_value;
     QCBORError qcbor_error;
@@ -261,8 +261,8 @@ Done:
  */
 enum ctoken_err_t
 ctoken_decode_get_tstr(struct ctoken_decode_ctx *me,
-                       int32_t                       label,
-                       struct q_useful_buf_c        *claim)
+                       int32_t                   label,
+                       struct q_useful_buf_c    *claim)
 {
     enum ctoken_err_t return_value;
     QCBORError qcbor_error;
@@ -288,8 +288,8 @@ Done:
  */
 enum ctoken_err_t
 ctoken_decode_get_int(struct ctoken_decode_ctx *me,
-                      int32_t                       label,
-                      int64_t                      *integer)
+                      int32_t                   label,
+                      int64_t                  *integer)
 {
     enum ctoken_err_t return_value;
     QCBORError qcbor_error;
@@ -315,8 +315,8 @@ Done:
  */
 enum ctoken_err_t
 ctoken_decode_get_uint(struct ctoken_decode_ctx *me,
-                       int32_t                       label,
-                       uint64_t                     *integer)
+                       int32_t                   label,
+                       uint64_t                 *integer)
 {
     enum ctoken_err_t return_value;
     QCBORError qcbor_error;
@@ -342,7 +342,7 @@ Done:
  */
 enum ctoken_err_t
 ctoken_decode_get_payload(struct ctoken_decode_ctx *me,
-                          struct q_useful_buf_c        *payload)
+                          struct q_useful_buf_c    *payload)
 {
     enum ctoken_err_t return_value;
 
