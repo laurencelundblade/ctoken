@@ -94,9 +94,9 @@ enum ctoken_err_t {
 };
 
 
-// TODO: Test that -3 is right; might need to divide by two
 /** The maximum nesting depth for submodules. */
-#define CTOKEN_MAX_SUBMOD_NESTING  QCBOR_MAX_ARRAY_NESTING - 3
+#define CTOKEN_MAX_SUBMOD_NESTING  (QCBOR_MAX_ARRAY_NESTING/2)
+
 
 #ifdef __cplusplus
 }

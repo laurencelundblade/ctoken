@@ -363,6 +363,7 @@ int32_t submods_test(void)
 }
 
 
+
 int32_t submods_errors_test(void)
 {
     struct ctoken_encode_ctx     encode_ctx;
@@ -381,6 +382,7 @@ int32_t submods_errors_test(void)
         return 100 + (int32_t)result;
     }
 
+
     ctoken_encode_open_submod(&encode_ctx, "foo");
 
     result = ctoken_encode_finish(&encode_ctx, &completed_token);
@@ -396,14 +398,14 @@ int32_t submods_errors_test(void)
 
     result = ctoken_encode_start(&encode_ctx, token_out_buffer);
     if(result) {
-        return 100 + (int32_t)result;
+        return 300 + (int32_t)result;
     }
 
     ctoken_encode_close_submod(&encode_ctx);
 
     result = ctoken_encode_finish(&encode_ctx, &completed_token);
     if(result != CTOKEN_ERR_NO_SUBMOD_OPEN) {
-        return 200 + (int32_t)result;
+        return 400 + (int32_t)result;
     }
 
 
@@ -414,17 +416,15 @@ int32_t submods_errors_test(void)
 
     result = ctoken_encode_start(&encode_ctx, token_out_buffer);
     if(result) {
-        return 100 + (int32_t)result;
+        return 500 + (int32_t)result;
     }
 
     ctoken_encode_end_submod_section(&encode_ctx);
 
     result = ctoken_encode_finish(&encode_ctx, &completed_token);
     if(result != CTOKEN_ERR_NO_SUBMOD_SECTION_STARTED) {
-        return 200 + (int32_t)result;
+        return 600 + (int32_t)result;
     }
-
-
 
 
     ctoken_encode_init(&encode_ctx,
@@ -434,7 +434,7 @@ int32_t submods_errors_test(void)
 
     result = ctoken_encode_start(&encode_ctx, token_out_buffer);
     if(result) {
-        return 100 + (int32_t)result;
+        return 700 + (int32_t)result;
     }
 
     ctoken_encode_add_token(&encode_ctx,
@@ -444,10 +444,8 @@ int32_t submods_errors_test(void)
 
     result = ctoken_encode_finish(&encode_ctx, &completed_token);
     if(result != CTOKEN_ERR_CANT_MAKE_SUBMOD_IN_SUBMOD) {
-        return 200 + (int32_t)result;
+        return 800 + (int32_t)result;
     }
-
-
 
 
     ctoken_encode_init(&encode_ctx,
@@ -457,18 +455,79 @@ int32_t submods_errors_test(void)
 
     result = ctoken_encode_start(&encode_ctx, token_out_buffer);
     if(result) {
-        return 100 + (int32_t)result;
+        return 900 + (int32_t)result;
     }
+
 
     ctoken_encode_start_submod_section(&encode_ctx);
     ctoken_encode_close_submod(&encode_ctx);
 
     result = ctoken_encode_finish(&encode_ctx, &completed_token);
     if(result != CTOKEN_ERR_NO_SUBMOD_OPEN) {
-        return 200 + (int32_t)result;
+        return 1000 + (int32_t)result;
     }
 
-    // TODO: test nesting too deep
+
+    ctoken_encode_init(&encode_ctx,
+                        T_COSE_OPT_SHORT_CIRCUIT_SIG,
+                        0,
+                        T_COSE_ALGORITHM_ES256);
+
+     result = ctoken_encode_start(&encode_ctx, token_out_buffer);
+     if(result) {
+         return 1100 + (int32_t)result;
+     }
+
+    for(char i = '1'; i < '7'; i++) {
+        char ii[2];
+        ii[0] = i;
+        ii[0] = 0;
+        ctoken_encode_start_submod_section(&encode_ctx);
+        ctoken_encode_open_submod(&encode_ctx, ii);
+    }
+
+    ctoken_encode_eat_uptime(&encode_ctx, 55);
+
+    for(char i = '1'; i < '7'; i++) {
+         ctoken_encode_close_submod(&encode_ctx);
+         ctoken_encode_end_submod_section(&encode_ctx);
+     }
+
+     result = ctoken_encode_finish(&encode_ctx, &completed_token);
+     if(result != CTOKEN_ERR_SUCCESS) {
+         return 1200 + (int32_t)result;
+     }
+
+
+    ctoken_encode_init(&encode_ctx,
+                        T_COSE_OPT_SHORT_CIRCUIT_SIG,
+                        0,
+                        T_COSE_ALGORITHM_ES256);
+
+     result = ctoken_encode_start(&encode_ctx, token_out_buffer);
+     if(result) {
+         return 1300 + (int32_t)result;
+     }
+
+    for(char i = '1'; i < '8'; i++) {
+        char ii[2];
+        ii[0] = i;
+        ii[0] = 0;
+        ctoken_encode_start_submod_section(&encode_ctx);
+        ctoken_encode_open_submod(&encode_ctx, ii);
+    }
+
+    ctoken_encode_eat_uptime(&encode_ctx, 55);
+
+    for(char i = '1'; i < '8'; i++) {
+         ctoken_encode_close_submod(&encode_ctx);
+         ctoken_encode_end_submod_section(&encode_ctx);
+     }
+
+     result = ctoken_encode_finish(&encode_ctx, &completed_token);
+     if(result != CTOKEN_ERR_SUBMOD_NESTING_TOO_DEEP) {
+         return 1400 + (int32_t)result;
+     }
 
     return 0;
 }
