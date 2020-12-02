@@ -47,7 +47,7 @@ extern "C" {
  *    ctoken_decode_validate_token().
  *
  * -# Call the various \c ctoken_get_xxx() methods in any
- * order. Also call the ctoken_eat_decode_xxx(), ctoken_cwt_decode_xxx() and
+ * order. Also call the ctoken_decode_xxx(), ctoken_cwt_decode_xxx() and
  * other methods in any order. The strings returned by the these functions
  * will point into
  * the token passed to ctoken_decode_validate_token(). A copy is
@@ -97,7 +97,7 @@ extern "C" {
  * Aproximate size on 64-bit CPU: 48 bytes.
  */
 struct ctoken_decode_ctx {
-    /* PRIVATE DATA STRUCTURE. USE ACCESSOR FUNCTIONS. */
+    /* PRIVATE DATA STRUCTURE */
     struct t_cose_sign1_verify_ctx verify_context;
     struct q_useful_buf_c          payload;
     uint32_t                       options;
@@ -753,11 +753,11 @@ ctoken_decode_origination(struct ctoken_decode_ctx *context,
  * This gets the security level claim out of the token.
  *
  * The security level gives a rough indication of how security
- * the HW and SW are.  See \ref ctoken_eat_security_level_t.
+ * the HW and SW are.  See \ref ctoken_security_level_t.
  */
 static inline enum ctoken_err_t
 ctoken_decode_security_level(struct ctoken_decode_ctx         *context,
-                             enum ctoken_eat_security_level_t *security_level);
+                             enum ctoken_security_level_t *security_level);
 
 
 /**
@@ -766,7 +766,7 @@ ctoken_decode_security_level(struct ctoken_decode_ctx         *context,
  * \param[in] context               The decoding context to decode from.
  * \param[out] secure_boot_enabled  This is \c true if secure boot
  *                                  is enabled or \c false it no.
- * \param[out] debug_state          See \ref ctoken_eat_debug_level_t for
+ * \param[out] debug_state          See \ref ctoken_debug_level_t for
  *                                  the different debug states.
  *
  * \retval CTOKEN_ERR_CBOR_STRUCTURE
@@ -785,12 +785,12 @@ ctoken_decode_security_level(struct ctoken_decode_ctx         *context,
  * This gets the boot and debug state out of the token.
  *
  * The security level gives a rough indication of how security
- * the HW and SW are.  See \ref ctoken_eat_security_level_t.
+ * the HW and SW are.  See \ref ctoken_security_level_t.
  */
 enum ctoken_err_t
-ctoken_eat_decode_boot_state(struct ctoken_decode_ctx *context,
-                             bool                     *secure_boot_enabled,
-                             enum ctoken_eat_debug_level_t *debug_state);
+ctoken_decode_boot_state(struct ctoken_decode_ctx *context,
+                         bool                     *secure_boot_enabled,
+                         enum ctoken_debug_level_t *debug_state);
 
 
 /**
@@ -807,11 +807,11 @@ ctoken_eat_decode_boot_state(struct ctoken_decode_ctx *context,
  * contents.
  *
  * Only some of the values in the location claim may be present. See
- * \ref ctoken_eat_location_t for how the data is returned.
+ * \ref ctoken_location_t for how the data is returned.
  */
 enum ctoken_err_t
 ctoken_decode_location(struct ctoken_decode_ctx     *context,
-                       struct ctoken_eat_location_t *location);
+                       struct ctoken_location_t *location);
 
 
 /**
@@ -907,12 +907,6 @@ enum ctoken_err_t
 ctoken_decode_enter_submod_sz(struct ctoken_decode_ctx *context,
                               const char               *name);
 
-/*
-error if submod is a token
-*/
-enum ctoken_err_t
-ctoken_eat_decode_enter_submod_n(struct ctoken_decode_ctx *context,
-                                 int64_t                   submod_name);
 
 /**
  * \brief Exit one submodule level
@@ -944,10 +938,10 @@ ctoken_decode_exit_submod(struct ctoken_decode_ctx *context);
  * must be processed by a JWT token decoder.
  */
 enum ctoken_err_t
-ctoken_eat_decode_get_nth_submod(struct ctoken_decode_ctx *context,
-                                 uint32_t                  submod_index,
-                                 enum ctoken_type         *type,
-                                 struct q_useful_buf_c    *token);
+ctoken_decode_get_nth_submod(struct ctoken_decode_ctx *context,
+                             uint32_t                  submod_index,
+                             enum ctoken_type         *type,
+                             struct q_useful_buf_c    *token);
 
 
 /**
@@ -960,22 +954,14 @@ ctoken_eat_decode_get_nth_submod(struct ctoken_decode_ctx *context,
  *
  * \returns A ctoken error code
  *
- * See ctoken_eat_decode_get_nth_submod() for discussion on the token returned.
+ * See ctoken_decode_get_nth_submod() for discussion on the token returned.
  */
 enum ctoken_err_t
-ctoken_eat_decode_get_submod_sz(struct ctoken_decode_ctx *context,
-                                 const char              *name,
-                                 enum ctoken_type        *type,
-                                 struct q_useful_buf_c   *token);
+ctoken_decode_get_submod_sz(struct ctoken_decode_ctx *context,
+                            const char              *name,
+                            enum ctoken_type        *type,
+                            struct q_useful_buf_c   *token);
 
-/*
-error if submod is not a token
-*/
-enum ctoken_err_t
-ctoken_decode_get_submod_n(struct ctoken_decode_ctx     *context,
-                                 uint32_t                name,
-                                 enum ctoken_type       *type,
-                                 struct q_useful_buf_c  *token);
 
 
 
@@ -1088,7 +1074,7 @@ ctoken_decode_origination(struct ctoken_decode_ctx *me,
 
 static inline enum ctoken_err_t
 ctoken_decode_security_level(struct ctoken_decode_ctx         *me,
-                             enum ctoken_eat_security_level_t *security_level)
+                             enum ctoken_security_level_t *security_level)
 {
     return ctoken_decode_get_int(me, CTOKEN_EAT_LABEL_SECURITY_LEVEL, (int64_t *)security_level);
 }

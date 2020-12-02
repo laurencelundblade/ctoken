@@ -481,7 +481,7 @@ ctoken_encode_ueid(struct ctoken_encode_ctx *context,
  * is called.
  */
 static void
-ctoken_encode_eat_oemid(struct ctoken_encode_ctx *context,
+ctoken_encode_oemid(struct ctoken_encode_ctx *context,
                         struct q_useful_buf_c     oemid);
 
 
@@ -501,7 +501,7 @@ ctoken_encode_eat_oemid(struct ctoken_encode_ctx *context,
  * is called.
  */
 static void
-ctoken_encode_eat_origination(struct ctoken_encode_ctx *context,
+ctoken_encode_origination(struct ctoken_encode_ctx *context,
                               struct q_useful_buf_c     origination);
 
 
@@ -514,15 +514,15 @@ ctoken_encode_eat_origination(struct ctoken_encode_ctx *context,
  * This outputs the security level claim.
  *
  * The security level gives a rough indication of how security
- * the HW and SW are.  See \ref ctoken_eat_security_level_t.
+ * the HW and SW are.  See \ref ctoken_security_level_t.
  *
  * If there is an error like insufficient space in the output buffer,
  * the error state is entered. It is returned later when ctoken_encode_finish()
  * is called.
  */
 static void
-ctoken_encode_eat_security_level(struct ctoken_encode_ctx        *context,
-                                 enum ctoken_eat_security_level_t security_level);
+ctoken_encode_security_level(struct ctoken_encode_ctx        *context,
+                                 enum ctoken_security_level_t security_level);
 
 
 
@@ -532,7 +532,7 @@ ctoken_encode_eat_security_level(struct ctoken_encode_ctx        *context,
  * \param[in] context              The encoding context to output to.
  * \paran[in] secure_boot_enabled  This is \c true if secure boot
  *                                 is enabled or \c false it no.
- * \param[out] debug_state         See \ref ctoken_eat_debug_level_t for
+ * \param[out] debug_state         See \ref ctoken_debug_level_t for
  *                                 the different debug states.
  *
  * This outputs the debug and boot state claim.
@@ -544,7 +544,7 @@ ctoken_encode_eat_security_level(struct ctoken_encode_ctx        *context,
 void
 ctoken_encode_boot_state(struct ctoken_encode_ctx     *context,
                          bool                          secure_boot_enabled,
-                         enum ctoken_eat_debug_level_t debug_state);
+                         enum ctoken_debug_level_t debug_state);
 
 
 /**
@@ -558,7 +558,7 @@ ctoken_encode_boot_state(struct ctoken_encode_ctx     *context,
  */
 void
 ctoken_encode_location(struct ctoken_encode_ctx           *context,
-                       const struct ctoken_eat_location_t *location);
+                       const struct ctoken_location_t *location);
 
 
 /**
@@ -578,7 +578,7 @@ ctoken_encode_location(struct ctoken_encode_ctx           *context,
  * is called.
  */
 static void
-ctoken_encode_eat_age(struct ctoken_encode_ctx  *context,
+ctoken_encode_age(struct ctoken_encode_ctx  *context,
                       uint64_t                   age);
 
 
@@ -597,7 +597,7 @@ ctoken_encode_eat_age(struct ctoken_encode_ctx  *context,
  * is called.
  */
 static void
-ctoken_encode_eat_uptime(struct ctoken_encode_ctx  *context,
+ctoken_encode_uptime(struct ctoken_encode_ctx  *context,
                          uint64_t                    uptime);
 
 
@@ -607,11 +607,11 @@ ctoken_encode_eat_uptime(struct ctoken_encode_ctx  *context,
  * \param[in] context  Encoding context.
  *
  * This must be called to start the submodules section before calling
- * ctoken_eat_encode_open_submod() or ctoken_eat_encode_add_token().
+ * ctoken_encode_open_submod() or ctoken_encode_add_token().
  * There is only one submodules section, so this can only be called once.
  * All submodules must be added together.
  *
- * When all submodules have been added, then ctoken_eat_encode_end_submod_section()
+ * When all submodules have been added, then ctoken_encode_end_submod_section()
  * must be called to close out the submodules section.
  */
 void ctoken_encode_start_submod_section(struct ctoken_encode_ctx *context);
@@ -622,7 +622,7 @@ void ctoken_encode_start_submod_section(struct ctoken_encode_ctx *context);
  *
  * \param[in] context  Encoding context.
  *
- * Close out the submodules section after calling ctoken_eat_encode_start_submod_section() and
+ * Close out the submodules section after calling ctoken_encode_start_submod_section() and
  * adding all submodules that are to be added.
  */
 void ctoken_encode_end_submod_section(struct ctoken_encode_ctx *context);
@@ -635,16 +635,16 @@ void ctoken_encode_end_submod_section(struct ctoken_encode_ctx *context);
  * \param [in] submod_name  Text string naming sub module.
  *
  * Initiates the creation of a sub module. All claims added after this
- * call until the a call to ctoken_eat_encode_close_submod() will
+ * call until the a call to ctoken_encode_close_submod() will
  * go into the named submodule.
  *
- * ctoken_eat_encode_start_submod_section() must be called before this
- * is called to open the submodules section. ctoken_eat_encode_end_submod_section()
+ * ctoken_encode_start_submod_section() must be called before this
+ * is called to open the submodules section. ctoken_encode_end_submod_section()
  * must be called at some point after this is called.
  *
  * Submodules can nest to a depth of \ref CTOKEN_MAX_SUBMOD_NESTING. To
  * nest one submodule inside another, simply call this again
- * before calling ctoken_eat_encode_close_submod().
+ * before calling ctoken_encode_close_submod().
  *
  * If an error occurs, such as nesting too deep, it will be reported when
  * ctoken_encode_finish() is called.
@@ -686,8 +686,8 @@ void ctoken_encode_close_submod(struct ctoken_encode_ctx *context);
  * The contents of token are not checked by this call. The bytes
  * are just added.
  *
- * ctoken_eat_encode_start_submod_section() must be called before this
- * is called to open the submodules section. ctoken_eat_encode_end_submod_section()
+ * ctoken_encode_start_submod_section() must be called before this
+ * is called to open the submodules section. ctoken_encode_end_submod_section()
  * must be called at some point after this is called.
  *
  * If an error occurs it will be reported when
@@ -892,7 +892,7 @@ ctoken_encode_ueid(struct ctoken_encode_ctx *me,
 
 
 static inline void
-ctoken_encode_eat_oemid(struct ctoken_encode_ctx *me,
+ctoken_encode_oemid(struct ctoken_encode_ctx *me,
                         struct q_useful_buf_c     oemid)
 {
     ctoken_encode_add_bstr(me, CTOKEN_EAT_LABEL_OEMID, oemid);
@@ -901,15 +901,15 @@ ctoken_encode_eat_oemid(struct ctoken_encode_ctx *me,
 
 
 static inline void
-ctoken_encode_eat_origination(struct ctoken_encode_ctx *me,
+ctoken_encode_origination(struct ctoken_encode_ctx *me,
                               struct q_useful_buf_c origination)
 {
     ctoken_encode_add_tstr(me, CTOKEN_EAT_LABEL_ORIGINATION, origination);
 }
 
 static inline void
-ctoken_encode_eat_security_level(struct ctoken_encode_ctx *me,
-                                 enum ctoken_eat_security_level_t security_level)
+ctoken_encode_security_level(struct ctoken_encode_ctx *me,
+                                 enum ctoken_security_level_t security_level)
 {
     ctoken_encode_add_integer(me,
                               CTOKEN_EAT_LABEL_SECURITY_LEVEL,
@@ -917,7 +917,7 @@ ctoken_encode_eat_security_level(struct ctoken_encode_ctx *me,
 }
 
 static inline void
-ctoken_encode_eat_age(struct ctoken_encode_ctx  *me,
+ctoken_encode_age(struct ctoken_encode_ctx  *me,
                       uint64_t                   age)
 {
     ctoken_encode_add_integer(me, CTOKEN_EAT_LABEL_AGE, age);
@@ -925,7 +925,7 @@ ctoken_encode_eat_age(struct ctoken_encode_ctx  *me,
 
 
 static inline void
-ctoken_encode_eat_uptime(struct ctoken_encode_ctx  *me,
+ctoken_encode_uptime(struct ctoken_encode_ctx  *me,
                          uint64_t                   uptime)
 {
     ctoken_encode_add_integer(me, CTOKEN_EAT_LABEL_UPTIME, uptime);

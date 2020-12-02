@@ -288,7 +288,7 @@ Done:
 void
 ctoken_encode_boot_state(struct ctoken_encode_ctx     *me,
                              bool                          secure_boot_enabled,
-                             enum ctoken_eat_debug_level_t debug_state)
+                             enum ctoken_debug_level_t debug_state)
 {
     QCBOREncodeContext *encode_context = ctoken_encode_borrow_cbor_cntxt(me);
 
@@ -304,7 +304,7 @@ ctoken_encode_boot_state(struct ctoken_encode_ctx     *me,
  */
 void
 ctoken_encode_location(struct ctoken_encode_ctx *me,
-                           const struct ctoken_eat_location_t *location)
+                           const struct ctoken_location_t *location)
 {
     int                 item_iterator;
     QCBOREncodeContext *encode_cxt = ctoken_encode_borrow_cbor_cntxt(me);
@@ -326,7 +326,7 @@ ctoken_encode_location(struct ctoken_encode_ctx *me,
 
 
 /*
- * Public function. See ctoken_eat_encode.h
+ * Public function. See ctoken_encode.h
  */
 void ctoken_encode_start_submod_section(struct ctoken_encode_ctx *me)
 {
@@ -342,7 +342,7 @@ void ctoken_encode_start_submod_section(struct ctoken_encode_ctx *me)
 
 
 /*
- * Public function. See ctoken_eat_encode.h
+ * Public function. See ctoken_encode.h
  */
 void ctoken_encode_end_submod_section(struct ctoken_encode_ctx *me)
 {
@@ -358,7 +358,7 @@ void ctoken_encode_end_submod_section(struct ctoken_encode_ctx *me)
 
 
 /*
- * Public function. See ctoken_eat_encode.h
+ * Public function. See ctoken_encode.h
  */
 void ctoken_encode_open_submod(struct ctoken_encode_ctx *me,
                                const char               *submod_name)
@@ -375,7 +375,7 @@ void ctoken_encode_open_submod(struct ctoken_encode_ctx *me,
 
 
 /*
- * Public function. See ctoken_eat_encode.h
+ * Public function. See ctoken_encode.h
  */
 void ctoken_encode_close_submod(struct ctoken_encode_ctx *me)
 {
@@ -391,7 +391,7 @@ void ctoken_encode_close_submod(struct ctoken_encode_ctx *me)
 
 
 /*
- * Public function. See ctoken_eat_encode.h
+ * Public function. See ctoken_encode.h
  */
 void ctoken_encode_add_token(struct ctoken_encode_ctx *me,
                              enum ctoken_type          type,

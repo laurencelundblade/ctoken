@@ -28,10 +28,10 @@ int32_t basic_eat_test(void)
     struct q_useful_buf_c        ueid;
     struct q_useful_buf_c        oemid;
     struct q_useful_buf_c        origination;
-    enum ctoken_eat_security_level_t security_level;
+    enum ctoken_security_level_t security_level;
     bool                         secure_boot;
-    enum ctoken_eat_debug_level_t debug_level;
-    struct ctoken_eat_location_t location;
+    enum ctoken_debug_level_t debug_level;
+    struct ctoken_location_t location;
     uint64_t                     age;
     uint64_t                     uptime;
 
@@ -71,11 +71,11 @@ int32_t basic_eat_test(void)
 
     ctoken_encode_ueid(&encode_ctx, test_ueid);
 
-    ctoken_encode_eat_oemid(&encode_ctx, test_oemid);
+    ctoken_encode_oemid(&encode_ctx, test_oemid);
 
-    ctoken_encode_eat_origination(&encode_ctx, test_origination);
+    ctoken_encode_origination(&encode_ctx, test_origination);
 
-    ctoken_encode_eat_security_level(&encode_ctx, EAT_SL_SECURE_RESTRICTED);
+    ctoken_encode_security_level(&encode_ctx, EAT_SL_SECURE_RESTRICTED);
 
     ctoken_encode_boot_state(&encode_ctx, true, EAT_DL_DISABLED_SINCE_BOOT);
 
@@ -84,15 +84,15 @@ int32_t basic_eat_test(void)
     location.item_flags = 0x3;
     ctoken_encode_location(&encode_ctx, &location);
 
-    ctoken_encode_eat_age(&encode_ctx, 987654321);
+    ctoken_encode_age(&encode_ctx, 987654321);
 
-    ctoken_encode_eat_uptime(&encode_ctx, 886688);
+    ctoken_encode_uptime(&encode_ctx, 886688);
 
     ctoken_encode_start_submod_section(&encode_ctx);
 
     ctoken_encode_open_submod(&encode_ctx, "a submodule");
 
-    ctoken_encode_eat_uptime(&encode_ctx, 5);
+    ctoken_encode_uptime(&encode_ctx, 5);
 
     ctoken_encode_close_submod(&encode_ctx);
 
@@ -165,7 +165,7 @@ int32_t basic_eat_test(void)
         return 899;
     }
 
-    result = ctoken_eat_decode_boot_state(&decode_context, &secure_boot, &debug_level);
+    result = ctoken_decode_boot_state(&decode_context, &secure_boot, &debug_level);
     if(result) {
         return 900 + (int32_t)result;
     }
@@ -238,6 +238,9 @@ int32_t submods_test(void)
     struct q_useful_buf_c        ueid;
     struct q_useful_buf_c        oemid;
 
+    struct ctoken_decode_ctx     decode_context;
+
+
     uint8_t test_nonce_bytes[] = {0x05, 0x08, 0x33, 0x99};
     const struct q_useful_buf_c test_nonce = Q_USEFUL_BUF_FROM_BYTE_ARRAY_LITERAL(test_nonce_bytes);
 
@@ -276,7 +279,7 @@ int32_t submods_test(void)
 
           ctoken_encode_open_submod(&encode_ctx, "subsub");
 
-            ctoken_encode_eat_oemid(&encode_ctx, test_oemid);
+            ctoken_encode_oemid(&encode_ctx, test_oemid);
 
           ctoken_encode_close_submod(&encode_ctx);
 
@@ -290,7 +293,6 @@ int32_t submods_test(void)
     ctoken_result = ctoken_encode_finish(&encode_ctx, &completed_token);
 
 
-    struct ctoken_decode_ctx decode_context;
      /* Set up to verify and decode the token */
 
      /* Initialize the decoder / verifier context. No options are set
@@ -327,7 +329,7 @@ int32_t submods_test(void)
     enum ctoken_type type;
     struct q_useful_buf_c token;
 
-    ctoken_eat_decode_get_submod_sz(&decode_context, "json", &type, &token);
+    ctoken_decode_get_submod_sz(&decode_context, "json", &type, &token);
 
     uint32_t num_submods;
     ctoken_decode_get_num_submods(&decode_context, &num_submods);
@@ -486,7 +488,7 @@ int32_t submods_errors_test(void)
         ctoken_encode_open_submod(&encode_ctx, ii);
     }
 
-    ctoken_encode_eat_uptime(&encode_ctx, 55);
+    ctoken_encode_uptime(&encode_ctx, 55);
 
     for(char i = '1'; i < '7'; i++) {
          ctoken_encode_close_submod(&encode_ctx);
@@ -517,7 +519,7 @@ int32_t submods_errors_test(void)
         ctoken_encode_open_submod(&encode_ctx, ii);
     }
 
-    ctoken_encode_eat_uptime(&encode_ctx, 55);
+    ctoken_encode_uptime(&encode_ctx, 55);
 
     for(char i = '1'; i < '8'; i++) {
          ctoken_encode_close_submod(&encode_ctx);
@@ -528,6 +530,49 @@ int32_t submods_errors_test(void)
      if(result != CTOKEN_ERR_SUBMOD_NESTING_TOO_DEEP) {
          return 1400 + (int32_t)result;
      }
+
+    return 0;
+}
+
+
+const char xx[] = {0xD2, 0x84, 0x43, 0xA1, 0x01, 0x26, 0xA1, 0x04, 0x58, 0x20, 0xEF, 0x95, 0x4B, 0x4B, 0xD9, 0xBD, 0xF6, 0x70, 0xD0, 0x33, 0x60, 0x82, 0xF5, 0xEF, 0x15, 0x2A, 0xF8, 0xF3, 0x5B, 0x6A, 0x6C, 0x00, 0xEF, 0xA6, 0xA9, 0xA7, 0x1F, 0x49, 0x51, 0x7E, 0x18, 0xC6, 0x58, 0x52, 0xA2, 0x3A, 0x00, 0x01, 0x24, 0xFF, 0x44, 0x05, 0x08, 0x33, 0x99, 0x3A, 0x00, 0x01, 0x28, 0xDF, 0xA1, 0x64, 0x73, 0x75, 0x62, 0x31, 0xA2, 0x3A, 0x00, 0x01, 0x25, 0x00, 0x46, 0xA4, 0x68, 0x23, 0x99, 0x00, 0x01, 0x3A, 0x00, 0x01, 0x28, 0xDF, 0xA2, 0x64, 0x6A, 0x73, 0x6F, 0x6E, 0x6F, 0x7B, 0x20, 0x22, 0x75, 0x65, 0x69, 0x64, 0x22, 0x2C, 0x20, 0x22, 0x78, 0x79, 0x7A, 0x22, 0x66, 0x73, 0x75, 0x62, 0x73, 0x75, 0x62, 0xA1, 0x3A, 0x00, 0x01, 0x28, 0xE0, 0x46, 0x14, 0x18, 0x13, 0x19, 0x10, 0x01, 0x58, 0x40, 0xF9, 0x43, 0xB7, 0xB3, 0x33, 0x29, 0x3A, 0x15, 0xEB, 0x87, 0x8E, 0x5F, 0xC1, 0x05, 0x17, 0xEA, 0x64, 0x0D, 0xA9, 0x5A, 0x40, 0xD4, 0x47, 0x8F, 0xE8, 0xF1, 0x0E, 0x63, 0x40, 0xEF, 0x6F, 0x10, 0xF9, 0x43, 0xB7, 0xB3, 0x33, 0x29, 0x3A, 0x15, 0xEB, 0x87, 0x8E, 0x5F, 0xC1, 0x05, 0x17, 0xEA, 0x64, 0x0D, 0xA9, 0x5A, 0x40, 0xD4, 0x47, 0x8F, 0xE8, 0xF1, 0x0E, 0x63, 0x40, 0xEF, 0x6F, 0x10};
+
+int32_t submod_decode_errors_test()
+{
+    struct ctoken_decode_ctx  decode_context;
+    enum ctoken_err_t         ctoken_result;
+    enum ctoken_type          type;
+    struct q_useful_buf_c     token;
+
+
+    ctoken_decode_init(&decode_context, T_COSE_OPT_ALLOW_SHORT_CIRCUIT, 0);
+
+    ctoken_result = ctoken_decode_validate_token(&decode_context, UsefulBuf_FROM_BYTE_ARRAY_LITERAL(xx));
+    if(ctoken_result) {
+        return 100 + (int32_t)ctoken_result;
+    }
+
+    ctoken_result = ctoken_decode_enter_submod_sz(&decode_context, "foobar");
+    if(ctoken_result != CTOKEN_NAMED_SUBMOD_NOT_FOUND) {
+        return 200 + (int32_t)ctoken_result;
+    }
+
+    ctoken_result = ctoken_decode_enter_nth_submod(&decode_context, 6, NULL);
+    if(ctoken_result != CTOKEN_SUBMOD_INDEX_TOO_LARGE) {
+        return 300 + (int32_t)ctoken_result;
+    }
+
+    ctoken_result = ctoken_decode_get_nth_submod(&decode_context, 6, &type, &token);
+    if(ctoken_result != CTOKEN_SUBMOD_INDEX_TOO_LARGE) {
+        return 400 + (int32_t)ctoken_result;
+    }
+
+    ctoken_result = ctoken_decode_get_submod_sz(&decode_context, "foobar", &type, &token);
+    if(ctoken_result != CTOKEN_NAMED_SUBMOD_NOT_FOUND) {
+        return 500 + (int32_t)ctoken_result;
+    }
+
+    // TODO: more tests
 
     return 0;
 }

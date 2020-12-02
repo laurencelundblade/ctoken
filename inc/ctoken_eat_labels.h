@@ -55,7 +55,7 @@ extern "C" {
 /**
  * This gives a rough notion of the security level of the attester.
  */
-enum ctoken_eat_security_level_t {
+enum ctoken_security_level_t {
     /** Signing key is protected by a general purpose OS running on generic
       * hardware
       */
@@ -77,7 +77,7 @@ enum ctoken_eat_security_level_t {
  * This characterizes the hardware and system debug state of the
  * attestor.
  */
-enum ctoken_eat_debug_level_t {
+enum ctoken_debug_level_t {
     /** The debug state is not reported. It is not know what it is */
     EAT_DL_NOT_REPORTED = 0,
     /** The debug system is enabled */
@@ -118,7 +118,7 @@ enum ctoken_eat_debug_level_t {
 /**
  * Holds a geographic location (e.g. a GPS position).
  */
-struct ctoken_eat_location_t {
+struct ctoken_location_t {
     /** Array of doubles to old latitude, longitude... indexed
      * CTOKEN_EAT_LABEL_XXX - 1. Use accessor macros below for
      * convenience. Array entry is only valid id flag for it is set

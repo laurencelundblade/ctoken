@@ -105,10 +105,12 @@ static enum ctoken_err_t t_cose_verify_error_map[] = {
 
 
 
-static inline enum ctoken_err_t map_qcbor_error(QCBORError uErr)
+static inline enum ctoken_err_t map_qcbor_error(QCBORError error)
 {
     // TODO: make this better
-    if(uErr) {
+    if(QCBORDecode_IsNotWellFormedError(error)) {
+        return CTOKEN_ERR_CBOR_NOT_WELL_FORMED;
+    } else if(error) {
         return CTOKEN_ERR_GENERAL;
     } else {
         return CTOKEN_ERR_SUCCESS;
@@ -146,8 +148,8 @@ map_t_cose_errors(enum t_cose_err_t t_cose_error)
 
 enum ctoken_err_t
 ctoken_decode_get_kid(struct ctoken_decode_ctx *me,
-                            struct q_useful_buf_c   token,
-                            struct q_useful_buf_c  *kid)
+                      struct q_useful_buf_c   token,
+                      struct q_useful_buf_c  *kid)
 {
     struct q_useful_buf_c     payload;
     struct t_cose_parameters  parameters;
@@ -370,9 +372,9 @@ Done:
  * Public function. See ctoken_eat_encode.h
  */
 enum ctoken_err_t
-ctoken_eat_decode_boot_state(struct ctoken_decode_ctx *me,
+ctoken_decode_boot_state(struct ctoken_decode_ctx *me,
                              bool *secure_boot_enabled,
-                             enum ctoken_eat_debug_level_t *debug_state)
+                             enum ctoken_debug_level_t *debug_state)
 {
     enum ctoken_err_t       return_value;
     int64_t boot_state;
@@ -407,7 +409,7 @@ ctoken_eat_decode_boot_state(struct ctoken_decode_ctx *me,
         goto Done;
     }
 
-    *debug_state = (enum ctoken_eat_debug_level_t)boot_state;
+    *debug_state = (enum ctoken_debug_level_t)boot_state;
 
     return_value = CTOKEN_ERR_SUCCESS;
 
@@ -421,7 +423,7 @@ Done:
  */
 enum ctoken_err_t
 ctoken_decode_location(struct ctoken_decode_ctx     *me,
-                           struct ctoken_eat_location_t *location)
+                           struct ctoken_location_t *location)
 {
     enum ctoken_err_t   return_value = 0;
     double              d;
@@ -458,30 +460,36 @@ Done:
 
 
 
-
-
-static void
+static enum ctoken_err_t
 descend_submod(struct ctoken_decode_ctx *me)
 {
-    // TODO: guard against calling too many times?
+    if(me->in_submods >= CTOKEN_MAX_SUBMOD_NESTING) {
+        return CTOKEN_ERR_SUBMOD_NESTING_TOO_DEEP;
+    }
     QCBORDecode_EnterMapFromMapN(&(me->qcbor_decode_context), CTOKEN_EAT_LABEL_SUBMODS);
     me->in_submods++;
+
+    return CTOKEN_ERR_SUCCESS;
 }
 
 
-static void
+static enum ctoken_err_t
 ascend_submod(struct ctoken_decode_ctx *me)
 {
-    // TODO: guard against calling too many times?
+    if(me->in_submods == 0) {
+        return CTOKEN_ERR_NO_SUBMOD_OPEN;
+    }
     me->in_submods--;
     QCBORDecode_ExitMap(&(me->qcbor_decode_context));
+
+    return CTOKEN_ERR_SUCCESS;
 }
 
 
 /* exit conditions are: found nth, got to the end, errored out. */
 
 static enum ctoken_err_t
-ctoken_decode_eat_nth_submod(struct ctoken_decode_ctx *me,
+ctoken_decode_nth_submod(struct ctoken_decode_ctx *me,
                              uint32_t                  submod_index,
                              uint32_t                 *num_submods)
 {
@@ -494,12 +502,10 @@ ctoken_decode_eat_nth_submod(struct ctoken_decode_ctx *me,
 
     // Must be entered into submods before calling this
 
-    // QCBORDecode_Rewind(decode_context);
-
     submod_count = 0;
     return_value = CTOKEN_ERR_SUCCESS;
     while(submod_index > 0) {
-        error = QCBORDecode_GetError(decode_context);
+        error = QCBORDecode_GetAndResetError(decode_context);
         if(error == QCBOR_SUCCESS) {
             error = QCBORDecode_PeekNext(decode_context, &map_item);
         }
@@ -541,124 +547,166 @@ Done:
  general token structure error
 
  */
+
+/*
+ * Public function. See ctoken_decode.h
+ */
 enum ctoken_err_t
 ctoken_decode_get_num_submods(struct ctoken_decode_ctx *me,
-                                  uint32_t                  *num_submods)
+                              uint32_t                 *num_submods)
 {
     enum ctoken_err_t return_value;
 
-    descend_submod(me);
+    return_value = descend_submod(me);
+    if(return_value != CTOKEN_ERR_SUCCESS) {
+        goto Done;
+    }
 
-    return_value = ctoken_decode_eat_nth_submod(me, UINT32_MAX, num_submods);
+    return_value = ctoken_decode_nth_submod(me, UINT32_MAX, num_submods);
+    if(return_value != CTOKEN_ERR_SUCCESS) {
+        goto Done;
+    }
 
-    ascend_submod(me);
+    return_value = ascend_submod(me);
 
+Done:
     return return_value;
 }
 
 
-
-
+/*
+ * Public function. See ctoken_decode.h
+ */
 enum ctoken_err_t
 ctoken_decode_enter_nth_submod(struct ctoken_decode_ctx *me,
-                                   uint32_t                   submod_index,
-                                   struct q_useful_buf_c    *name)
+                               uint32_t                  submod_index,
+                               struct q_useful_buf_c    *name)
 {
-    QCBORItem map_item;
-    QCBORError error;
+    QCBORItem         map_item;
+    QCBORError        qcbor_error;
     enum ctoken_err_t return_value;
-    uint32_t num_submods;
+    uint32_t          num_submods;
 
-    descend_submod(me);
-
-    return_value = ctoken_decode_eat_nth_submod(me, submod_index, &num_submods);
+    return_value = descend_submod(me);
+    if(return_value != CTOKEN_ERR_SUCCESS) {
+        goto Done;
+    }
+    
+    return_value = ctoken_decode_nth_submod(me, submod_index, &num_submods);
     if(return_value != CTOKEN_ERR_SUCCESS) {
         goto Done;
     }
 
     if(num_submods != submod_index) {
-        return_value = 99; // TODO: error code
+        return_value = CTOKEN_SUBMOD_INDEX_TOO_LARGE;
+        ascend_submod(me);
+        goto Done;
     }
 
     QCBORDecode_EnterMap(&(me->qcbor_decode_context), &map_item);
-
-
-    error = QCBORDecode_GetError(&(me->qcbor_decode_context));
-
-    if(map_item.uLabelType != QCBOR_TYPE_TEXT_STRING) {
-        error = 99; // TODO: fix error code
+    qcbor_error = QCBORDecode_GetAndResetError(&(me->qcbor_decode_context));
+    if(qcbor_error != QCBOR_SUCCESS) {
+        return_value = map_qcbor_error(qcbor_error);
+        goto Done;
     }
 
-    if(name) {
+    if(map_item.uLabelType != QCBOR_TYPE_TEXT_STRING) {
+        return_value = CTOKEN_SUBMOD_NAME_NOT_A_TEXT_STRING;
+        goto Done;
+    }
+
+    if(name != NULL) {
         *name = map_item.label.string;
     }
 
 Done:
-    // TODO: error handling
-    // TODO: keep track to help error handling when exiting?
     return return_value;
 }
 
 
+
 enum ctoken_err_t
 ctoken_decode_enter_submod_sz(struct ctoken_decode_ctx *me,
-                                  const char               *name)
+                              const char               *name)
 {
-    descend_submod(me);
+    enum ctoken_err_t return_value;
+    QCBORError        error;
+
+    return_value = descend_submod(me);
+    if(return_value != CTOKEN_ERR_SUCCESS) {
+        goto Done;
+    }
 
     QCBORDecode_EnterMapFromMapSZ(&(me->qcbor_decode_context), name);
+    error = QCBORDecode_GetAndResetError(&(me->qcbor_decode_context));
+    if(error == QCBOR_ERR_LABEL_NOT_FOUND) {
+        return_value = CTOKEN_NAMED_SUBMOD_NOT_FOUND;
+        goto Done;
+    } else if(error != QCBOR_SUCCESS) {
+        return_value = map_qcbor_error(error);
+        goto Done;
+    }
 
-    return 0; // TODO: error handling
+Done:
+    if(return_value != CTOKEN_ERR_SUCCESS) {
+        /* try to reset decoding can continue even on error. */
+        ascend_submod(me);
+    }
+    return return_value;
 }
 
 
-enum ctoken_err_t
-ctoken_eat_decode_enter_submod_n(struct ctoken_decode_ctx *me,
-                                 int64_t                   name)
-{
-    descend_submod(me);
 
-    QCBORDecode_EnterMapFromMapN(&(me->qcbor_decode_context), name);
-
-    return 0; // TODO: error handling
-}
-
-
-
-
+/*
+ * Public function. See ctoken_decode.h
+ */
 enum ctoken_err_t
 ctoken_decode_exit_submod(struct ctoken_decode_ctx *me)
 {
+    enum ctoken_err_t return_value;
+    QCBORError        error;
+
+    return_value = ascend_submod(me);
+    if(return_value != CTOKEN_ERR_SUCCESS) {
+        goto Done;
+    }
+
     QCBORDecode_ExitMap(&(me->qcbor_decode_context));
+    error = QCBORDecode_GetAndResetError(&(me->qcbor_decode_context));
+    if(error != QCBOR_SUCCESS) {
+        return_value = map_qcbor_error(error);
+        goto Done;
+    }
 
-    ascend_submod(me);
-
-    // TODO: error code
-
-    return 0;
+Done:
+    return return_value;
 }
 
 
 static enum ctoken_err_t
-ctoken_eat_decode_finish_token(struct ctoken_decode_ctx *me,
-                               const QCBORItem           Item,
-                               enum ctoken_type         *type,
-                               struct q_useful_buf_c    *token)
+ctoken_decode_submod_token(struct ctoken_decode_ctx  *me,
+                           const QCBORItem           *item,
+                           enum ctoken_type          *type,
+                           struct q_useful_buf_c     *token)
 {
-    enum ctoken_err_t return_value = CTOKEN_ERR_SUCCESS;
+    enum ctoken_err_t return_value;
+    QCBORError        qcbor_error;
 
-    QCBORError qcbor_error = QCBORDecode_GetError(&(me->qcbor_decode_context));
-    if(QCBORDecode_IsNotWellFormedError(qcbor_error)) {
-        return_value = CTOKEN_ERR_CBOR_NOT_WELL_FORMED;
+    qcbor_error = QCBORDecode_GetAndResetError(&(me->qcbor_decode_context));
+    if(qcbor_error == QCBOR_ERR_LABEL_NOT_FOUND) {
+        return_value = CTOKEN_NAMED_SUBMOD_NOT_FOUND;
+        goto Done;
+    } else  if(qcbor_error != QCBOR_SUCCESS) {
+        return_value = map_qcbor_error(qcbor_error);
         goto Done;
     }
 
-    // TODO: make Item a pointer
-    if(Item.uDataType == QCBOR_TYPE_BYTE_STRING) {
-        *token = Item.val.string;
+    return_value = CTOKEN_ERR_SUCCESS;
+    if(item->uDataType == QCBOR_TYPE_BYTE_STRING) {
+        *token = item->val.string;
         *type = CTOKEN_TYPE_CWT;
-    } else if(Item.uDataType == QCBOR_TYPE_TEXT_STRING) {
-        *token = Item.val.string;
+    } else if(item->uDataType == QCBOR_TYPE_TEXT_STRING) {
+        *token = item->val.string;
         *type = CTOKEN_TYPE_JSON;
     } else {
         return_value = CTOKEN_ERR_TOKEN_FORMAT;
@@ -670,74 +718,80 @@ Done:
 }
 
 
-
+/*
+ * Public function. See ctoken_decode.h
+ */
 enum ctoken_err_t
-ctoken_eat_decode_get_submod_sz(struct ctoken_decode_ctx *me,
-                                 const char              *name,
-                                 enum ctoken_type        *type,
-                                 struct q_useful_buf_c   *token)
+ctoken_decode_get_submod_sz(struct ctoken_decode_ctx *me,
+                            const char              *name,
+                            enum ctoken_type        *type,
+                            struct q_useful_buf_c   *token)
 {
-    QCBORItem Item;
+    QCBORItem         item;
     enum ctoken_err_t return_value;
+    enum ctoken_err_t return_value2;
 
-     descend_submod(me);
+    return_value = descend_submod(me);
+    if(return_value != CTOKEN_ERR_SUCCESS) {
+        goto Done;
+    }
 
-    QCBORDecode_GetItemInMapSZ(&(me->qcbor_decode_context), name, QCBOR_TYPE_ANY, &Item);
-    // All error handling from QCBOR last error in ctoken_eat_decode_finish_token()
-    // TODO: is this working well?
+    QCBORDecode_GetItemInMapSZ(&(me->qcbor_decode_context), name, QCBOR_TYPE_ANY, &item);
+    // Errors check in next call to ctoken_decode_submod_token
 
-    return_value = ctoken_eat_decode_finish_token(me, Item, type, token);
+    return_value = ctoken_decode_submod_token(me, &item, type, token);
 
-    ascend_submod(me);
+    return_value2 = ascend_submod(me);
+    if(return_value == CTOKEN_ERR_SUCCESS) {
+        return_value = return_value2;
+    }
 
-    return return_value;
-}
-
-enum ctoken_err_t
-ctoken_decode_get_submod_n(struct ctoken_decode_ctx *me,
-                                 uint32_t               name,
-                                 enum ctoken_type        *type,
-                                 struct q_useful_buf_c   *token)
-{
-    QCBORItem Item;
-    enum ctoken_err_t return_value;
-
-
-    descend_submod(me);
-
-    QCBORDecode_GetItemInMapN(&(me->qcbor_decode_context), name, QCBOR_TYPE_ANY, &Item);
-    // All error handling from QCBOR last error in ctoken_eat_decode_finish_token()
-    // TODO: is this working well?
-
-    return_value = ctoken_eat_decode_finish_token(me, Item, type, token);
-
-    ascend_submod(me);
+Done:
 
     return return_value;
 }
 
 
+/*
+ * Public function. See ctoken_decode.h
+ */
 enum ctoken_err_t
-ctoken_eat_decode_get_nth_submod(struct ctoken_decode_ctx *me,
-                                  uint32_t                  submod_index,
-                                 enum ctoken_type        *type,
-                                 struct q_useful_buf_c   *token)
+ctoken_decode_get_nth_submod(struct ctoken_decode_ctx *me,
+                             uint32_t                  submod_index,
+                             enum ctoken_type         *type,
+                             struct q_useful_buf_c    *token)
 {
-    QCBORItem Item;
+    QCBORItem         item;
     enum ctoken_err_t return_value;
+    uint32_t          n;
 
-    descend_submod(me);
+    return_value = descend_submod(me);
+    if(return_value != CTOKEN_ERR_SUCCESS) {
+        goto Done;
+    }
 
-    return_value = ctoken_decode_eat_nth_submod(me, submod_index, NULL);
+    return_value = ctoken_decode_nth_submod(me, submod_index, &n);
     if(return_value != CTOKEN_ERR_SUCCESS) {
         return return_value;
     }
 
-    QCBORDecode_GetNext(&(me->qcbor_decode_context), &Item);
+    if(n != submod_index) {
+        return_value = CTOKEN_SUBMOD_INDEX_TOO_LARGE;
+        ascend_submod(me);
+        goto Done;
+    }
 
-    return_value = ctoken_eat_decode_finish_token(me, Item, type, token);
+    QCBORDecode_VGetNext(&(me->qcbor_decode_context), &item);
+    // Errors check in next call to ctoken_decode_submod_token
 
-    ascend_submod(me);
 
+    return_value = ctoken_decode_submod_token(me, &item, type, token);
+    if(return_value != CTOKEN_ERR_SUCCESS) {
+         return return_value;
+     }
+
+    return_value = ascend_submod(me);
+
+Done:
     return return_value;
 }
