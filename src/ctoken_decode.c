@@ -80,6 +80,7 @@ static enum ctoken_err_t t_cose_verify_error_map[] = {
     /*     T_COSE_ERR_NO_ALG_ID */
     CTOKEN_ERR_COSE_SIGN1_FORMAT,
     /*     T_COSE_ERR_NO_KID */
+    0, // TODO: fix this list 
     CTOKEN_ERR_COSE_SIGN1_FORMAT,
     /*     T_COSE_ERR_SIG_VERIFY */
     CTOKEN_ERR_COSE_SIGN1_VALIDATION,
@@ -783,7 +784,6 @@ ctoken_decode_get_nth_submod(struct ctoken_decode_ctx *me,
 
     QCBORDecode_VGetNext(&(me->qcbor_decode_context), &item);
     // Errors check in next call to ctoken_decode_submod_token
-
 
     return_value = ctoken_decode_submod_token(me, &item, type, token);
     if(return_value != CTOKEN_ERR_SUCCESS) {
