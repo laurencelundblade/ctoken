@@ -12,14 +12,31 @@
 
 
 # ---- QCBOR location ----
-# Adjust this to the location of QCBOR in your build environment
-QCBOR_INC= -I ../../QCBOR/master/inc
-QCBOR_LIB=../../QCBOR/master/libqcbor.a
+
+# This is for direct reference to QCBOR that is not installed in
+# /usr/local or some system location. The path names may need to be
+# adjusted for your location of QCBOR.
+#QCBOR_INC= -I ../../QCBOR/master/inc
+#QCBOR_LIB=../../QCBOR/master/libqcbor.a
+
+# This is for reference to QCBOR that has been installed in
+# /usr/local/ or in some system location.
+QCBOR_INC= -I /usr/local/include
+QCBOR_LIB= -l qcbor
 
 # ---- t_cose location ----
-# Adjust this to the location of t_cose in your build environment
-T_COSE_INC= -I ../../t_cose/master/inc
-T_COSE_LIB=../../t_cose/master/libt_cose.a
+
+# This is for direct reference to t_cose that is not installed in
+# /usr/local or some system location. The path names may need to be
+# adjusted for your location of t_cose.
+#T_COSE_INC= -I ../../t_cose/master/inc
+#T_COSE_LIB=../../t_cose/master/libt_cose.a
+
+# This is for reference to t_cose that has been installed in
+# /usr/local/ or in some system location.
+T_COSE_INC= -I /usr/local/include
+T_COSE_LIB= -l t_cose
+
 
 # ---- crypto configuration -----
 # The lib and inc directories may have to be adjusted for your build environment.
@@ -27,8 +44,15 @@ CRYPTO_LIB=../../mbed-crypto/library/libmbedcrypto.a
 CRYPTO_INC= -I  ../../mbed-crypto/include/
 
 # ---- compiler configuration -----
-C_OPTS=-Os -Wall -pedantic-errors -Wextra -Wshadow -Wparentheses -xc -std=c99
+CC=cc
 
+# Optimize for size
+C_OPTS=-Os -fPIC
+
+# The following are used before a release of t_cose help to make sure
+# the code compiles and runs in the most strict environments, but not
+# all compilers support them so they are not turned on.
+#C_OPTS=-Os -fpic -Wall -pedantic-errors -Wextra -Wshadow -Wparentheses -Wconversion -xc -std=c99
 
 # ---- T_COSE Config and test options ----
 TEST_CONFIG_OPTS=

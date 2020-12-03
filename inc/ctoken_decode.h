@@ -19,9 +19,10 @@
 #include "ctoken_cwt_labels.h"
 #include "ctoken_eat_labels.h"
 
+
 #ifdef __cplusplus
 extern "C" {
-#ifdef 0
+#if 0
 } /* Keep editor indention formatting happy */
 #endif
 #endif

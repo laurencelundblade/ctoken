@@ -472,16 +472,8 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				HEADER_SEARCH_PATHS = (
-					../../QCBOR/master/inc,
-					../../t_cose/SpiffyDecode/inc,
-					/usr/local/include,
-				);
-				"LIBRARY_SEARCH_PATHS[arch=*]" = (
-					../../t_cose/SpiffyDecode,
-					"../../openssl/openssl-1.1.1b",
-					/usr/local/lib,
-				);
+				HEADER_SEARCH_PATHS = /usr/local/include;
+				LIBRARY_SEARCH_PATHS = /usr/local/lib;
 				MACOSX_DEPLOYMENT_TARGET = 10.13;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -534,11 +526,8 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				HEADER_SEARCH_PATHS = (
-					../../QCBOR/master/inc,
-					../../t_cose/SpiffyDecode/inc,
-					/usr/local/include,
-				);
+				"HEADER_SEARCH_PATHS[arch=*]" = /usr/local/include;
+				LIBRARY_SEARCH_PATHS = /usr/local/lib;
 				MACOSX_DEPLOYMENT_TARGET = 10.13;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = macosx;
@@ -574,7 +563,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				"HEADER_SEARCH_PATHS[arch=*]" = "/Users/laurencelundblade/Code/openssl/openssl-1.1.1b/include";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -591,12 +579,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				"HEADER_SEARCH_PATHS[arch=*]" = "/Users/laurencelundblade/Code/mbed-crypto/include";
-				"LIBRARY_SEARCH_PATHS[arch=*]" = (
-					/Users/laurencelundblade/Code/t_cose/master,
-					/Users/laurencelundblade/Code/QCBOR/master,
-					"/Users/laurencelundblade/Code/mbed-crypto/library",
-				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
