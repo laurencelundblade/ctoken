@@ -14,24 +14,30 @@
 
 # ---- QCBOR location ----
 # This is for direct reference to QCBOR that is not installed in
-# /usr/local or some system location. The path names may need to be
+# /usr/local or some system location. The path may need to be
 # adjusted for your location of QCBOR.
-#QCBOR_INC= -I ../../QCBOR/master/inc
-#QCBOR_LIB=../../QCBOR/master/libqcbor.a
+#QCBOR_DIR=../../QCBOR/master
+#QCBOR_INC=-I $(QCBOR_DIR)/inc
+#QCBOR_LIB=$(QCBOR_DIR)/libqcbor.a
 
 # This is for reference to QCBOR that has been installed in
-# /usr/local/ or in some system location.
-QCBOR_INC= -I /usr/local/include
-QCBOR_LIB= -lqcbor
+# /usr/local/ or in some system location. This will typically
+# use dynamic linking if there is a libqcbor.so
+QCBOR_INC=-I /usr/local/include
+QCBOR_LIB=-lqcbor
 
 
 # ---- t_cose location ----
 # Adjust this to the location of t_cose in your build environment
-#T_COSE_INC= -I ../../t_cose/master/inc
-#T_COSE_LIB=../../t_cose/master/libt_cose.a
+#T_COSE_DIR=../../t_cose/master
+#T_COSE_INC= -I $(T_COSE_DIR)/inc
+#T_COSE_LIB=$(T_COSE_DIR)/libt_cose.a
 
-T_COSE_INC= -I /usr/local/include
-T_COSE_LIB= -lt_cose
+# This is for reference to QCBOR that has been installed in
+# /usr/local/ or in some system location. This will typically
+# use dynamic linking if there is a libqcbor.so
+T_COSE_INC=-I /usr/local/include
+T_COSE_LIB=-lt_cose
 
 
 # ---- crypto configuration -----
@@ -86,14 +92,15 @@ clean:
 
 
 # ---- public headers -----
-PUBLIC_INTERFACE=inc/ctoken_encode.h inc/ctoken_decode.h \
-                  inc/ctoken_cwt_labels.h 
+PUBLIC_INTERFACE=inc/ctoken.h inc/ctoken_encode.h inc/ctoken_decode.h \
+                  inc/ctoken_cwt_labels.h inc/ctoken_eat_labels.h \
+                  inc/ctoken_psaia_decode.h inc/ctoken_psaia_encode.h inc/ctoken_psaia_labels.h
 
 # ---- source dependecies -----
-src/ctoken_encode.o:	inc/ctoken_encode.h
-src/ctoken_decode.o:	inc/ctoken_decode.h 
-src/ctoken_psaia_encode.o:	inc/ctoken_psaia_encode.h inc/ctoken_psaia_labels.h  inc/ctoken_cwt_labels.h
-src/ctoken_psaia_decode.o:	inc/ctoken_psaia_decode.h inc/ctoken_psaia_labels.h  inc/ctoken_cwt_labels.h
+src/ctoken_encode.o:	inc/ctoken_encode.h inc/ctoken.h inc/ctoken_cwt_labels.h inc/ctoken_eat_labels.h
+src/ctoken_decode.o:	inc/ctoken_decode.h inc/ctoken.h inc/ctoken_cwt_labels.h inc/ctoken_eat_labels.h
+src/ctoken_psaia_encode.o:	inc/ctoken_psaia_encode.h inc/ctoken.h inc/ctoken_psaia_labels.h  inc/ctoken_cwt_labels.h inc/ctoken_eat_labels.h
+src/ctoken_psaia_decode.o:	inc/ctoken_psaia_decode.h inc/ctoken.h inc/ctoken_psaia_labels.h  inc/ctoken_cwt_labels.h inc/ctoken_eat_labels.h
 
 
 # ---- test dependencies -----
@@ -102,3 +109,4 @@ test/eat_test.o:	test/eat_test.h $(PUBLIC_INTERFACE)
 
 # ---- example dependencies ----
 eat_example_ossl.o:	$(PUBLIC_INTERFACE)
+
