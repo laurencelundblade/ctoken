@@ -112,6 +112,7 @@
 		E76A6E5025662EDA00DEBB41 /* ieee754.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = ieee754.c; path = ../../QCBOR/master/src/ieee754.c; sourceTree = "<group>"; };
 		E76A6E5125662EDA00DEBB41 /* ieee754.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ieee754.h; path = ../../QCBOR/master/src/ieee754.h; sourceTree = "<group>"; };
 		E76A6E5325662EDA00DEBB41 /* qcbor_err_to_str.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = qcbor_err_to_str.c; path = ../../QCBOR/master/src/qcbor_err_to_str.c; sourceTree = "<group>"; };
+		E7FDBF1725787DD1007138A8 /* t_cose */ = {isa = PBXFileReference; lastKnownFileType = folder; name = t_cose; path = ../../t_cose/master/inc/t_cose; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -174,6 +175,7 @@
 		0F3AF32323E4E86A00A60561 /* t_cose */ = {
 			isa = PBXGroup;
 			children = (
+				E7FDBF1725787DD1007138A8 /* t_cose */,
 				0F3AF32423E4E8B500A60561 /* inc */,
 			);
 			name = t_cose;
