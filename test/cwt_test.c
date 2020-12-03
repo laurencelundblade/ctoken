@@ -13,11 +13,13 @@
 
 #include "cwt_test.h"
 
-#include "ctoken_cwt_encode.h"
-#include "ctoken_cwt_decode.h"
 
 #include "t_cose/t_cose_common.h"
 #include "t_cose/t_cose_sign1_sign.h"
+
+#include "ctoken_encode.h"
+#include "ctoken_decode.h"
+
 
 
 int32_t cwt_test()
@@ -46,7 +48,7 @@ int32_t cwt_test()
 
     /* --- Add the claims --- */
 
-    ctoken_encode_cwt_expiration(&encode_ctx, 9999);
+    ctoken_encode_expiration(&encode_ctx, 9999);
 
     /* --- Done adding the claims --- */
 
@@ -64,8 +66,7 @@ int32_t cwt_test()
     int64_t expiration;
     /* Set up to verify and decode the token */
 
-    /* Initialize the decoder / verifier context. No options are set
-     * so two 0's are passed
+    /* Initialize the decoder / verifier context. 
      */
     ctoken_decode_init(&decode_context, T_COSE_OPT_ALLOW_SHORT_CIRCUIT, 0);
 
@@ -78,7 +79,7 @@ int32_t cwt_test()
     }
 
     /* Get the expiration and see that it is what was expected */
-    result = ctoken_decode_cwt_expiration(&decode_context, &expiration);
+    result = ctoken_decode_expiration(&decode_context, &expiration);
     if(result) {
         return 400 +(int32_t)result;
     }

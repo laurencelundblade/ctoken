@@ -53,6 +53,9 @@ static test_entry s_tests[] = {
     TEST_ENTRY(psaia_basic_test),
     TEST_ENTRY(basic_eat_test),
     TEST_ENTRY(cwt_test),
+    TEST_ENTRY(submods_test),
+    TEST_ENTRY(submods_errors_test),
+    TEST_ENTRY(submod_decode_errors_test)
 };
 
 

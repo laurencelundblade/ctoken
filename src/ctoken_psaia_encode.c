@@ -18,11 +18,11 @@ void ctoken_psaia_encode_simple_claims(struct ctoken_encode_ctx *me,
                                        const struct ctoken_psaia_simple_claims_t *claims)
 {
     if(IS_ITEM_FLAG_SET(NONCE_FLAG, claims->item_flags)) {
-        ctoken_psaia_encode_nonce(me, claims->nonce);
+        ctoken_encode_nonce(me, claims->nonce);
     }
 
     if(IS_ITEM_FLAG_SET(UEID_FLAG, claims->item_flags)) {
-        ctoken_psaia_encode_ueid(me, claims->ueid);
+        ctoken_encode_ueid(me, claims->ueid);
     }
 
     if(IS_ITEM_FLAG_SET(BOOT_SEED_FLAG, claims->item_flags)) {

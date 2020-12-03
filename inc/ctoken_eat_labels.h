@@ -55,7 +55,7 @@ extern "C" {
 /**
  * This gives a rough notion of the security level of the attester.
  */
-enum ctoken_eat_security_level_t {
+enum ctoken_security_level_t {
     /** Signing key is protected by a general purpose OS running on generic
       * hardware
       */
@@ -77,7 +77,7 @@ enum ctoken_eat_security_level_t {
  * This characterizes the hardware and system debug state of the
  * attestor.
  */
-enum ctoken_eat_debug_level_t {
+enum ctoken_debug_level_t {
     /** The debug state is not reported. It is not know what it is */
     EAT_DL_NOT_REPORTED = 0,
     /** The debug system is enabled */
@@ -116,9 +116,9 @@ enum ctoken_eat_debug_level_t {
 
 
 /**
- * Holds a location (e.g. a GPS position).
+ * Holds a geographic location (e.g. a GPS position).
  */
-struct ctoken_eat_location_t {
+struct ctoken_location_t {
     /** Array of doubles to old latitude, longitude... indexed
      * CTOKEN_EAT_LABEL_XXX - 1. Use accessor macros below for
      * convenience. Array entry is only valid id flag for it is set
@@ -138,6 +138,22 @@ struct ctoken_eat_location_t {
 #define  eat_loc_altitude_accuracy items[CTOKEN_EAT_LABEL_ALTITUDE_ACCURACY-1]
 #define  eat_loc_heading    items[CTOKEN_EAT_LABEL_HEADING-1]
 #define  eat_loc_speed      items[CTOKEN_EAT_LABEL_SPEED-1]
+
+
+/** The type of a submodule that is a token. */
+enum ctoken_type {
+    /** The submodule token is a CWT as defined by RFC 8392. It may be
+     * a CWT tag or CWT protocol message. It may be signed and/or encrypted.
+     * It may not be a UCCS per the EAT draft.
+     */
+    CTOKEN_TYPE_CWT,
+
+    /** The submodule token is a JWT as defined by RFC 7519. It must not be
+     * an unsecured JWT per the EAT draft.
+     */
+    CTOKEN_TYPE_JSON
+};
+
 
 #ifdef __cplusplus
 }

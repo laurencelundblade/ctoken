@@ -15,7 +15,7 @@
 #define psa_ia_encode_h
 
 #include "ctoken_psaia_labels.h"
-#include "ctoken_eat_encode.h"
+#include "ctoken_encode.h"
 
 
 #ifdef __cplusplus
@@ -47,22 +47,6 @@ void ctoken_psaia_encode_simple_claims(struct ctoken_encode_ctx *context,
                                        const struct ctoken_psaia_simple_claims_t *claims);
 
 
-/**
- * \brief Encode the nonce / challenge seed in to the token.
- *
- * \param[in] context  The token encoder context.
- * \param[in] nonce    Pointer and length of nonce to output.
- *
- * This outputs the nonce claim.
- *
- * If there is an error like insufficient space in the output buffer,
- * the error state is entered. It is returned later when ctoken_encode_finish()
- * is called.
- */
-static inline void
-ctoken_psaia_encode_nonce(struct ctoken_encode_ctx *context,
-                          struct q_useful_buf_c nonce);
-
 
 /**
  * \brief Encode the boot seed in to the token.
@@ -80,28 +64,10 @@ ctoken_psaia_encode_nonce(struct ctoken_encode_ctx *context,
  * the error state is entered. It is returned later when ctoken_encode_finish()
  * is called.
  */
-static inline void
+static void
 ctoken_psaia_encode_boot_seed(struct ctoken_encode_ctx *context,
                               struct q_useful_buf_c boot_seed);
 
-/**
- * \brief Encode the UEID in to the token.
- *
- * \param[in] context  The token encoder context.
- * \param[in] ueid     Pointer and length of UEID to output.
- *
- * This outputs the UEID claim.
- *
- * The UEID is the Universal Entity ID, an opaque binary blob that uniquely
- * identifies the device.
- *
- * If there is an error like insufficient space in the output buffer,
- * the error state is entered. It is returned later when ctoken_encode_finish()
- * is called.
- */
-static inline void
-ctoken_psaia_encode_ueid(struct ctoken_encode_ctx *context,
-                         struct q_useful_buf_c ueid);
 
 /**
  * \brief Encode the hardware version in to the token.
@@ -241,28 +207,11 @@ ctoken_psaia_encode_client_id(struct ctoken_encode_ctx *context,
 
 
 static inline void
-ctoken_psaia_encode_nonce(struct ctoken_encode_ctx *me,
-                          struct q_useful_buf_c nonce)
-{
-    ctoken_eat_encode_nonce(me, nonce);
-}
-
-
-static inline void
 ctoken_psaia_encode_boot_seed(struct ctoken_encode_ctx *me,
                               struct q_useful_buf_c boot_seed)
 {
     ctoken_encode_add_bstr(me, EAT_CBOR_ARM_LABEL_BOOT_SEED, boot_seed);
 }
-
-
-static inline void
-ctoken_psaia_encode_ueid(struct ctoken_encode_ctx *me,
-                         struct q_useful_buf_c ueid)
-{
-    ctoken_eat_encode_ueid(me, ueid);
-}
-
 
 static inline void
 ctoken_psaia_encode_hw_version(struct ctoken_encode_ctx *me,
@@ -282,7 +231,7 @@ static inline void
 ctoken_psaia_encode_origination(struct ctoken_encode_ctx *me,
                                 struct q_useful_buf_c origination)
 {
-    ctoken_eat_encode_origination(me, origination);
+    ctoken_encode_origination(me, origination);
 }
 
 static inline void
