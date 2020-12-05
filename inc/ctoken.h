@@ -91,13 +91,15 @@ enum ctoken_err_t {
     /** All submodules and submodule sections were not closed out. */
     CTOKEN_ERR_SUBMODS_NOT_CLOSED,
     /** The name of a submodule is not a text string. */
-    CTOKEN_SUBMOD_NAME_NOT_A_TEXT_STRING,
+    CTOKEN_ERR_SUBMOD_NAME_NOT_A_TEXT_STRING,
     /** Index beyond the number of submodules. */
-    CTOKEN_SUBMOD_INDEX_TOO_LARGE,
+    CTOKEN_ERR_SUBMOD_INDEX_TOO_LARGE,
     /** No submodule of the given name as found. */
-    CTOKEN_NAMED_SUBMOD_NOT_FOUND,
-
-
+    CTOKEN_ERR_NAMED_SUBMOD_NOT_FOUND,
+    /** Submodule is the wrong CBOR type */
+    CTOKEN_ERR_SUBMOD_TYPE,
+    /** Submods section is missing or wrong type */
+    CTOKEN_ERR_SUBMOD_SECTION,
 };
 
 

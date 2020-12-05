@@ -111,6 +111,8 @@ static inline enum ctoken_err_t map_qcbor_error(QCBORError error)
     // TODO: make this better
     if(QCBORDecode_IsNotWellFormedError(error)) {
         return CTOKEN_ERR_CBOR_NOT_WELL_FORMED;
+    } else if(error == QCBOR_ERR_LABEL_NOT_FOUND) {
+        return CTOKEN_ERR_NOT_FOUND;
     } else if(error) {
         return CTOKEN_ERR_GENERAL;
     } else {
@@ -468,6 +470,9 @@ descend_submod(struct ctoken_decode_ctx *me)
         return CTOKEN_ERR_SUBMOD_NESTING_TOO_DEEP;
     }
     QCBORDecode_EnterMapFromMapN(&(me->qcbor_decode_context), CTOKEN_EAT_LABEL_SUBMODS);
+    if(QCBORDecode_GetAndResetError(&(me->qcbor_decode_context))) {
+        return CTOKEN_ERR_SUBMOD_SECTION;
+    }
     me->in_submods++;
 
     return CTOKEN_ERR_SUCCESS;
@@ -599,7 +604,7 @@ ctoken_decode_enter_nth_submod(struct ctoken_decode_ctx *me,
     }
 
     if(num_submods != submod_index) {
-        return_value = CTOKEN_SUBMOD_INDEX_TOO_LARGE;
+        return_value = CTOKEN_ERR_SUBMOD_INDEX_TOO_LARGE;
         ascend_submod(me);
         goto Done;
     }
@@ -612,7 +617,9 @@ ctoken_decode_enter_nth_submod(struct ctoken_decode_ctx *me,
     }
 
     if(map_item.uLabelType != QCBOR_TYPE_TEXT_STRING) {
-        return_value = CTOKEN_SUBMOD_NAME_NOT_A_TEXT_STRING;
+        return_value = CTOKEN_ERR_SUBMOD_NAME_NOT_A_TEXT_STRING;
+        QCBORDecode_ExitMap(&(me->qcbor_decode_context));
+        ascend_submod(me);
         goto Done;
     }
 
@@ -641,8 +648,10 @@ ctoken_decode_enter_submod_sz(struct ctoken_decode_ctx *me,
     QCBORDecode_EnterMapFromMapSZ(&(me->qcbor_decode_context), name);
     error = QCBORDecode_GetAndResetError(&(me->qcbor_decode_context));
     if(error == QCBOR_ERR_LABEL_NOT_FOUND) {
-        return_value = CTOKEN_NAMED_SUBMOD_NOT_FOUND;
+        return_value = CTOKEN_ERR_NAMED_SUBMOD_NOT_FOUND;
         goto Done;
+    } else if(error == QCBOR_ERR_UNEXPECTED_TYPE) {
+        return_value = CTOKEN_ERR_SUBMOD_TYPE;
     } else if(error != QCBOR_SUCCESS) {
         return_value = map_qcbor_error(error);
         goto Done;
@@ -667,15 +676,15 @@ ctoken_decode_exit_submod(struct ctoken_decode_ctx *me)
     enum ctoken_err_t return_value;
     QCBORError        error;
 
-    return_value = ascend_submod(me);
-    if(return_value != CTOKEN_ERR_SUCCESS) {
-        goto Done;
-    }
-
     QCBORDecode_ExitMap(&(me->qcbor_decode_context));
     error = QCBORDecode_GetAndResetError(&(me->qcbor_decode_context));
     if(error != QCBOR_SUCCESS) {
         return_value = map_qcbor_error(error);
+        goto Done;
+    }
+
+    return_value = ascend_submod(me);
+    if(return_value != CTOKEN_ERR_SUCCESS) {
         goto Done;
     }
 
@@ -695,9 +704,9 @@ ctoken_decode_submod_token(struct ctoken_decode_ctx  *me,
 
     qcbor_error = QCBORDecode_GetAndResetError(&(me->qcbor_decode_context));
     if(qcbor_error == QCBOR_ERR_LABEL_NOT_FOUND) {
-        return_value = CTOKEN_NAMED_SUBMOD_NOT_FOUND;
+        return_value = CTOKEN_ERR_NAMED_SUBMOD_NOT_FOUND;
         goto Done;
-    } else  if(qcbor_error != QCBOR_SUCCESS) {
+    } else if(qcbor_error != QCBOR_SUCCESS) {
         return_value = map_qcbor_error(qcbor_error);
         goto Done;
     }
@@ -710,7 +719,7 @@ ctoken_decode_submod_token(struct ctoken_decode_ctx  *me,
         *token = item->val.string;
         *type = CTOKEN_TYPE_JSON;
     } else {
-        return_value = CTOKEN_ERR_TOKEN_FORMAT;
+        return_value = CTOKEN_ERR_SUBMOD_TYPE;
         goto Done;
     }
 
@@ -777,7 +786,7 @@ ctoken_decode_get_nth_submod(struct ctoken_decode_ctx *me,
     }
 
     if(n != submod_index) {
-        return_value = CTOKEN_SUBMOD_INDEX_TOO_LARGE;
+        return_value = CTOKEN_ERR_SUBMOD_INDEX_TOO_LARGE;
         ascend_submod(me);
         goto Done;
     }
