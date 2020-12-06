@@ -376,7 +376,8 @@ void ctoken_encode_start_submod_section(struct ctoken_encode_ctx *me)
 
     me->error = submod_state_start_section(&(me->submod_state));
     if(me->error == CTOKEN_ERR_SUCCESS) {
-        QCBOREncode_OpenMapInMapN(&(me->cbor_encode_context), CTOKEN_EAT_LABEL_SUBMODS);
+        QCBOREncode_OpenMapInMapN(&(me->cbor_encode_context),
+                                  CTOKEN_EAT_LABEL_SUBMODS);
     }
 }
 
@@ -433,7 +434,7 @@ void ctoken_encode_close_submod(struct ctoken_encode_ctx *me)
 /*
  * Public function. See ctoken_encode.h
  */
-void ctoken_encode_add_token(struct ctoken_encode_ctx *me,
+void ctoken_encode_nested_token(struct ctoken_encode_ctx *me,
                              enum ctoken_type          type,
                              const  char              *submod_name,
                              struct q_useful_buf_c     token)
