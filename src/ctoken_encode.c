@@ -188,14 +188,9 @@ static enum ctoken_err_t t_cose_err_to_attest_err(enum t_cose_err_t err)
 }
 
 
-/*
- * Public function. See attest_token_decode.h
- */
-enum ctoken_err_t
-ctoken_encode_start(struct ctoken_encode_ctx  *me,
-                    const struct q_useful_buf  out_buf)
+static enum ctoken_err_t
+ctoken_encode_start2(struct ctoken_encode_ctx *me, const struct q_useful_buf out_buf)
 {
-    /* approximate stack usage on 32-bit machine: 4 bytes */
     enum t_cose_err_t cose_return_value;
     enum ctoken_err_t return_value;
 
@@ -213,15 +208,61 @@ ctoken_encode_start(struct ctoken_encode_ctx  *me,
      */
     cose_return_value = t_cose_sign1_encode_parameters(&(me->signer_ctx),
                                                        &(me->cbor_encode_context));
-    if(cose_return_value) {
-        return_value = t_cose_err_to_attest_err(cose_return_value);
-        goto Done;
-    }
+    return_value = t_cose_err_to_attest_err(cose_return_value);
+
+    return return_value;
+}
+
+
+/*
+ * Public function. See attest_token_decode.h
+ */
+enum ctoken_err_t
+ctoken_encode_start(struct ctoken_encode_ctx  *me,
+                    const struct q_useful_buf  out_buf)
+{
+    enum ctoken_err_t return_value = ctoken_encode_start2(me, out_buf);
 
     QCBOREncode_OpenMap(&(me->cbor_encode_context));
 
     return_value = CTOKEN_ERR_SUCCESS;
 
+Done:
+    return return_value;
+}
+
+
+static enum ctoken_err_t
+ctoken_encode_finish2(struct ctoken_encode_ctx *me, struct q_useful_buf_c *completed_token)
+{
+    QCBORError            qcbor_result;
+    enum t_cose_err_t     cose_return_value;
+    enum ctoken_err_t     return_value;
+    /* The payload with all the claims that is signed */
+    /* The completed and signed encoded cose_sign1 */
+    struct q_useful_buf_c  completed_token_ub;
+
+    /* Finish off the cose signature. This does all the interesting work of
+     hashing and signing */
+    cose_return_value = t_cose_sign1_encode_signature(&(me->signer_ctx), &(me->cbor_encode_context));
+    if(cose_return_value) {
+        /* Main errors are invoking the hash or signature */
+        return_value = t_cose_err_to_attest_err(cose_return_value);
+        goto Done;
+    }
+
+    return_value = CTOKEN_ERR_SUCCESS;
+
+    /* Close off the CBOR encoding and return the completed token */
+    qcbor_result = QCBOREncode_Finish(&(me->cbor_encode_context),  &completed_token_ub);
+    if(qcbor_result == QCBOR_ERR_BUFFER_TOO_SMALL) {
+        return_value = CTOKEN_ERR_TOO_SMALL;
+    } else if (qcbor_result != QCBOR_SUCCESS) {
+        /* likely from array not closed, too many closes, ... */
+        return_value = CTOKEN_ERR_CBOR_FORMATTING;
+    } else {
+        *completed_token = completed_token_ub;
+    }
 Done:
     return return_value;
 }
@@ -234,13 +275,7 @@ enum ctoken_err_t
 ctoken_encode_finish(struct ctoken_encode_ctx *me,
                      struct q_useful_buf_c    *completed_token)
 {
-    /* approximate stack usage on 32-bit machine: 4 + 4 + 8 + 8 = 24 */
     enum ctoken_err_t       return_value = CTOKEN_ERR_SUCCESS;
-    /* The payload with all the claims that is signed */
-    /* The completed and signed encoded cose_sign1 */
-    struct q_useful_buf_c   completed_token_ub;
-    QCBORError              qcbor_result;
-    enum t_cose_err_t       cose_return_value;
 
     if(me->error != CTOKEN_ERR_SUCCESS) {
         return_value = me->error;
@@ -252,29 +287,35 @@ ctoken_encode_finish(struct ctoken_encode_ctx *me,
         goto Done;
     }
 
-
     /* Close the map that holds all the claims */
     QCBOREncode_CloseMap(&(me->cbor_encode_context));
 
-    /* Finish off the cose signature. This does all the interesting work of
-     hashing and signing */
-    cose_return_value = t_cose_sign1_encode_signature(&(me->signer_ctx), &(me->cbor_encode_context));
-    if(cose_return_value) {
-        /* Main errors are invoking the hash or signature */
-        return_value = t_cose_err_to_attest_err(cose_return_value);
+    return_value = ctoken_encode_finish2(me, completed_token);
+
+Done:
+    return return_value;
+}
+
+
+/*
+ * Public function. See ctoken_eat_encode.h
+ */
+enum ctoken_err_t
+ctoken_encode_one_shot(struct ctoken_encode_ctx    *me,
+                       const struct q_useful_buf    out_buf,
+                       const struct q_useful_buf_c  encoded_payload,
+                       struct q_useful_buf_c       *completed_token)
+{
+    enum ctoken_err_t       return_value;
+
+    return_value = ctoken_encode_start2(me, out_buf);
+    if(return_value != CTOKEN_ERR_SUCCESS) {
         goto Done;
     }
 
-    /* Close off the CBOR encoding and return the completed token */
-    qcbor_result = QCBOREncode_Finish(&(me->cbor_encode_context),  &completed_token_ub);
-    if(qcbor_result == QCBOR_ERR_BUFFER_TOO_SMALL) {
-        return_value = CTOKEN_ERR_TOO_SMALL;
-    } else if (qcbor_result != QCBOR_SUCCESS) {
-        /* likely from array not closed, too many closes, ... */
-        return_value = CTOKEN_ERR_CBOR_FORMATTING;
-    } else {
-        *completed_token = completed_token_ub;
-    }
+    QCBOREncode_AddEncoded(&(me->cbor_encode_context), encoded_payload);
+
+    return_value = ctoken_encode_finish2(me, completed_token);
 
 Done:
     return return_value;
@@ -335,7 +376,8 @@ void ctoken_encode_start_submod_section(struct ctoken_encode_ctx *me)
 
     me->error = submod_state_start_section(&(me->submod_state));
     if(me->error == CTOKEN_ERR_SUCCESS) {
-        QCBOREncode_OpenMapInMapN(&(me->cbor_encode_context), CTOKEN_EAT_LABEL_SUBMODS);
+        QCBOREncode_OpenMapInMapN(&(me->cbor_encode_context),
+                                  CTOKEN_EAT_LABEL_SUBMODS);
     }
 }
 
@@ -392,7 +434,7 @@ void ctoken_encode_close_submod(struct ctoken_encode_ctx *me)
 /*
  * Public function. See ctoken_encode.h
  */
-void ctoken_encode_add_token(struct ctoken_encode_ctx *me,
+void ctoken_encode_nested_token(struct ctoken_encode_ctx *me,
                              enum ctoken_type          type,
                              const  char              *submod_name,
                              struct q_useful_buf_c     token)

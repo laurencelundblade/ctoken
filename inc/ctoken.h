@@ -80,24 +80,30 @@ enum ctoken_err_t {
     CTOKEN_ERR_SUBMOD_NESTING_TOO_DEEP,
     /** Trying to close a submod with no submods open. */
     CTOKEN_ERR_NO_SUBMOD_OPEN,
-    /** When decoding, something wrong with the token format other than CBOR not well formed. */
+    /** When decoding, something wrong with the token format other
+     * than CBOR not well formed. */
     CTOKEN_ERR_TOKEN_FORMAT,
-    /** Can't start submodule section because one is already started, or one was started and completed for this submodule.*/
+    /** Can't start submodule section because one is already started,
+      * or one was started and completed for this submodule. */
     CTOKEN_CANT_START_SUBMOD_SECTION,
-    /** Trying to end a submod section with no submod section started. */
+    /** Trying to end a submod section with no submod section
+     * started. */
     CTOKEN_ERR_NO_SUBMOD_SECTION_STARTED,
-    /** Attempting to make a submod or add a token without starting a submod section */
+    /** Attempting to make a submod or add a token without starting a
+      * submod section */
     CTOKEN_ERR_CANT_MAKE_SUBMOD_IN_SUBMOD,
     /** All submodules and submodule sections were not closed out. */
     CTOKEN_ERR_SUBMODS_NOT_CLOSED,
     /** The name of a submodule is not a text string. */
-    CTOKEN_SUBMOD_NAME_NOT_A_TEXT_STRING,
+    CTOKEN_ERR_SUBMOD_NAME_NOT_A_TEXT_STRING,
     /** Index beyond the number of submodules. */
-    CTOKEN_SUBMOD_INDEX_TOO_LARGE,
+    CTOKEN_ERR_SUBMOD_INDEX_TOO_LARGE,
     /** No submodule of the given name as found. */
-    CTOKEN_NAMED_SUBMOD_NOT_FOUND,
-
-
+    CTOKEN_ERR_NAMED_SUBMOD_NOT_FOUND,
+    /** Submodule is the wrong CBOR type */
+    CTOKEN_ERR_SUBMOD_TYPE,
+    /** Submods section is missing or wrong type */
+    CTOKEN_ERR_SUBMOD_SECTION,
 };
 
 

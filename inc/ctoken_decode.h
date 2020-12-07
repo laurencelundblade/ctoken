@@ -848,8 +848,8 @@ ctoken_decode_age(struct ctoken_decode_ctx  *context,
  * This is the time in seconds since the device booted or started.
  *
  * If there is an error like insufficient space in the output buffer,
- * the error state is entered. It is returned later when ctoken_encode_finish()
- * is called.
+ * the error state is entered. It is returned later when
+ * ctoken_encode_finish() is called.
  */
 static inline enum ctoken_err_t
 ctoken_decode_uptime(struct ctoken_decode_ctx *context,
@@ -865,7 +865,8 @@ ctoken_decode_uptime(struct ctoken_decode_ctx *context,
  *
  * \returns A ctoken error code
  *
- * This returns the number of submolues at the current submodule nesting level.
+ * This returns the number of submodules at the current submodule
+ * nesting level.
  */
 enum ctoken_err_t
 ctoken_decode_get_num_submods(struct ctoken_decode_ctx *context,
@@ -874,17 +875,18 @@ ctoken_decode_get_num_submods(struct ctoken_decode_ctx *context,
 /**
  * \brief Enter the nth submodule.
  *
- * \param[in] context         The decoding context.
- * \param[in] submod_index     Index of the submodule to enter.
- * \param[out] name                  The returned string name of the submodule.
+ * \param[in] context       The decoding context.
+ * \param[in] submod_index  Index of the submodule to enter.
+ * \param[out] name         The returned string name of the submodule.
  *
  * \returns A ctoken error code
  *
- * After this call, all claims fetched will be from the submodule that was entered.
- * This, and the other functions to enter submodules, may be called multiple
- * times to enter nested submodules.
+ * After this call, all claims fetched will be from the submodule that
+ * was entered.  This, and the other functions to enter submodules,
+ * may be called multiple times to enter nested submodules.
  *
- * The \c name parameter may be NULL if the submodule name is not of interest.
+ * The \c name parameter may be NULL if the submodule name is not of
+ * interest.
  */
 enum ctoken_err_t
 ctoken_decode_enter_nth_submod(struct ctoken_decode_ctx *context,
@@ -900,9 +902,9 @@ ctoken_decode_enter_nth_submod(struct ctoken_decode_ctx *context,
  *
  * \returns A ctoken error code
  *
- * After this call, all claims fetched will be from the submodule that was entered.
- * This, and the other functions to enter submodules, may be called multiple
- * times to enter nested submodules.
+ * After this call, all claims fetched will be from the submodule that
+ * was entered.  This, and the other functions to enter submodules,
+ * may be called multiple times to enter nested submodules.
  */
 enum ctoken_err_t
 ctoken_decode_enter_submod_sz(struct ctoken_decode_ctx *context,
@@ -910,7 +912,7 @@ ctoken_decode_enter_submod_sz(struct ctoken_decode_ctx *context,
 
 
 /**
- * \brief Exit one submodule level
+ * \brief Exit one submodule level.
  *
  * \param[in] context         The decoding context.
  *
@@ -923,45 +925,46 @@ ctoken_decode_exit_submod(struct ctoken_decode_ctx *context);
 
 
 /**
- * \brief Enter the nth submodule.
+ * \brief Get the nth nested token.
  *
- * \param[in] context         The decoding context.
- * \param[in] submod_index     Index of the submodule to fetch.
- * \param[out] type                  The type of the nested token returned.
- * \param[out] token           Pointer and length of the token returned.
+ * \param[in] context       The decoding context.
+ * \param[in] submod_index  Index of the submodule to fetch.
+ * \param[out] type         The type of the nested token returned.
+ * \param[out] token        Pointer and length of the token returned.
  *
- * \returns A ctoken error code
+ * \returns A ctoken error code.
  *
  * A submodule may be a signed and secured token. Such submodules are
- * returned as a byte or text string. To process these that are in CWT format,
- * create a new instance of the ctoken decoder, set up the verification keys
- * and process it like the superior token it came from. JWT format tokens
- * must be processed by a JWT token decoder.
+ * returned as a byte or text string. To process these that are in CWT
+ * format, create a new instance of the ctoken decoder, set up the
+ * verification keys and process it like the superior token it came
+ * from. JWT format tokens must be processed by a JWT token decoder.
  */
 enum ctoken_err_t
-ctoken_decode_get_nth_submod(struct ctoken_decode_ctx *context,
-                             uint32_t                  submod_index,
-                             enum ctoken_type         *type,
-                             struct q_useful_buf_c    *token);
+ctoken_decode_get_nth_nested_token(struct ctoken_decode_ctx *context,
+                                   uint32_t                  submod_index,
+                                   enum ctoken_type         *type,
+                                   struct q_useful_buf_c    *token);
 
 
 /**
- * \brief Enter the nth submodule.
+ * \brief Get a nested token by name.
  *
- * \param[in] context         The decoding context.
+ * \param[in] context  The decoding context.
  * \param[in] name     Index of the submodule to fetch.
- * \param[out] type                  The type of the nested token returned.
- * \param[out] token           Pointer and length of the token returned.
+ * \param[out] type    The type of the nested token returned.
+ * \param[out] token   Pointer and length of the token returned.
  *
  * \returns A ctoken error code
  *
- * See ctoken_decode_get_nth_submod() for discussion on the token returned.
+ * See ctoken_decode_get_nth_nested_token() for discussion on the
+ * token returned.
  */
 enum ctoken_err_t
-ctoken_decode_get_submod_sz(struct ctoken_decode_ctx *context,
-                            const char              *name,
-                            enum ctoken_type        *type,
-                            struct q_useful_buf_c   *token);
+ctoken_decode_get_nested_token_sz(struct ctoken_decode_ctx *context,
+                                  const char               *name,
+                                  enum ctoken_type         *type,
+                                  struct q_useful_buf_c    *token);
 
 
 
