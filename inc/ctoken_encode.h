@@ -74,7 +74,7 @@ struct ctoken_submod_state {
  *
  * The structure is opaque for the caller.
  *
- * This is roughly 320 bytes on a 64-bit CPU
+ * This is 304 bytes on a 64-bit x86 CPU with the System V ABI (MacOS)
  */
 struct ctoken_encode_ctx {
     /* Private data structure */
@@ -588,12 +588,13 @@ ctoken_encode_uptime(struct ctoken_encode_ctx  *context,
  * \param[in] context  Encoding context.
  *
  * This must be called to start the submodules section before calling
- * ctoken_encode_open_submod() or ctoken_encode_add_token().
- * There is only one submodules section, so this can only be called once.
- * All submodules must be added together.
+ * ctoken_encode_open_submod() or ctoken_encode_add_token().  There is
+ * only one submodules section, so this can only be called once.  All
+ * submodules must be added together.
  *
- * When all submodules have been added, then ctoken_encode_end_submod_section()
- * must be called to close out the submodules section.
+ * When all submodules have been added, then
+ * ctoken_encode_end_submod_section() must be called to close out the
+ * submodules section.
  */
 void ctoken_encode_start_submod_section(struct ctoken_encode_ctx *context);
 
@@ -603,8 +604,9 @@ void ctoken_encode_start_submod_section(struct ctoken_encode_ctx *context);
  *
  * \param[in] context  Encoding context.
  *
- * Close out the submodules section after calling ctoken_encode_start_submod_section() and
- * adding all submodules that are to be added.
+ * Close out the submodules section after calling
+ * ctoken_encode_start_submod_section() and adding all submodules that
+ * are to be added.
  */
 void ctoken_encode_end_submod_section(struct ctoken_encode_ctx *context);
 
@@ -616,19 +618,20 @@ void ctoken_encode_end_submod_section(struct ctoken_encode_ctx *context);
  * \param [in] submod_name  Text string naming sub module.
  *
  * Initiates the creation of a sub module. All claims added after this
- * call until the a call to ctoken_encode_close_submod() will
- * go into the named submodule.
+ * call until the a call to ctoken_encode_close_submod() will go into
+ * the named submodule.
  *
- * ctoken_encode_start_submod_section() must be called before this
- * is called to open the submodules section. ctoken_encode_end_submod_section()
- * must be called at some point after this is called.
+ * ctoken_encode_start_submod_section() must be called before this is
+ * called to open the submodules
+ * section. ctoken_encode_end_submod_section() must be called at some
+ * point after this is called.
  *
- * Submodules can nest to a depth of \ref CTOKEN_MAX_SUBMOD_NESTING. To
- * nest one submodule inside another, simply call this again
- * before calling ctoken_encode_close_submod().
+ * Submodules can nest to a depth of \ref CTOKEN_MAX_SUBMOD_NESTING.
+ * To nest one submodule inside another, simply call this again before
+ * calling ctoken_encode_close_submod().
  *
- * If an error occurs, such as nesting too deep, it will be reported when
- * ctoken_encode_finish() is called.
+ * If an error occurs, such as nesting too deep, it will be reported
+ * when ctoken_encode_finish() is called.
  */
 void ctoken_encode_open_submod(struct ctoken_encode_ctx *context,
                                const char               *submod_name);
@@ -650,33 +653,34 @@ void ctoken_encode_close_submod(struct ctoken_encode_ctx *context);
 
 
 /**
- * \brief Add a complete EAT token as a submodule.
+ * \brief Add a complete EAT as a nested token submodule.
  *
- * \param[in] context           Token creation context.
- * \param[in] type                  Whether added token is CBOR format or JSON format.
+ * \param[in] context      Token creation context.
+ * \param[in] type         Whether added token is CBOR format or JSON format.
  * \param[in] submod_name  String naming the submodule.
- * \param[in] token               The full encoded token.
+ * \param[in] token        The full encoded token to add.
  *
- * A submodule can be a fully encoded and signed EAT token such as
- * the completed_token returned from ctoken_encode_finish(). Use this
- * call to add such a token.
+ * A submodule can be a fully encoded and signed EAT token such as the
+ * completed_token returned from ctoken_encode_finish(). Use this call
+ * to add such a token.
  *
- * The added token may be CBOR/COSE/CWT format or JSON/JOSE/JWT format.
- * Indicate which with the \c type parameter.
+ * The added token may be CBOR/COSE/CWT format or JSON/JOSE/JWT
+ * format.  Indicate which with the \c type parameter.
  *
  * The contents of token are not checked by this call. The bytes
  * are just added.
  *
- * ctoken_encode_start_submod_section() must be called before this
- * is called to open the submodules section. ctoken_encode_end_submod_section()
- * must be called at some point after this is called.
+ * ctoken_encode_start_submod_section() must be called before this is
+ * called to open the submodules
+ * section. ctoken_encode_end_submod_section() must be called at some
+ * point after this is called.
  *
- * If an error occurs it will be reported when
- * ctoken_encode_finish() is called.
+ * If an error occurs it will be reported when ctoken_encode_finish()
+ * is called.
  */
 void ctoken_encode_nested_token(struct ctoken_encode_ctx *context,
                                 enum ctoken_type          type,
-                                const  char              *submod_name,
+                                const char               *submod_name,
                                 struct q_useful_buf_c     token);
 
 
@@ -707,21 +711,23 @@ ctoken_encode_finish(struct ctoken_encode_ctx *context,
  *
  * \return                      One of the \ref ctoken_err_t errors.
  *
- * This is used in lieu of ctoken_encode_start(), ctoken_encode_finish()
- * and all the calls in between. Instead of encoding the claims one
- * at a time this assumes they have already be fully encoded. The
- * encoding context must still have been set up with ctoken_encode_init(),
- * ctoken_encode_set_key() and such.
+ * This is used in lieu of ctoken_encode_start(),
+ * ctoken_encode_finish() and all the calls in between. Instead of
+ * encoding the claims one at a time this assumes they have already be
+ * fully encoded. The encoding context must still have been set up
+ * with ctoken_encode_init(), ctoken_encode_set_key() and such.
  *
- * This is a good way to turn a UCCS (Unprotected CWT Claim Set)
- * into a real signed CWT. The encoded_payload is simply the encoded
- * UCCS and the complted_token will be a CWT.
+ * This is a good way to turn a UCCS (Unprotected CWT Claim Set) into
+ * a real signed CWT. The encoded_payload is simply the encoded UCCS
+ * and the complted_token will be a CWT.
  */
 enum ctoken_err_t
 ctoken_encode_one_shot(struct ctoken_encode_ctx   *context,
                        const struct q_useful_buf   out_buf,
                        const struct q_useful_buf_c encoded_payload,
                        struct q_useful_buf_c      *completed_token);
+
+
 
 
 /* ----- inline implementations ------ */
