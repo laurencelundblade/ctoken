@@ -15,6 +15,7 @@
 #define eat_labels_h
 
 #include <stdint.h>
+#include <stdbool.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -35,7 +36,6 @@ extern "C" {
 #define CTOKEN_EAT_LABEL_SECURITY_LEVEL -76002
 #define CTOKEN_EAT_LABEL_BOOT_STATE -76003
 #define CTOKEN_EAT_LABEL_LOCATION -76004
-#define CTOKEN_EAT_LABEL_AGE -76005
 #define CTOKEN_EAT_LABEL_UPTIME -76006
 
 
@@ -111,19 +111,27 @@ enum ctoken_debug_level_t {
 #define CTOKEN_EAT_LABEL_ALTITUDE_ACCURACY 5
 #define CTOKEN_EAT_LABEL_HEADING           6
 #define CTOKEN_EAT_LABEL_SPEED             7
+#define CTOKEN_EAT_LABEL_TIME_STAMP        8
+#define CTOKEN_EAT_LABEL_AGE               9
 
-#define NUM_LOCATION_ITEMS CTOKEN_EAT_LABEL_SPEED
+#define NUM_FLOAT_LOCATION_ITEMS CTOKEN_EAT_LABEL_SPEED
 
 
 /**
  * Holds a geographic location (e.g. a GPS position).
  */
 struct ctoken_location_t {
-    /** Array of doubles to old latitude, longitude... indexed
+    /** Array of doubles to hold latitude, longitude... indexed
      * CTOKEN_EAT_LABEL_XXX - 1. Use accessor macros below for
-     * convenience. Array entry is only valid id flag for it is set
+     * convenience. Array entry is only valid if flag for it is set
      * in item_flags. */
-    double items[NUM_LOCATION_ITEMS];
+    double items[NUM_FLOAT_LOCATION_ITEMS];
+
+    /** Epoch-based time for when the location was obtained, particularly
+     * if it is different than when the token is generated. TODO: doc */
+    uint64_t time_stamp;
+    // TODO: doc
+    uint64_t age;
     /** Bit flags indicating valid data in array. Corresponding bit is
      * 0x01u << (CTOKEN_EAT_LABEL_XXX - 1)
      */
@@ -138,6 +146,20 @@ struct ctoken_location_t {
 #define  eat_loc_altitude_accuracy items[CTOKEN_EAT_LABEL_ALTITUDE_ACCURACY-1]
 #define  eat_loc_heading    items[CTOKEN_EAT_LABEL_HEADING-1]
 #define  eat_loc_speed      items[CTOKEN_EAT_LABEL_SPEED-1]
+
+static inline bool location_item_present(const struct ctoken_location_t *l, int label)
+{
+    // TODO: integer promotions and types?
+    return l->item_flags & (0x01u << (label-1));
+}
+
+static inline void location_mark_item_present(struct ctoken_location_t *l, int label)
+{
+    // TODO: integer promotions and types?
+    l->item_flags |= (0x01u << (label-1));
+}
+
+
 
 
 /** The type of a submodule that is a token. */

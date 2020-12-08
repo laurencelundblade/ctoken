@@ -111,6 +111,8 @@ static inline enum ctoken_err_t map_qcbor_error(QCBORError error)
     // TODO: make this better
     if(QCBORDecode_IsNotWellFormedError(error)) {
         return CTOKEN_ERR_CBOR_NOT_WELL_FORMED;
+    } else if(error == QCBOR_ERR_LABEL_NOT_FOUND) {
+        return CTOKEN_ERR_CLAIM_NOT_PRESENT;
     } else if(error) {
         return CTOKEN_ERR_GENERAL;
     } else {
@@ -423,35 +425,57 @@ Done:
  * Public function. See ctoken_eat_encode.h
  */
 enum ctoken_err_t
-ctoken_decode_location(struct ctoken_decode_ctx     *me,
-                           struct ctoken_location_t *location)
+ctoken_decode_location(struct ctoken_decode_ctx   *me,
+                       struct ctoken_location_t   *location)
 {
-    enum ctoken_err_t   return_value = 0;
-    double              d;
-    int64_t             label;
+    enum ctoken_err_t  return_value = CTOKEN_ERR_SUCCESS;
+    double             d;
+    int                label;
+    QCBORError         cbor_error;
 
     if(me->last_error != CTOKEN_ERR_SUCCESS) {
         return_value = me->last_error;
         goto Done;
     }
 
+    location->item_flags = 0;
+
     QCBORDecode_EnterMapFromMapN(&(me->qcbor_decode_context),
                                  CTOKEN_EAT_LABEL_LOCATION);
-    // TODO: probably need error here to indicate claim is not present
+    cbor_error = QCBORDecode_GetAndResetError(&(me->qcbor_decode_context));
+    if(cbor_error != QCBOR_SUCCESS) {
+        return_value = map_qcbor_error(cbor_error);
+    }
 
-    for(label = CTOKEN_EAT_LABEL_LATITUDE; label < NUM_LOCATION_ITEMS; label++) {
+    for(label = CTOKEN_EAT_LABEL_LATITUDE; label < NUM_FLOAT_LOCATION_ITEMS; label++) {
         QCBORDecode_GetDoubleInMapN(&(me->qcbor_decode_context), label, &d);
-        QCBORError e = QCBORDecode_GetAndResetError(&(me->qcbor_decode_context));
-        if(!e) {
+        cbor_error = QCBORDecode_GetAndResetError(&(me->qcbor_decode_context));
+        if(cbor_error == QCBOR_SUCCESS) {
             location->items[label-1] = d;
-            location->item_flags |= (0x01U << (label-1));
+            location_mark_item_present(location, label);
         }
+    }
+
+    QCBORDecode_GetUInt64InMapN(&(me->qcbor_decode_context), CTOKEN_EAT_LABEL_TIME_STAMP, &(location->time_stamp));
+    cbor_error = QCBORDecode_GetAndResetError(&(me->qcbor_decode_context));
+    if(cbor_error == QCBOR_SUCCESS) {
+        // TODO: check for specific not-found error?
+        location_mark_item_present(location, CTOKEN_EAT_LABEL_TIME_STAMP);
+    }
+
+    QCBORDecode_GetUInt64InMapN(&(me->qcbor_decode_context), CTOKEN_EAT_LABEL_AGE, &(location->age));
+    cbor_error = QCBORDecode_GetAndResetError(&(me->qcbor_decode_context));
+    if(cbor_error == QCBOR_SUCCESS) {
+        // TODO: check for specific not-found error?
+        location_mark_item_present(location, CTOKEN_EAT_LABEL_AGE);
     }
 
     QCBORDecode_ExitMap(&(me->qcbor_decode_context));
     if(QCBORDecode_GetError(&(me->qcbor_decode_context)) != QCBOR_SUCCESS) {
         return_value = CTOKEN_ERR_CBOR_STRUCTURE;
     }
+
+    return_value = CTOKEN_ERR_SUCCESS;
 
 Done:
     me->last_error = return_value;
@@ -795,3 +819,87 @@ ctoken_decode_get_nth_submod(struct ctoken_decode_ctx *me,
 Done:
     return return_value;
 }
+
+#if 0
+
+/*
+Make a list of pointers to locations and types. Locations are void *
+ and cast to the type. Sets a bit field by label. Also indicate optionality.
+
+
+
+
+ */
+
+// 16 bytes on 64-bit
+// 8 bytes on 32-bits machine
+struct xxx {
+    void *destination;
+    int16_t label;
+    uint8_t datatype;
+    bool    mandatory;
+};
+
+void foofoo()
+{
+    struct ctoken_location_t l;
+    struct xxx x[7];
+    x[0].destination = &(l.items[0]);
+    x[0].label = 1;
+    x[0].datatype = FLOAT;
+    x[1].datatype = END;
+
+    foxoxox(encode_ctx, x);
+
+    /* errors:
+     type error, all mandatory items not found, extransious items exist (if requested) */
+
+
+}
+
+void foxoxo(struct xxx *x)
+{
+
+    // loop over items in map or loop over items in list
+
+    /*   items in map: get next, then switch on expected type ; fastest*/
+
+    /* loop on items in list using spiffy decode calls; slower */
+
+    RewindMap();
+
+    while(1) {
+        GetNextItem( & Item);
+        if(error is not found) {
+            continue;
+        } else if(error is serious) {
+            break;
+        }
+
+        if(!match_label_and_type_in_list()) {
+            continue;
+        }
+
+        switch (type) {
+            case UINT64_T:
+                *(uint64_t)destiation = Item.val.uint64_t;
+                break;
+
+            case INT64_T:
+
+
+                case DOUBLE:
+
+            case BYTE_STRING:
+
+            case TEXT_STRING:
+
+
+        }
+
+
+    }
+
+}
+
+#endif

@@ -816,28 +816,6 @@ ctoken_decode_location(struct ctoken_decode_ctx     *context,
 
 
 /**
- * \brief  Decode the age claim.
- *
- * \param[in] context         The decoding context to output to.
- * \paran[in] age             The age in seconds of the token.
- *
- * This decodes the age claim.
- *
- * If the other claims in token were obtained previously and held
- * until token creation, this gives their age in seconds in the epoch
- * (January 1, 1970).
- *
- * If there is an error like insufficient space in the output buffer,
- * the error state is entered. It is returned later when ctoken_encode_finish()
- * is called.
- */
-static inline enum ctoken_err_t
-ctoken_decode_age(struct ctoken_decode_ctx  *context,
-                  uint64_t                  *age);
-
-
-
-/**
  * \brief  Decode the uptime claim.
  *
  * \param[in] context         The decoding context.
@@ -1078,13 +1056,6 @@ ctoken_decode_security_level(struct ctoken_decode_ctx         *me,
                              enum ctoken_security_level_t *security_level)
 {
     return ctoken_decode_get_int(me, CTOKEN_EAT_LABEL_SECURITY_LEVEL, (int64_t *)security_level);
-}
-
-static inline enum ctoken_err_t
-ctoken_decode_age(struct ctoken_decode_ctx *me,
-                  uint64_t                 *age)
-{
-    return ctoken_decode_get_uint(me, CTOKEN_EAT_LABEL_AGE, age);
 }
 
 

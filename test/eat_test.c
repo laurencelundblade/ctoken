@@ -32,7 +32,6 @@ int32_t basic_eat_test(void)
     bool                         secure_boot;
     enum ctoken_debug_level_t debug_level;
     struct ctoken_location_t location;
-    uint64_t                     age;
     uint64_t                     uptime;
 
     uint8_t test_nonce_bytes[] = {0x05, 0x08, 0x33, 0x99};
@@ -83,8 +82,6 @@ int32_t basic_eat_test(void)
     location.eat_loc_longitude = 9.54;
     location.item_flags = 0x3;
     ctoken_encode_location(&encode_ctx, &location);
-
-    ctoken_encode_age(&encode_ctx, 987654321);
 
     ctoken_encode_uptime(&encode_ctx, 886688);
 
@@ -188,19 +185,12 @@ int32_t basic_eat_test(void)
         return 1099;
     }
 
-    result = ctoken_decode_age(&decode_context, &age);
-    if(result) {
-        return 1100 + (int32_t)result;
-    }
-    if(age != 987654321) {
-        return 1199;
-    }
 
     result = ctoken_decode_uptime(&decode_context, &uptime);
     if(result) {
         return 1200 + (int32_t)result;
     }
-    if(age != 987654321) {
+    if(uptime != 886688) {
         return 1299;
     }
 

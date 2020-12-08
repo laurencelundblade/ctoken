@@ -97,6 +97,9 @@ enum ctoken_err_t {
     /** No submodule of the given name as found. */
     CTOKEN_NAMED_SUBMOD_NOT_FOUND,
 
+    /** Claim is not present in the token */
+    CTOKEN_ERR_CLAIM_NOT_PRESENT,
+
 
 };
 
