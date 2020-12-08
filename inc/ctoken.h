@@ -12,6 +12,7 @@
 #define __CTOKEN_H__
 
 #include <stdint.h>
+#include "ctoken_eat_labels.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -114,6 +115,74 @@ enum ctoken_err_t {
 
 /** The maximum nesting depth for submodules. */
 #define CTOKEN_MAX_SUBMOD_NESTING  (QCBOR_MAX_ARRAY_NESTING/2)
+
+
+
+
+/**
+ * Holds a geographic location (e.g. a GPS position).
+ */
+struct ctoken_location_t {
+    /** Array of doubles to hold latitude, longitude... indexed
+     * CTOKEN_EAT_LABEL_XXX - 1. Use accessor macros below for
+     * convenience. Array entry is only valid if flag for it is set
+     * in item_flags. */
+    double items[NUM_FLOAT_LOCATION_ITEMS];
+
+    /** Epoch-based time for when the location was obtained, particularly
+     * if it is different than when the token is generated. TODO: doc */
+    uint64_t time_stamp;
+    // TODO: doc
+    uint64_t age;
+    /** Bit flags indicating valid data in array. Corresponding bit is
+     * 0x01u << (CTOKEN_EAT_LABEL_XXX - 1)
+     */
+    uint32_t item_flags;
+};
+
+/* Accessor macros for ctoken_eat_location_t. */
+#define  eat_loc_latitude   items[CTOKEN_EAT_LABEL_LATITUDE-1]
+#define  eat_loc_longitude  items[CTOKEN_EAT_LABEL_LONGITUDE-1]
+#define  eat_loc_altitude   items[CTOKEN_EAT_LABEL_ALTITUDE-1]
+#define  eat_loc_accuracy   items[CTOKEN_EAT_LABEL_ACCURACY-1]
+#define  eat_loc_altitude_accuracy items[CTOKEN_EAT_LABEL_ALTITUDE_ACCURACY-1]
+#define  eat_loc_heading    items[CTOKEN_EAT_LABEL_HEADING-1]
+#define  eat_loc_speed      items[CTOKEN_EAT_LABEL_SPEED-1]
+
+
+static inline bool location_item_present(const struct ctoken_location_t *l, int label)
+{
+    /* This will misbehave if label is greater than 32, but the
+     * effect is not of any consequence.
+     */
+    return l->item_flags & (0x01 << (label-1));
+}
+
+static inline void location_mark_item_present(struct ctoken_location_t *l, int label)
+{
+    /* This will misbehave if label is greater than 32, but the
+     * effect is not of any consequence.
+     */
+    l->item_flags |= (0x01 << (label-1));
+}
+
+
+
+
+/** The type of a submodule that is a token. */
+enum ctoken_type {
+    /** The submodule token is a CWT as defined by RFC 8392. It may be
+     * a CWT tag or CWT protocol message. It may be signed and/or encrypted.
+     * It may not be a UCCS per the EAT draft.
+     */
+    CTOKEN_TYPE_CWT,
+
+    /** The submodule token is a JWT as defined by RFC 7519. It must not be
+     * an unsecured JWT per the EAT draft.
+     */
+    CTOKEN_TYPE_JSON
+};
+
 
 
 #ifdef __cplusplus

@@ -796,3 +796,65 @@ int32_t submod_decode_errors_test()
 
     return 0;
 }
+
+
+
+int32_t setup_decode_test(struct q_useful_buf_c cbor_input, UsefulBuf out_buf, struct ctoken_decode_ctx *decode_context)
+{
+    struct ctoken_encode_ctx encode_ctx;
+    struct q_useful_buf_c completed_token;
+    enum ctoken_err_t ctoken_result;
+
+    ctoken_encode_init(&encode_ctx,
+                       T_COSE_OPT_SHORT_CIRCUIT_SIG,
+                       0,
+                       T_COSE_ALGORITHM_ES256);
+
+    ctoken_encode_one_shot(&encode_ctx, out_buf, cbor_input, &completed_token);
+
+    ctoken_decode_init(decode_context, T_COSE_OPT_ALLOW_SHORT_CIRCUIT, 0);
+
+     ctoken_result = ctoken_decode_validate_token(decode_context, completed_token);
+     if(ctoken_result) {
+         return 1;
+     }
+
+    return 0;
+}
+
+
+// 3A 000128E5
+/* Location claim that is a byte string, not a map */
+static const uint8_t bad_location[] = {
+    0xa1,
+    0x3a, 0x00, 0x01, 0x28, 0xE3,
+    0x40
+};
+
+
+int32_t location_test()
+{
+    struct ctoken_decode_ctx  decode_context;
+    UsefulBuf_MAKE_STACK_UB(  out, 400);
+    struct ctoken_location_t  l;
+    enum ctoken_err_t         error;
+
+
+    /* Test todo list:
+     - encode an empty location claim
+     - encode a full location claim
+     - decode an empty location claim
+     - decode a full location claim
+     - decode a not-well-formed location claim
+     - decode a token with no location claim
+     - */
+
+    setup_decode_test(UsefulBuf_FROM_BYTE_ARRAY_LITERAL(bad_location),  out, &decode_context);
+
+    error = ctoken_decode_location(&decode_context, &l);
+    if(error != CTOKEN_ERR_CBOR_TYPE) {
+        return -1;
+    }
+
+    return 0;
+}

@@ -548,16 +548,17 @@ ctoken_encode_boot_state(struct ctoken_encode_ctx     *context,
 
 
 /**
- * \brief Encode an EAT location claims
+ * \brief Encode an EAT location claim.
  *
  * \param[in] context   ctoken encode context to output to.
  * \param[in] location  The location to output.
  *
+ * See \ref ctoken_location_t for the details of the location claim.
  * Only the location fields indicated as present in \c item_flags
  * will be output.
  */
 void
-ctoken_encode_location(struct ctoken_encode_ctx           *context,
+ctoken_encode_location(struct ctoken_encode_ctx       *context,
                        const struct ctoken_location_t *location);
 
 
@@ -673,10 +674,10 @@ void ctoken_encode_close_submod(struct ctoken_encode_ctx *context);
  * If an error occurs it will be reported when
  * ctoken_encode_finish() is called.
  */
-void ctoken_encode_add_token(struct ctoken_encode_ctx *context,
-                             enum ctoken_type          type,
-                             const char               *submod_name,
-                             struct q_useful_buf_c     token);
+void ctoken_encode_nested_token(struct ctoken_encode_ctx *context,
+                                enum ctoken_type          type,
+                                const  char              *submod_name,
+                                struct q_useful_buf_c     token);
 
 
 /**
