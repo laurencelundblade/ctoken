@@ -696,8 +696,31 @@ ctoken_encode_finish(struct ctoken_encode_ctx *context,
                      struct q_useful_buf_c    *completed_token);
 
 
-
-
+/**
+ * \brief Sign and tag already encoded claims
+ *
+ * \param[in] context                Token creation context.
+ * \param[in] out_buf            The buffer the completed token will be written to.
+ * \param[in] encoded_payload   The already-encoded claims.
+ * \param[out] completed_token  Pointer and length to completed token.
+ *
+ * \return                      One of the \ref ctoken_err_t errors.
+ *
+ * This is used in lieu of ctoken_encode_start(), ctoken_encode_finish()
+ * and all the calls in between. Instead of encoding the claims one
+ * at a time this assumes they have already be fully encoded. The
+ * encoding context must still have been set up with ctoken_encode_init(),
+ * ctoken_encode_set_key() and such.
+ *
+ * This is a good way to turn a UCCS (Unprotected CWT Claim Set)
+ * into a real signed CWT. The encoded_payload is simply the encoded
+ * UCCS and the complted_token will be a CWT.
+ */
+enum ctoken_err_t
+ctoken_encode_one_shot(struct ctoken_encode_ctx   *context,
+                       const struct q_useful_buf   out_buf,
+                       const struct q_useful_buf_c encoded_payload,
+                       struct q_useful_buf_c      *completed_token);
 
 
 /* ----- inline implementations ------ */

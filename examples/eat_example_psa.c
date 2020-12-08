@@ -26,8 +26,6 @@
 
 #include "ctoken_encode.h"
 #include "ctoken_decode.h"
-#include "ctoken_eat_encode.h"
-#include "ctoken_eat_decode.h"
 
 #include "t_cose/t_cose_common.h"
 #include "t_cose/t_cose_sign1_sign.h"
@@ -329,9 +327,9 @@ int32_t eat_encode(struct t_cose_key signing_key,
      * You can even make up your own claims.
      */
 
-    ctoken_eat_encode_nonce(&encode_ctx, nonce);
+    ctoken_encode_nonce(&encode_ctx, nonce);
 
-    ctoken_eat_encode_ueid(&encode_ctx, ueid);
+    ctoken_encode_ueid(&encode_ctx, ueid);
 
     /* Finally completed it. This invokes the signing and
      * ties everything off and outputs the completed token.
@@ -384,7 +382,7 @@ int32_t eat_decode(struct t_cose_key     verification_key,
     }
 
     /* Parse the nonce out of the token */
-    return_value = ctoken_eat_decode_nonce(&decode_context, nonce);
+    return_value = ctoken_decode_nonce(&decode_context, nonce);
 
 Done:
     return return_value;
