@@ -450,13 +450,23 @@ ctoken_decode_location(struct ctoken_decode_ctx   *me,
         goto Done;
     }
 
-    for(label = CTOKEN_EAT_LABEL_LATITUDE; label < NUM_FLOAT_LOCATION_ITEMS; label++) {
+    for(label = CTOKEN_EAT_LABEL_LATITUDE; label <= NUM_FLOAT_LOCATION_ITEMS; label++) {
         QCBORDecode_GetDoubleInMapN(&(me->qcbor_decode_context), label, &d);
         cbor_error = QCBORDecode_GetAndResetError(&(me->qcbor_decode_context));
         if(cbor_error == QCBOR_SUCCESS) {
             location->items[label-1] = d;
             location_mark_item_present(location, label);
+        } else if(cbor_error != QCBOR_ERR_LABEL_NOT_FOUND) {
+            return_value = map_qcbor_error(cbor_error);
+            goto Done;
         }
+    }
+
+    if(!location_item_present(location, CTOKEN_EAT_LABEL_LATITUDE) ||
+        !location_item_present(location, CTOKEN_EAT_LABEL_LONGITUDE)) {
+        /* Per EAT and W3C specs, the lattitude and longitude must be present */
+        return_value = CTOKEN_ERR_CLAIM_FORMAT;
+        goto Done;
     }
 
     QCBORDecode_GetUInt64InMapN(&(me->qcbor_decode_context), CTOKEN_EAT_LABEL_TIME_STAMP, &(location->time_stamp));

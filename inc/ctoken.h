@@ -110,6 +110,14 @@ enum ctoken_err_t {
     CTOKEN_ERR_SUBMOD_TYPE,
     /** Submods section is missing or wrong type */
     CTOKEN_ERR_SUBMOD_SECTION,
+
+    /** Something is wrong with the content of a claim such as mandatory
+     * parts are missing, the CBOR structure is wrong or other
+     */
+    CTOKEN_ERR_CLAIM_FORMAT,
+
+    /** The latitude and longitude fields are required in the location claim */
+    CTOKEN_ERR_LAT_LONG_REQUIRED,
 };
 
 

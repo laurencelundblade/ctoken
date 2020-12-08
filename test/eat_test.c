@@ -798,12 +798,16 @@ int32_t submod_decode_errors_test()
 }
 
 
-
-int32_t setup_decode_test(struct q_useful_buf_c cbor_input, UsefulBuf out_buf, struct ctoken_decode_ctx *decode_context)
+/* Create a token with the given payload and set up a decoder context
+ * for it so everything is ready to for testing the decode methods.
+ */
+int32_t setup_decode_test(struct q_useful_buf_c     cbor_input,
+                          UsefulBuf                 out_buf,
+                          struct ctoken_decode_ctx *decode_context)
 {
     struct ctoken_encode_ctx encode_ctx;
-    struct q_useful_buf_c completed_token;
-    enum ctoken_err_t ctoken_result;
+    struct q_useful_buf_c    completed_token;
+    enum ctoken_err_t        ctoken_result;
 
     ctoken_encode_init(&encode_ctx,
                        T_COSE_OPT_SHORT_CIRCUIT_SIG,
@@ -823,7 +827,7 @@ int32_t setup_decode_test(struct q_useful_buf_c cbor_input, UsefulBuf out_buf, s
 }
 
 
-// 3A 000128E5
+
 /* Location claim that is a byte string, not a map */
 static const uint8_t bad_location[] = {
     0xa1,
@@ -831,29 +835,168 @@ static const uint8_t bad_location[] = {
     0x40
 };
 
+static const uint8_t no_location[] = {
+    0xa1,
+    0x3a, 0x00, 0x01, 0x28, 0xE0,
+    0x40
+};
+
+
+static const uint8_t empty_location[] = {
+    0xa1,
+    0x3a, 0x00, 0x01, 0x28, 0xE3,
+    0xa0
+};
+
+static const uint8_t location_not_well_formed[] = {
+    0xa1,
+    0x3a, 0x00, 0x01, 0x28, 0xE3,
+    0xa1, 0x01, 0x1d, 0x02, 0x3d
+};
+
+/*
+ The payload part of this token:
+ {-76004: {1: 1.1, 2: 2.2, 3: 3.3, 4: 4.4, 5: 5.5, 6: 6.6, 7: 7.7, 8: 880000, 9: 9900}}
+ */
+static const uint8_t expected_full_location[] = {
+    0xD2, 0x84, 0x43, 0xA1, 0x01, 0x26, 0xA1, 0x04, 0x58, 0x20, 0xEF, 0x95, 0x4B, 0x4B, 0xD9, 0xBD, 0xF6, 0x70, 0xD0, 0x33, 0x60, 0x82, 0xF5, 0xEF, 0x15, 0x2A, 0xF8, 0xF3, 0x5B, 0x6A, 0x6C, 0x00, 0xEF, 0xA6, 0xA9, 0xA7, 0x1F, 0x49, 0x51, 0x7E, 0x18, 0xC6, 0x58, 0x51, 0xA1, 0x3A, 0x00, 0x01, 0x28, 0xE3, 0xA9, 0x01, 0xFB, 0x3F, 0xF1, 0x99, 0x99, 0x99, 0x99, 0x99, 0x9A, 0x02, 0xFB, 0x40, 0x01, 0x99, 0x99, 0x99, 0x99, 0x99, 0x9A, 0x03, 0xFB, 0x40, 0x0A, 0x66, 0x66, 0x66, 0x66, 0x66, 0x66, 0x04, 0xFB, 0x40, 0x11, 0x99, 0x99, 0x99, 0x99, 0x99, 0x9A, 0x05, 0xF9, 0x45, 0x80, 0x06, 0xFB, 0x40, 0x1A, 0x66, 0x66, 0x66, 0x66, 0x66, 0x66, 0x07, 0xFB, 0x40, 0x1E, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCD, 0x08, 0x1A, 0x00, 0x0D, 0x6D, 0x80, 0x09, 0x19, 0x26, 0xAC, 0x58, 0x40, 0x2F, 0x52, 0xC2, 0x4A, 0xAC, 0x8C, 0x01, 0xDD, 0x17, 0xDE, 0x3B, 0x34, 0x54, 0x90, 0xA9, 0x83, 0x6A, 0x1B, 0x68, 0xA4, 0x40, 0xF9, 0x1E, 0x97, 0x35, 0x88, 0xBC, 0x8A, 0x59, 0x8C, 0xD6, 0x69, 0x2F, 0x52, 0xC2, 0x4A, 0xAC, 0x8C, 0x01, 0xDD, 0x17, 0xDE, 0x3B, 0x34, 0x54, 0x90, 0xA9, 0x83, 0x6A, 0x1B, 0x68, 0xA4, 0x40, 0xF9, 0x1E, 0x97, 0x35, 0x88, 0xBC, 0x8A, 0x59, 0x8C, 0xD6, 0x69};
+
 
 int32_t location_test()
 {
     struct ctoken_decode_ctx  decode_context;
     UsefulBuf_MAKE_STACK_UB(  out, 400);
-    struct ctoken_location_t  l;
+    struct ctoken_location_t  location;
     enum ctoken_err_t         error;
+    struct ctoken_encode_ctx  encode_context;
+    struct q_useful_buf_c     completed_token;
 
 
     /* Test todo list:
-     - encode an empty location claim
      - encode a full location claim
-     - decode an empty location claim
      - decode a full location claim
-     - decode a not-well-formed location claim
-     - decode a token with no location claim
      - */
 
     setup_decode_test(UsefulBuf_FROM_BYTE_ARRAY_LITERAL(bad_location),  out, &decode_context);
 
-    error = ctoken_decode_location(&decode_context, &l);
+    error = ctoken_decode_location(&decode_context, &location);
     if(error != CTOKEN_ERR_CBOR_TYPE) {
         return -1;
+    }
+
+
+    setup_decode_test(UsefulBuf_FROM_BYTE_ARRAY_LITERAL(no_location),  out, &decode_context);
+
+    error = ctoken_decode_location(&decode_context, &location);
+    if(error != CTOKEN_ERR_CLAIM_NOT_PRESENT) {
+        return -1;
+    }
+
+
+    setup_decode_test(UsefulBuf_FROM_BYTE_ARRAY_LITERAL(empty_location),  out, &decode_context);
+
+    error = ctoken_decode_location(&decode_context, &location);
+    if(error != CTOKEN_ERR_CLAIM_FORMAT) {
+        return -1;
+    }
+
+
+    setup_decode_test(UsefulBuf_FROM_BYTE_ARRAY_LITERAL(location_not_well_formed),  out, &decode_context);
+
+    error = ctoken_decode_location(&decode_context, &location);
+    if(error != CTOKEN_ERR_CBOR_NOT_WELL_FORMED) {
+        return -1;
+    }
+
+
+    /* Longitude field is missing */
+    location.item_flags = 01;
+    location.eat_loc_latitude = 5.6;
+
+    ctoken_encode_init(&encode_context,
+                       T_COSE_OPT_SHORT_CIRCUIT_SIG,
+                       0,
+                       T_COSE_ALGORITHM_ES256);
+
+    /* Get started on a particular token by giving an out buffer.
+     */
+    error = ctoken_encode_start(&encode_context, out);
+    if(error) {
+        return 100 + (int32_t)error;
+    }
+
+    ctoken_encode_location(&encode_context, &location);
+    error = ctoken_encode_finish(&encode_context, &completed_token);
+    if(error != CTOKEN_ERR_LAT_LONG_REQUIRED) {
+        return 88;
+    }
+
+    location.eat_loc_latitude = 1.1;
+    location.eat_loc_longitude = 2.2;
+    location.eat_loc_altitude = 3.3;
+    location.eat_loc_accuracy = 4.4;
+    location.eat_loc_altitude_accuracy = 5.5;
+    location.eat_loc_heading = 6.6;
+    location.eat_loc_speed = 7.7;
+    location.time_stamp = 880000;
+    location.age = 9900;
+    location_mark_item_present(&location, CTOKEN_EAT_LABEL_LATITUDE);
+    location_mark_item_present(&location, CTOKEN_EAT_LABEL_LONGITUDE);
+    location_mark_item_present(&location, CTOKEN_EAT_LABEL_ALTITUDE);
+    location_mark_item_present(&location, CTOKEN_EAT_LABEL_ACCURACY);
+    location_mark_item_present(&location, CTOKEN_EAT_LABEL_ALTITUDE_ACCURACY);
+    location_mark_item_present(&location, CTOKEN_EAT_LABEL_HEADING);
+    location_mark_item_present(&location, CTOKEN_EAT_LABEL_SPEED);
+    location_mark_item_present(&location, CTOKEN_EAT_LABEL_TIME_STAMP);
+    location_mark_item_present(&location, CTOKEN_EAT_LABEL_AGE);
+
+    ctoken_encode_init(&encode_context,
+                       T_COSE_OPT_SHORT_CIRCUIT_SIG,
+                       0,
+                       T_COSE_ALGORITHM_ES256);
+
+    error = ctoken_encode_start(&encode_context, out);
+    if(error) {
+        return 100 + (int32_t)error;
+    }
+
+    ctoken_encode_location(&encode_context, &location);
+    error = ctoken_encode_finish(&encode_context, &completed_token);
+    if(error != CTOKEN_ERR_SUCCESS) {
+        return 88;
+    }
+    if(q_useful_buf_compare(completed_token, Q_USEFUL_BUF_FROM_BYTE_ARRAY_LITERAL(expected_full_location))) {
+        return 77;
+    }
+
+    ctoken_decode_init(&decode_context, T_COSE_OPT_ALLOW_SHORT_CIRCUIT, 0);
+
+    error = ctoken_decode_validate_token(&decode_context, Q_USEFUL_BUF_FROM_BYTE_ARRAY_LITERAL(expected_full_location));
+    if(error) {
+        return 1;
+    }
+    memset(&location, 0x44, sizeof(struct ctoken_location_t)); /* initialize to something incorrect */
+    error = ctoken_decode_location(&decode_context, &location);
+    if(error != CTOKEN_ERR_SUCCESS ||
+       !location_item_present(&location, CTOKEN_EAT_LABEL_LATITUDE) ||
+       !location_item_present(&location, CTOKEN_EAT_LABEL_LONGITUDE) ||
+       !location_item_present(&location, CTOKEN_EAT_LABEL_ALTITUDE) ||
+       !location_item_present(&location, CTOKEN_EAT_LABEL_ACCURACY) ||
+       !location_item_present(&location, CTOKEN_EAT_LABEL_ALTITUDE_ACCURACY) ||
+       !location_item_present(&location, CTOKEN_EAT_LABEL_HEADING) ||
+       !location_item_present(&location, CTOKEN_EAT_LABEL_SPEED) ||
+       !location_item_present(&location, CTOKEN_EAT_LABEL_TIME_STAMP) ||
+       !location_item_present(&location, CTOKEN_EAT_LABEL_AGE) ||
+       location.eat_loc_latitude != 1.1 ||
+       location.eat_loc_longitude != 2.2 ||
+       location.eat_loc_altitude != 3.3 ||
+       location.eat_loc_accuracy != 4.4 ||
+       location.eat_loc_altitude_accuracy != 5.5 ||
+       location.eat_loc_heading != 6.6 ||
+       location.eat_loc_speed != 7.7 ||
+       location.time_stamp != 880000 ||
+       location.age != 9900) {
+        return 66;
     }
 
     return 0;

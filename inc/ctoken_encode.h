@@ -555,7 +555,8 @@ ctoken_encode_boot_state(struct ctoken_encode_ctx     *context,
  *
  * See \ref ctoken_location_t for the details of the location claim.
  * Only the location fields indicated as present in \c item_flags
- * will be output.
+ * will be output. The latitude and longitude fields must always
+ * be present.
  */
 void
 ctoken_encode_location(struct ctoken_encode_ctx       *context,
