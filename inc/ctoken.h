@@ -13,6 +13,8 @@
 
 #include <stdint.h>
 #include "ctoken_eat_labels.h"
+#include <stdbool.h>
+
 
 #ifdef __cplusplus
 extern "C" {
