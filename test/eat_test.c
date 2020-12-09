@@ -940,15 +940,15 @@ int32_t location_test()
     location.eat_loc_speed = 7.7;
     location.time_stamp = 880000;
     location.age = 9900;
-    location_mark_item_present(&location, CTOKEN_EAT_LABEL_LATITUDE);
-    location_mark_item_present(&location, CTOKEN_EAT_LABEL_LONGITUDE);
-    location_mark_item_present(&location, CTOKEN_EAT_LABEL_ALTITUDE);
-    location_mark_item_present(&location, CTOKEN_EAT_LABEL_ACCURACY);
-    location_mark_item_present(&location, CTOKEN_EAT_LABEL_ALTITUDE_ACCURACY);
-    location_mark_item_present(&location, CTOKEN_EAT_LABEL_HEADING);
-    location_mark_item_present(&location, CTOKEN_EAT_LABEL_SPEED);
-    location_mark_item_present(&location, CTOKEN_EAT_LABEL_TIME_STAMP);
-    location_mark_item_present(&location, CTOKEN_EAT_LABEL_AGE);
+    ctoken_location_mark_item_present(&location, CTOKEN_EAT_LABEL_LATITUDE);
+    ctoken_location_mark_item_present(&location, CTOKEN_EAT_LABEL_LONGITUDE);
+    ctoken_location_mark_item_present(&location, CTOKEN_EAT_LABEL_ALTITUDE);
+    ctoken_location_mark_item_present(&location, CTOKEN_EAT_LABEL_ACCURACY);
+    ctoken_location_mark_item_present(&location, CTOKEN_EAT_LABEL_ALTITUDE_ACCURACY);
+    ctoken_location_mark_item_present(&location, CTOKEN_EAT_LABEL_HEADING);
+    ctoken_location_mark_item_present(&location, CTOKEN_EAT_LABEL_SPEED);
+    ctoken_location_mark_item_present(&location, CTOKEN_EAT_LABEL_TIME_STAMP);
+    ctoken_location_mark_item_present(&location, CTOKEN_EAT_LABEL_AGE);
 
     ctoken_encode_init(&encode_context,
                        T_COSE_OPT_SHORT_CIRCUIT_SIG,
@@ -978,15 +978,15 @@ int32_t location_test()
     memset(&location, 0x44, sizeof(struct ctoken_location_t)); /* initialize to something incorrect */
     error = ctoken_decode_location(&decode_context, &location);
     if(error != CTOKEN_ERR_SUCCESS ||
-       !location_item_present(&location, CTOKEN_EAT_LABEL_LATITUDE) ||
-       !location_item_present(&location, CTOKEN_EAT_LABEL_LONGITUDE) ||
-       !location_item_present(&location, CTOKEN_EAT_LABEL_ALTITUDE) ||
-       !location_item_present(&location, CTOKEN_EAT_LABEL_ACCURACY) ||
-       !location_item_present(&location, CTOKEN_EAT_LABEL_ALTITUDE_ACCURACY) ||
-       !location_item_present(&location, CTOKEN_EAT_LABEL_HEADING) ||
-       !location_item_present(&location, CTOKEN_EAT_LABEL_SPEED) ||
-       !location_item_present(&location, CTOKEN_EAT_LABEL_TIME_STAMP) ||
-       !location_item_present(&location, CTOKEN_EAT_LABEL_AGE) ||
+       !ctoken_location_is_item_present(&location, CTOKEN_EAT_LABEL_LATITUDE) ||
+       !ctoken_location_is_item_present(&location, CTOKEN_EAT_LABEL_LONGITUDE) ||
+       !ctoken_location_is_item_present(&location, CTOKEN_EAT_LABEL_ALTITUDE) ||
+       !ctoken_location_is_item_present(&location, CTOKEN_EAT_LABEL_ACCURACY) ||
+       !ctoken_location_is_item_present(&location, CTOKEN_EAT_LABEL_ALTITUDE_ACCURACY) ||
+       !ctoken_location_is_item_present(&location, CTOKEN_EAT_LABEL_HEADING) ||
+       !ctoken_location_is_item_present(&location, CTOKEN_EAT_LABEL_SPEED) ||
+       !ctoken_location_is_item_present(&location, CTOKEN_EAT_LABEL_TIME_STAMP) ||
+       !ctoken_location_is_item_present(&location, CTOKEN_EAT_LABEL_AGE) ||
        location.eat_loc_latitude != 1.1 ||
        location.eat_loc_longitude != 2.2 ||
        location.eat_loc_altitude != 3.3 ||

@@ -110,12 +110,10 @@ enum ctoken_err_t {
     CTOKEN_ERR_SUBMOD_TYPE,
     /** Submods section is missing or wrong type */
     CTOKEN_ERR_SUBMOD_SECTION,
-
     /** Something is wrong with the content of a claim such as mandatory
      * parts are missing, the CBOR structure is wrong or other
      */
     CTOKEN_ERR_CLAIM_FORMAT,
-
     /** The latitude and longitude fields are required in the location claim */
     CTOKEN_ERR_LAT_LONG_REQUIRED,
 };
@@ -128,7 +126,8 @@ enum ctoken_err_t {
 
 
 /**
- * Holds a geographic location (e.g. a GPS position).
+ * Holds a geographic location (e.g. a GPS position). The exact
+ * specification for this is in the EAT document.
  */
 struct ctoken_location_t {
     /** Array of doubles to hold latitude, longitude... indexed
@@ -138,9 +137,14 @@ struct ctoken_location_t {
     double items[NUM_FLOAT_LOCATION_ITEMS];
 
     /** Epoch-based time for when the location was obtained, particularly
-     * if it is different than when the token is generated. TODO: doc */
+     * if it is different than when the token is generated. */
     uint64_t time_stamp;
-    // TODO: doc
+    /** The time difference in seconds between when the location was obtained
+     * and when the token was created. It is preferable to use time_stamp
+     * rather than this, but some system may not know what time it is.
+     * Note that this does require a "ticker" to count seconds to implement,
+     * but does not require knowing the time.
+     */
     uint64_t age;
     /** Bit flags indicating valid data in array. Corresponding bit is
      * 0x01u << (CTOKEN_EAT_LABEL_XXX - 1)
@@ -158,7 +162,7 @@ struct ctoken_location_t {
 #define  eat_loc_speed      items[CTOKEN_EAT_LABEL_SPEED-1]
 
 
-static inline bool location_item_present(const struct ctoken_location_t *l, int label)
+static inline bool ctoken_location_is_item_present(const struct ctoken_location_t *l, int label)
 {
     /* This will misbehave if label is greater than 32, but the
      * effect is not of any consequence.
@@ -166,7 +170,7 @@ static inline bool location_item_present(const struct ctoken_location_t *l, int 
     return l->item_flags & (0x01 << (label-1));
 }
 
-static inline void location_mark_item_present(struct ctoken_location_t *l, int label)
+static inline void ctoken_location_mark_item_present(struct ctoken_location_t *l, int label)
 {
     /* This will misbehave if label is greater than 32, but the
      * effect is not of any consequence.

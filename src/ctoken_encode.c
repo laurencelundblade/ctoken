@@ -349,8 +349,8 @@ ctoken_encode_location(struct ctoken_encode_ctx       *me,
     int                 item_iterator;
     QCBOREncodeContext *encode_cxt;
 
-    if(!location_item_present(location, CTOKEN_EAT_LABEL_LATITUDE) ||
-       !location_item_present(location, CTOKEN_EAT_LABEL_LONGITUDE)) {
+    if(!ctoken_location_is_item_present(location, CTOKEN_EAT_LABEL_LATITUDE) ||
+       !ctoken_location_is_item_present(location, CTOKEN_EAT_LABEL_LONGITUDE)) {
         /* Per EAT and W3C specs, the lattitude and longitude must be present */
         me->error = CTOKEN_ERR_LAT_LONG_REQUIRED;
         return;
@@ -360,22 +360,27 @@ ctoken_encode_location(struct ctoken_encode_ctx       *me,
 
     QCBOREncode_OpenMapInMapN(encode_cxt, CTOKEN_EAT_LABEL_LOCATION);
 
-    for(item_iterator = CTOKEN_EAT_LABEL_LATITUDE-1; item_iterator <= NUM_FLOAT_LOCATION_ITEMS-1; item_iterator++) {
-        if(location_item_present(location, item_iterator + 1)) {
+    for(item_iterator = CTOKEN_EAT_LABEL_LATITUDE-1;
+        item_iterator <= NUM_FLOAT_LOCATION_ITEMS-1;
+        item_iterator++) {
+        if(ctoken_location_is_item_present(location, item_iterator + 1)) {
             QCBOREncode_AddDoubleToMapN(encode_cxt,
                                         item_iterator + 1,
                                         location->items[item_iterator]);
         }
     }
 
-    if(location_item_present(location, CTOKEN_EAT_LABEL_TIME_STAMP)) {
-        QCBOREncode_AddUInt64ToMapN(encode_cxt, CTOKEN_EAT_LABEL_TIME_STAMP, location->time_stamp);
+    if(ctoken_location_is_item_present(location, CTOKEN_EAT_LABEL_TIME_STAMP)) {
+        QCBOREncode_AddUInt64ToMapN(encode_cxt,
+                                    CTOKEN_EAT_LABEL_TIME_STAMP,
+                                    location->time_stamp);
     }
 
-    if(location_item_present(location, CTOKEN_EAT_LABEL_AGE)) {
-        QCBOREncode_AddUInt64ToMapN(encode_cxt, CTOKEN_EAT_LABEL_AGE, location->age);
+    if(ctoken_location_is_item_present(location, CTOKEN_EAT_LABEL_AGE)) {
+        QCBOREncode_AddUInt64ToMapN(encode_cxt,
+                                    CTOKEN_EAT_LABEL_AGE,
+                                    location->age);
     }
-
 
     QCBOREncode_CloseMap(encode_cxt);
 }

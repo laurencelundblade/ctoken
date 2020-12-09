@@ -802,7 +802,7 @@ ctoken_decode_boot_state(struct ctoken_decode_ctx *context,
  *
  * \retval CTOKEN_ERR_NOT_FOUND             No location claims exists.
  * \retval CTOKEN_ERR_CBOR_NOT_WELL_FORMED  CBOR is not well formed.
- * \retval CTOKEN_ERR_CBOR_STRUCTURE        The location claim format is bad.
+ * \retval CTOKEN_ERR_CLAIM_FORMAT          The location claim format is bad.
  *
  * This finds the location claim in the token and returns its
  * contents.
