@@ -112,7 +112,9 @@ static inline enum ctoken_err_t map_qcbor_error(QCBORError error)
     if(QCBORDecode_IsNotWellFormedError(error)) {
         return CTOKEN_ERR_CBOR_NOT_WELL_FORMED;
     } else if(error == QCBOR_ERR_LABEL_NOT_FOUND) {
-        return CTOKEN_ERR_NOT_FOUND;
+        return CTOKEN_ERR_CLAIM_NOT_PRESENT;
+    } else if(error == QCBOR_ERR_UNEXPECTED_TYPE) {
+        return CTOKEN_ERR_CBOR_TYPE;
     } else if(error) {
         return CTOKEN_ERR_GENERAL;
     } else {
@@ -425,35 +427,73 @@ Done:
  * Public function. See ctoken_eat_encode.h
  */
 enum ctoken_err_t
-ctoken_decode_location(struct ctoken_decode_ctx     *me,
-                           struct ctoken_location_t *location)
+ctoken_decode_location(struct ctoken_decode_ctx   *me,
+                       struct ctoken_location_t   *location)
 {
-    enum ctoken_err_t   return_value = 0;
-    double              d;
-    int64_t             label;
+    enum ctoken_err_t  return_value = CTOKEN_ERR_SUCCESS;
+    double             d;
+    int                label;
+    QCBORError         cbor_error;
 
     if(me->last_error != CTOKEN_ERR_SUCCESS) {
         return_value = me->last_error;
         goto Done;
     }
 
+    location->item_flags = 0;
+
     QCBORDecode_EnterMapFromMapN(&(me->qcbor_decode_context),
                                  CTOKEN_EAT_LABEL_LOCATION);
-    // TODO: probably need error here to indicate claim is not present
+    cbor_error = QCBORDecode_GetAndResetError(&(me->qcbor_decode_context));
+    if(cbor_error != QCBOR_SUCCESS) {
+        return_value = map_qcbor_error(cbor_error);
+        goto Done;
+    }
 
-    for(label = CTOKEN_EAT_LABEL_LATITUDE; label < NUM_LOCATION_ITEMS; label++) {
+    for(label = CTOKEN_EAT_LABEL_LATITUDE; label <= NUM_FLOAT_LOCATION_ITEMS; label++) {
         QCBORDecode_GetDoubleInMapN(&(me->qcbor_decode_context), label, &d);
-        QCBORError e = QCBORDecode_GetAndResetError(&(me->qcbor_decode_context));
-        if(!e) {
+        cbor_error = QCBORDecode_GetAndResetError(&(me->qcbor_decode_context));
+        if(cbor_error == QCBOR_SUCCESS) {
             location->items[label-1] = d;
-            location->item_flags |= (0x01U << (label-1));
+            ctoken_location_mark_item_present(location, label);
+        } else if(cbor_error != QCBOR_ERR_LABEL_NOT_FOUND) {
+            return_value = map_qcbor_error(cbor_error);
+            goto Done;
         }
     }
 
-    QCBORDecode_ExitMap(&(me->qcbor_decode_context));
-    if(QCBORDecode_GetError(&(me->qcbor_decode_context)) != QCBOR_SUCCESS) {
-        return_value = CTOKEN_ERR_CBOR_STRUCTURE;
+    if(!ctoken_location_is_item_present(location, CTOKEN_EAT_LABEL_LATITUDE) ||
+        !ctoken_location_is_item_present(location, CTOKEN_EAT_LABEL_LONGITUDE)) {
+        /* Per EAT and W3C specs, the lattitude and longitude must be present */
+        return_value = CTOKEN_ERR_CLAIM_FORMAT;
+        goto Done;
     }
+
+    QCBORDecode_GetUInt64InMapN(&(me->qcbor_decode_context), CTOKEN_EAT_LABEL_TIME_STAMP, &(location->time_stamp));
+    cbor_error = QCBORDecode_GetAndResetError(&(me->qcbor_decode_context));
+    if(cbor_error == QCBOR_SUCCESS) {
+        ctoken_location_mark_item_present(location, CTOKEN_EAT_LABEL_TIME_STAMP);
+    } else if(cbor_error != QCBOR_ERR_LABEL_NOT_FOUND) {
+        return_value = map_qcbor_error(cbor_error);
+        goto Done;
+    }
+
+    QCBORDecode_GetUInt64InMapN(&(me->qcbor_decode_context), CTOKEN_EAT_LABEL_AGE, &(location->age));
+    cbor_error = QCBORDecode_GetAndResetError(&(me->qcbor_decode_context));
+    if(cbor_error == QCBOR_SUCCESS) {
+        ctoken_location_mark_item_present(location, CTOKEN_EAT_LABEL_AGE);
+    } else if(cbor_error != QCBOR_ERR_LABEL_NOT_FOUND) {
+        return_value = map_qcbor_error(cbor_error);
+        goto Done;
+    }
+
+    QCBORDecode_ExitMap(&(me->qcbor_decode_context));
+    cbor_error = QCBORDecode_GetAndResetError(&(me->qcbor_decode_context));
+    if(cbor_error != QCBOR_SUCCESS) {
+        return_value = map_qcbor_error(cbor_error);
+    }
+
+    return_value = CTOKEN_ERR_SUCCESS;
 
 Done:
     me->last_error = return_value;
@@ -795,3 +835,4 @@ ctoken_decode_get_nth_nested_token(struct ctoken_decode_ctx *me,
 Done:
     return return_value;
 }
+

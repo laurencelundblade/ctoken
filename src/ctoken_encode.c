@@ -343,26 +343,47 @@ ctoken_encode_boot_state(struct ctoken_encode_ctx     *me,
  * Public function. See ctoken_eat_encode.h
  */
 void
-ctoken_encode_location(struct ctoken_encode_ctx *me,
-                           const struct ctoken_location_t *location)
+ctoken_encode_location(struct ctoken_encode_ctx       *me,
+                       const struct ctoken_location_t *location)
 {
     int                 item_iterator;
-    QCBOREncodeContext *encode_cxt = ctoken_encode_borrow_cbor_cntxt(me);
+    QCBOREncodeContext *encode_cxt;
+
+    if(!ctoken_location_is_item_present(location, CTOKEN_EAT_LABEL_LATITUDE) ||
+       !ctoken_location_is_item_present(location, CTOKEN_EAT_LABEL_LONGITUDE)) {
+        /* Per EAT and W3C specs, the lattitude and longitude must be present */
+        me->error = CTOKEN_ERR_LAT_LONG_REQUIRED;
+        return;
+    }
+
+    encode_cxt = ctoken_encode_borrow_cbor_cntxt(me);
 
     QCBOREncode_OpenMapInMapN(encode_cxt, CTOKEN_EAT_LABEL_LOCATION);
 
-    for(item_iterator = CTOKEN_EAT_LABEL_LATITUDE-1; item_iterator < NUM_LOCATION_ITEMS-1; item_iterator++) {
-        if(location->item_flags & (0x01u << item_iterator)) {
+    for(item_iterator = CTOKEN_EAT_LABEL_LATITUDE-1;
+        item_iterator <= NUM_FLOAT_LOCATION_ITEMS-1;
+        item_iterator++) {
+        if(ctoken_location_is_item_present(location, item_iterator + 1)) {
             QCBOREncode_AddDoubleToMapN(encode_cxt,
                                         item_iterator + 1,
                                         location->items[item_iterator]);
         }
     }
 
+    if(ctoken_location_is_item_present(location, CTOKEN_EAT_LABEL_TIME_STAMP)) {
+        QCBOREncode_AddUInt64ToMapN(encode_cxt,
+                                    CTOKEN_EAT_LABEL_TIME_STAMP,
+                                    location->time_stamp);
+    }
+
+    if(ctoken_location_is_item_present(location, CTOKEN_EAT_LABEL_AGE)) {
+        QCBOREncode_AddUInt64ToMapN(encode_cxt,
+                                    CTOKEN_EAT_LABEL_AGE,
+                                    location->age);
+    }
+
     QCBOREncode_CloseMap(encode_cxt);
 }
-
-
 
 
 /*

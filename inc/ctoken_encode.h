@@ -548,38 +548,20 @@ ctoken_encode_boot_state(struct ctoken_encode_ctx     *context,
 
 
 /**
- * \brief Encode an EAT location claims
+ * \brief Encode an EAT location claim.
  *
  * \param[in] context   ctoken encode context to output to.
  * \param[in] location  The location to output.
  *
+ * See \ref ctoken_location_t for the details of the location claim.
  * Only the location fields indicated as present in \c item_flags
- * will be output.
+ * will be output. The latitude and longitude fields must always
+ * be present.
  */
 void
-ctoken_encode_location(struct ctoken_encode_ctx           *context,
+ctoken_encode_location(struct ctoken_encode_ctx       *context,
                        const struct ctoken_location_t *location);
 
-
-/**
- * \brief  Encode the EAT age claim.
- *
- * \param[in] context         The encoding context to output to.
- * \paran[in] age             The age in seconds of the token.
- *
- * This outputs the age claim.
- *
- * If the other claims in token were obtained previously and held
- * until token creation, this gives their age in seconds in the epoch
- * (January 1, 1970).
- *
- * If there is an error like insufficient space in the output buffer,
- * the error state is entered. It is returned later when ctoken_encode_finish()
- * is called.
- */
-static void
-ctoken_encode_age(struct ctoken_encode_ctx  *context,
-                      uint64_t                   age);
 
 
 /**
@@ -943,13 +925,6 @@ ctoken_encode_security_level(struct ctoken_encode_ctx *me,
     ctoken_encode_add_integer(me,
                               CTOKEN_EAT_LABEL_SECURITY_LEVEL,
                               (int64_t)security_level);
-}
-
-static inline void
-ctoken_encode_age(struct ctoken_encode_ctx  *me,
-                      uint64_t                   age)
-{
-    ctoken_encode_add_integer(me, CTOKEN_EAT_LABEL_AGE, age);
 }
 
 

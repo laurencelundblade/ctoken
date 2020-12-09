@@ -35,7 +35,6 @@ extern "C" {
 #define CTOKEN_EAT_LABEL_SECURITY_LEVEL -76002
 #define CTOKEN_EAT_LABEL_BOOT_STATE -76003
 #define CTOKEN_EAT_LABEL_LOCATION -76004
-#define CTOKEN_EAT_LABEL_AGE -76005
 #define CTOKEN_EAT_LABEL_UPTIME -76006
 
 
@@ -98,11 +97,12 @@ enum ctoken_debug_level_t {
 
 
 /* These are labels for inside the map that is the location claims.
- The are assigned in the EAT specification.
-
- They also index items[] in ctoken_eat_location_t.
-
- They also index the bits indicating valid data in item_flags in ctoken_eat_location_t
+ * The are assigned in the EAT specification.
+ *
+ * They also index items[] in ctoken_eat_location_t.
+ *
+ * They also index the bits indicating valid data in item_flags in
+ * ctoken_eat_location_t
  */
 #define CTOKEN_EAT_LABEL_LATITUDE          1
 #define CTOKEN_EAT_LABEL_LONGITUDE         2
@@ -111,48 +111,11 @@ enum ctoken_debug_level_t {
 #define CTOKEN_EAT_LABEL_ALTITUDE_ACCURACY 5
 #define CTOKEN_EAT_LABEL_HEADING           6
 #define CTOKEN_EAT_LABEL_SPEED             7
+#define CTOKEN_EAT_LABEL_TIME_STAMP        8
+#define CTOKEN_EAT_LABEL_AGE               9
 
-#define NUM_LOCATION_ITEMS CTOKEN_EAT_LABEL_SPEED
+#define NUM_FLOAT_LOCATION_ITEMS CTOKEN_EAT_LABEL_SPEED
 
-
-/**
- * Holds a geographic location (e.g. a GPS position).
- */
-struct ctoken_location_t {
-    /** Array of doubles to old latitude, longitude... indexed
-     * CTOKEN_EAT_LABEL_XXX - 1. Use accessor macros below for
-     * convenience. Array entry is only valid id flag for it is set
-     * in item_flags. */
-    double items[NUM_LOCATION_ITEMS];
-    /** Bit flags indicating valid data in array. Corresponding bit is
-     * 0x01u << (CTOKEN_EAT_LABEL_XXX - 1)
-     */
-    uint32_t item_flags;
-};
-
-/* Accessor macros for ctoken_eat_location_t. */
-#define  eat_loc_latitude   items[CTOKEN_EAT_LABEL_LATITUDE-1]
-#define  eat_loc_longitude  items[CTOKEN_EAT_LABEL_LONGITUDE-1]
-#define  eat_loc_altitude   items[CTOKEN_EAT_LABEL_ALTITUDE-1]
-#define  eat_loc_accuracy   items[CTOKEN_EAT_LABEL_ACCURACY-1]
-#define  eat_loc_altitude_accuracy items[CTOKEN_EAT_LABEL_ALTITUDE_ACCURACY-1]
-#define  eat_loc_heading    items[CTOKEN_EAT_LABEL_HEADING-1]
-#define  eat_loc_speed      items[CTOKEN_EAT_LABEL_SPEED-1]
-
-
-/** The type of a submodule that is a token. */
-enum ctoken_type {
-    /** The submodule token is a CWT as defined by RFC 8392. It may be
-     * a CWT tag or CWT protocol message. It may be signed and/or encrypted.
-     * It may not be a UCCS per the EAT draft.
-     */
-    CTOKEN_TYPE_CWT,
-
-    /** The submodule token is a JWT as defined by RFC 7519. It must not be
-     * an unsecured JWT per the EAT draft.
-     */
-    CTOKEN_TYPE_JSON
-};
 
 
 #ifdef __cplusplus

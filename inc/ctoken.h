@@ -12,6 +12,9 @@
 #define __CTOKEN_H__
 
 #include <stdint.h>
+#include "ctoken_eat_labels.h"
+#include <stdbool.h>
+
 
 #ifdef __cplusplus
 extern "C" {
@@ -99,16 +102,101 @@ enum ctoken_err_t {
     /** Index beyond the number of submodules. */
     CTOKEN_ERR_SUBMOD_INDEX_TOO_LARGE,
     /** No submodule of the given name as found. */
+    CTOKEN_NAMED_SUBMOD_NOT_FOUND,
+
+    /** Claim is not present in the token */
+    CTOKEN_ERR_CLAIM_NOT_PRESENT,
+
     CTOKEN_ERR_NAMED_SUBMOD_NOT_FOUND,
     /** Submodule is the wrong CBOR type */
     CTOKEN_ERR_SUBMOD_TYPE,
     /** Submods section is missing or wrong type */
     CTOKEN_ERR_SUBMOD_SECTION,
+    /** Something is wrong with the content of a claim such as mandatory
+     * parts are missing, the CBOR structure is wrong or other
+     */
+    CTOKEN_ERR_CLAIM_FORMAT,
+    /** The latitude and longitude fields are required in the location claim */
+    CTOKEN_ERR_LAT_LONG_REQUIRED,
 };
 
 
 /** The maximum nesting depth for submodules. */
 #define CTOKEN_MAX_SUBMOD_NESTING  (QCBOR_MAX_ARRAY_NESTING/2)
+
+
+
+
+/**
+ * Holds a geographic location (e.g. a GPS position). The exact
+ * specification for this is in the EAT document.
+ */
+struct ctoken_location_t {
+    /** Array of doubles to hold latitude, longitude... indexed
+     * CTOKEN_EAT_LABEL_XXX - 1. Use accessor macros below for
+     * convenience. Array entry is only valid if flag for it is set
+     * in item_flags. */
+    double items[NUM_FLOAT_LOCATION_ITEMS];
+
+    /** Epoch-based time for when the location was obtained, particularly
+     * if it is different than when the token is generated. */
+    uint64_t time_stamp;
+    /** The time difference in seconds between when the location was obtained
+     * and when the token was created. It is preferable to use time_stamp
+     * rather than this, but some system may not know what time it is.
+     * Note that this does require a "ticker" to count seconds to implement,
+     * but does not require knowing the time.
+     */
+    uint64_t age;
+    /** Bit flags indicating valid data in array. Corresponding bit is
+     * 0x01u << (CTOKEN_EAT_LABEL_XXX - 1)
+     */
+    uint32_t item_flags;
+};
+
+/* Accessor macros for ctoken_eat_location_t. */
+#define  eat_loc_latitude   items[CTOKEN_EAT_LABEL_LATITUDE-1]
+#define  eat_loc_longitude  items[CTOKEN_EAT_LABEL_LONGITUDE-1]
+#define  eat_loc_altitude   items[CTOKEN_EAT_LABEL_ALTITUDE-1]
+#define  eat_loc_accuracy   items[CTOKEN_EAT_LABEL_ACCURACY-1]
+#define  eat_loc_altitude_accuracy items[CTOKEN_EAT_LABEL_ALTITUDE_ACCURACY-1]
+#define  eat_loc_heading    items[CTOKEN_EAT_LABEL_HEADING-1]
+#define  eat_loc_speed      items[CTOKEN_EAT_LABEL_SPEED-1]
+
+
+static inline bool ctoken_location_is_item_present(const struct ctoken_location_t *l, int label)
+{
+    /* This will misbehave if label is greater than 32, but the
+     * effect is not of any consequence.
+     */
+    return l->item_flags & (0x01 << (label-1));
+}
+
+static inline void ctoken_location_mark_item_present(struct ctoken_location_t *l, int label)
+{
+    /* This will misbehave if label is greater than 32, but the
+     * effect is not of any consequence.
+     */
+    l->item_flags |= (0x01 << (label-1));
+}
+
+
+
+
+/** The type of a submodule that is a token. */
+enum ctoken_type {
+    /** The submodule token is a CWT as defined by RFC 8392. It may be
+     * a CWT tag or CWT protocol message. It may be signed and/or encrypted.
+     * It may not be a UCCS per the EAT draft.
+     */
+    CTOKEN_TYPE_CWT,
+
+    /** The submodule token is a JWT as defined by RFC 7519. It must not be
+     * an unsecured JWT per the EAT draft.
+     */
+    CTOKEN_TYPE_JSON
+};
+
 
 
 #ifdef __cplusplus
