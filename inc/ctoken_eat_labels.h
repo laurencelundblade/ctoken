@@ -34,6 +34,8 @@ extern "C" {
 #define CTOKEN_EAT_LABEL_ORIGINATION  -75010 // Same as PSA
 #define CTOKEN_EAT_LABEL_SECURITY_LEVEL -76002
 #define CTOKEN_EAT_LABEL_BOOT_STATE -76003
+#define CTOKEN_EAT_LABEL_SECURE_BOOT -76007
+#define CTOKEN_EAT_LABEL_DEBUG_STATE -76008
 #define CTOKEN_EAT_LABEL_LOCATION -76004
 #define CTOKEN_EAT_LABEL_UPTIME -76006
 
@@ -77,23 +79,21 @@ enum ctoken_security_level_t {
  * attestor.
  */
 enum ctoken_debug_level_t {
-    /** The debug state is not reported. It is not know what it is */
-    EAT_DL_NOT_REPORTED = 0,
     /** The debug system is enabled */
-    EAT_DL_NOT_DISABLED = 1,
+    CTOKEN_DEBUG_ENABLED = 0,
     /** The debug system is disabled, but might have been enabled recently,
      * been enabled since the system booted or started */
-    EAT_DL_DISABLED = 2,
+    CTOKEN_DEBUG_DISABLED = 1,
     /** The debug system is disabled and has not been enabled recently, not
      * since before the device most recently booted or restarted
      */
-    EAT_DL_DISABLED_SINCE_BOOT = 3,
+    CTOKEN_DEBUG_DISABLED_SINCE_BOOT = 2,
     /** The debug system is disabled and cannot be enabled by any put the
      * chip / hardware manufacturer
      */
-    EAT_DL_PERMANENT_DISABLE = 4,
+    CTOKEN_DEBUG_DISABLED_PERMANENT = 3,
     /** The debug system cannot be enabled by anyone */
-    EAT_DL_FULL_PERMANENT_DISABLE = 5};
+    CTOKEN_DEBUG_DISABLED_FULL_PERMANENT = 4};
 
 
 /* These are labels for inside the map that is the location claims.

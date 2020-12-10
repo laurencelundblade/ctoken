@@ -76,7 +76,9 @@ int32_t basic_eat_test(void)
 
     ctoken_encode_security_level(&encode_ctx, EAT_SL_SECURE_RESTRICTED);
 
-    ctoken_encode_boot_state(&encode_ctx, true, EAT_DL_DISABLED_SINCE_BOOT);
+    ctoken_encode_secure_boot(&encode_ctx, true);
+
+    ctoken_encode_debug_state(&encode_ctx, CTOKEN_DEBUG_ENABLED);
 
     location.eat_loc_latitude = 34.88;
     location.eat_loc_longitude = 9.54;
@@ -162,13 +164,22 @@ int32_t basic_eat_test(void)
         return 899;
     }
 
-    result = ctoken_decode_boot_state(&decode_context, &secure_boot, &debug_level);
+    result = ctoken_decode_secure_boot(&decode_context, &secure_boot);
     if(result) {
         return 900 + (int32_t)result;
     }
-    if(secure_boot != true || debug_level != EAT_DL_DISABLED_SINCE_BOOT) {
+    if(secure_boot != true) {
         return 999;
     }
+
+    result = ctoken_decode_debug_state(&decode_context, &debug_level);
+    if(result) {
+        return 900 + (int32_t)result;
+    }
+    if(debug_level != CTOKEN_DEBUG_ENABLED) {
+        return 999;
+    }
+
 
     /* zero out to make sure results are tested correctly */
     memset(&location, 0, sizeof(location));
@@ -1000,4 +1011,66 @@ int32_t location_test()
     }
 
     return 0;
+}
+
+
+static const uint8_t expected_boot_and_debug[] = {
+    0xD2, 0x84, 0x43, 0xA1, 0x01, 0x26, 0xA1, 0x04, 0x58, 0x20, 0xEF, 0x95, 0x4B, 0x4B, 0xD9, 0xBD, 0xF6, 0x70, 0xD0, 0x33, 0x60, 0x82, 0xF5, 0xEF, 0x15, 0x2A, 0xF8, 0xF3, 0x5B, 0x6A, 0x6C, 0x00, 0xEF, 0xA6, 0xA9, 0xA7, 0x1F, 0x49, 0x51, 0x7E, 0x18, 0xC6, 0x4D, 0xA2, 0x3A, 0x00, 0x01, 0x28, 0xE7, 0x02, 0x3A, 0x00, 0x01, 0x28, 0xE6, 0xF5, 0x58, 0x40, 0x4D, 0xBF, 0x6B, 0x47, 0x59, 0x87, 0x2C, 0xD5, 0xA4, 0xD6, 0x3C, 0xF4, 0xDA, 0x2E, 0xC1, 0x20, 0xFF, 0x71, 0x8E, 0x88, 0x8B, 0x25, 0xA0, 0xFE, 0x19, 0x34, 0x4A, 0xE6, 0xB6, 0x79, 0x97, 0x23, 0x4D, 0xBF, 0x6B, 0x47, 0x59, 0x87, 0x2C, 0xD5, 0xA4, 0xD6, 0x3C, 0xF4, 0xDA, 0x2E, 0xC1, 0x20, 0xFF, 0x71, 0x8E, 0x88, 0x8B, 0x25, 0xA0, 0xFE, 0x19, 0x34, 0x4A, 0xE6, 0xB6, 0x79, 0x97, 0x23};
+
+
+int32_t debug_and_boot_test()
+{
+    struct ctoken_decode_ctx  decode_context;
+    UsefulBuf_MAKE_STACK_UB(  out, 400);
+    enum ctoken_err_t         error;
+    struct ctoken_encode_ctx  encode_context;
+    struct q_useful_buf_c     completed_token;
+    bool                      secure_boot;
+    enum ctoken_debug_level_t debug_state;
+
+    ctoken_encode_init(&encode_context,
+                       T_COSE_OPT_SHORT_CIRCUIT_SIG,
+                       0,
+                       T_COSE_ALGORITHM_ES256);
+
+    /* Get started on a particular token by giving an out buffer.
+     */
+    error = ctoken_encode_start(&encode_context, out);
+    if(error) {
+        return 100 + (int32_t)error;
+    }
+
+    ctoken_encode_debug_state(&encode_context, CTOKEN_DEBUG_DISABLED_SINCE_BOOT);
+
+    ctoken_encode_secure_boot(&(encode_context), true);
+
+    error = ctoken_encode_finish(&encode_context, &completed_token);
+    if(error != CTOKEN_ERR_SUCCESS) {
+        return 88;
+    }
+    if(q_useful_buf_compare(completed_token, Q_USEFUL_BUF_FROM_BYTE_ARRAY_LITERAL(expected_boot_and_debug))) {
+        return 77;
+    }
+
+    ctoken_decode_init(&decode_context, T_COSE_OPT_ALLOW_SHORT_CIRCUIT, 0);
+
+    error = ctoken_decode_validate_token(&decode_context, Q_USEFUL_BUF_FROM_BYTE_ARRAY_LITERAL(expected_boot_and_debug));
+    if(error) {
+        return 1;
+    }
+
+    error = ctoken_decode_secure_boot(&decode_context, &secure_boot);
+    if(error != CTOKEN_ERR_SUCCESS || secure_boot != true) {
+        return 999;
+    }
+
+    error = ctoken_decode_debug_state(&decode_context, &debug_state);
+    if(error != CTOKEN_ERR_SUCCESS || debug_state != CTOKEN_DEBUG_DISABLED_SINCE_BOOT) {
+        return 699;
+    }
+
+    
+
+    return 0;
+
 }

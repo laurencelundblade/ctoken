@@ -111,7 +111,7 @@ struct ctoken_decode_ctx {
 /**
  * \brief Initialize token decoder.
  *
- * \param[in] me             gtThe token decoder context to be initialized.
+ * \param[in] context             gtThe token decoder context to be initialized.
  * \param[in] t_cose_options Options passed to t_cose verification.
  * \param[in] token_options  Decoding options.
  *
@@ -119,7 +119,7 @@ struct ctoken_decode_ctx {
  * use. An instance of \ref attest_token_decode_context can
  * be used again by calling this on it again.
  **/
-void ctoken_decode_init(struct ctoken_decode_ctx *me,
+void ctoken_decode_init(struct ctoken_decode_ctx *context,
                         uint32_t                  t_cose_options,
                         uint32_t                  token_options);
 
@@ -127,7 +127,7 @@ void ctoken_decode_init(struct ctoken_decode_ctx *me,
 /**
  * \brief Set specific public key to use for verification.
  *
- * \param[in] me           The token decoder context to configure.
+ * \param[in] context           The token decoder context to configure.
  * \param[in] verification_key  TODO: reference to t_cose.
  *
  *
@@ -148,14 +148,14 @@ void ctoken_decode_init(struct ctoken_decode_ctx *me,
  * attest_token_decode_set_pub_key_select().
  */
 static inline void
-ctoken_decode_set_verification_key(struct ctoken_decode_ctx *me,
+ctoken_decode_set_verification_key(struct ctoken_decode_ctx *context,
                                    struct t_cose_key         verification_key);
 
 
 /**
  * \brief Get the kid (key ID) from the token
  *
- * \param[in] me     The token decoder context.
+ * \param[in] context     The token decoder context.
  * \param[in] token  The token from which to get the kid.
  * \param[out] kid   The kid from the token.
  *
@@ -172,7 +172,7 @@ ctoken_decode_set_verification_key(struct ctoken_decode_ctx *me,
  * will use key ID and some will not.
  */
 enum ctoken_err_t
-ctoken_decode_get_kid(struct ctoken_decode_ctx *me,
+ctoken_decode_get_kid(struct ctoken_decode_ctx *context,
                       struct q_useful_buf_c     token,
                       struct q_useful_buf_c    *kid);
 
@@ -180,7 +180,7 @@ ctoken_decode_get_kid(struct ctoken_decode_ctx *me,
 /**
  * \brief Set the token to work on and validate its signature.
  *
- * \param[in] me     The token decoder context to validate with.
+ * \param[in] context     The token decoder context to validate with.
  * \param[in] token  The CBOR-encoded token to validate and decode.
  *
  * \return An error from \ref CTOKEN_ERR_t.
@@ -212,7 +212,7 @@ ctoken_decode_get_kid(struct ctoken_decode_ctx *me,
  * up the verification key is the token, not the COSE key id.
  */
 enum ctoken_err_t
-ctoken_decode_validate_token(struct ctoken_decode_ctx *me,
+ctoken_decode_validate_token(struct ctoken_decode_ctx *context,
                              struct q_useful_buf_c     token);
 
 
@@ -230,7 +230,7 @@ ctoken_decode_get_error(struct ctoken_decode_ctx *me);
 /**
  * \brief Get undecoded CBOR payload from the token.
  *
- * \param[in]  me      The token decoder context.
+ * \param[in]  context      The token decoder context.
  * \param[out] payload The returned, verified token payload.
  *
  * \return An error from \ref CTOKEN_ERR_t.
@@ -245,7 +245,7 @@ ctoken_decode_get_error(struct ctoken_decode_ctx *me);
  * that are not CBOR.
  */
 enum ctoken_err_t
-ctoken_decode_get_payload(struct ctoken_decode_ctx *me,
+ctoken_decode_get_payload(struct ctoken_decode_ctx *context,
                           struct q_useful_buf_c    *payload);
 
 
@@ -253,7 +253,7 @@ ctoken_decode_get_payload(struct ctoken_decode_ctx *me,
  *
  * \brief Get a claim of type byte string.
  *
- * \param[in]  me    The token decoder context.
+ * \param[in]  context    The token decoder context.
  * \param[in]  label The integer label identifying the claim.
  * \param[out] claim The byte string or \c NULL_Q_USEFUL_BUF_C.
  *
@@ -277,7 +277,7 @@ ctoken_decode_get_payload(struct ctoken_decode_ctx *me,
  * be set.
  */
 enum ctoken_err_t
-ctoken_decode_get_bstr(struct ctoken_decode_ctx  *me,
+ctoken_decode_get_bstr(struct ctoken_decode_ctx  *context,
                        int32_t                    label,
                        struct q_useful_buf_c     *claim);
 
@@ -286,7 +286,7 @@ ctoken_decode_get_bstr(struct ctoken_decode_ctx  *me,
  * \brief Get a claim of type text string.
  * string.
  *
- * \param[in] me     The token decoder context.
+ * \param[in] context     The token decoder context.
  * \param[in] label  The integer label identifying the claim.
  * \param[out] claim The byte string or \c NULL_Q_USEFUL_BUF_C.
  *
@@ -312,7 +312,7 @@ ctoken_decode_get_bstr(struct ctoken_decode_ctx  *me,
  * be set.
  */
 enum ctoken_err_t
-ctoken_decode_get_tstr(struct ctoken_decode_ctx *me,
+ctoken_decode_get_tstr(struct ctoken_decode_ctx *context,
                        int32_t                   label,
                        struct q_useful_buf_c    *claim);
 
@@ -320,7 +320,7 @@ ctoken_decode_get_tstr(struct ctoken_decode_ctx *me,
 /**
  * \brief Get a claim of type signed integer.
  *
- * \param[in]  me    The token decoder context.
+ * \param[in]  context    The token decoder context.
  * \param[in]  label The integer label identifying the claim.
  * \param[out] claim The signed integer or 0.
  *
@@ -353,7 +353,7 @@ ctoken_decode_get_tstr(struct ctoken_decode_ctx *me,
  * inside the \c attest_token_decode_context will be set.
  */
 enum ctoken_err_t
-ctoken_decode_get_int(struct ctoken_decode_ctx *me,
+ctoken_decode_get_int(struct ctoken_decode_ctx *context,
                       int32_t                   label,
                       int64_t                  *claim);
 
@@ -361,7 +361,7 @@ ctoken_decode_get_int(struct ctoken_decode_ctx *me,
 /**
  * \brief Get a claim of type unsigned integer.
  *
- * \param[in]  me    The token decoder context.
+ * \param[in]  context    The token decoder context.
  * \param[in]  label The integer label identifying the claim.
  * \param[out] claim The unsigned integer or 0.
  *
@@ -393,11 +393,16 @@ ctoken_decode_get_int(struct ctoken_decode_ctx *me,
  *  inside the \c attest_token_decode_context will be set.
  */
 enum ctoken_err_t
-ctoken_decode_get_uint(struct ctoken_decode_ctx *me,
+ctoken_decode_get_uint(struct ctoken_decode_ctx *context,
                        int32_t                  label,
                        uint64_t                *claim);
 
 
+
+enum ctoken_err_t
+ctoken_decode_get_bool(struct ctoken_decode_ctx *context,
+                       int32_t                   label,
+                       bool                     *b);
 
 
 /**
@@ -767,6 +772,34 @@ ctoken_decode_security_level(struct ctoken_decode_ctx         *context,
  * \param[in] context               The decoding context to decode from.
  * \param[out] secure_boot_enabled  This is \c true if secure boot
  *                                  is enabled or \c false it no.
+ *
+ * \retval CTOKEN_ERR_CBOR_STRUCTURE
+ *         General structure of the token is incorrect, for example
+ *         the top level is not a map or some map wasn't closed.
+ *
+ * \retval CTOKEN_ERR_CBOR_NOT_WELL_FORMED
+ *         CBOR syntax is wrong and it is not decodable.
+ *
+ * \retval CTOKEN_ERR_CBOR_TYPE
+ *         Returned if the claim is not a byte string.
+ *
+ * \retval CTOKEN_ERR_NOT_FOUND
+ *         Data item for \c label was not found in token.
+ *
+ * This gets the boot and debug state out of the token.
+ *
+ * The security level gives a rough indication of how security
+ * the HW and SW are.  See \ref ctoken_security_level_t.
+ */
+static enum ctoken_err_t
+ctoken_decode_secure_boot(struct ctoken_decode_ctx *context,
+                          bool                     *secure_boot_enabled);
+
+
+/**
+ * \brief Decode the boot and debug state claim.
+ *
+ * \param[in] context               The decoding context to decode from.
  * \param[out] debug_state          See \ref ctoken_debug_level_t for
  *                                  the different debug states.
  *
@@ -789,9 +822,10 @@ ctoken_decode_security_level(struct ctoken_decode_ctx         *context,
  * the HW and SW are.  See \ref ctoken_security_level_t.
  */
 enum ctoken_err_t
-ctoken_decode_boot_state(struct ctoken_decode_ctx *context,
-                         bool                     *secure_boot_enabled,
-                         enum ctoken_debug_level_t *debug_state);
+ctoken_decode_debug_state(struct ctoken_decode_ctx  *context,
+                          enum ctoken_debug_level_t *debug_state);
+
+
 
 
 /**
@@ -1067,6 +1101,14 @@ ctoken_decode_uptime(struct ctoken_decode_ctx *me,
                      uint64_t                 *uptime)
 {
     return ctoken_decode_get_uint(me, CTOKEN_EAT_LABEL_UPTIME, uptime);
+}
+
+
+static inline enum ctoken_err_t
+ctoken_decode_secure_boot(struct ctoken_decode_ctx *me,
+                          bool                     *secure_boot_enabled)
+{
+    return ctoken_decode_get_bool(me, CTOKEN_EAT_LABEL_SECURE_BOOT, secure_boot_enabled);
 }
 
 
