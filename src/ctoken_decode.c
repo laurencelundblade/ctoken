@@ -105,31 +105,12 @@ static enum ctoken_err_t t_cose_verify_error_map[] = {
 };
 
 
-
-static inline enum ctoken_err_t map_qcbor_error(QCBORError error)
-{
-    // TODO: make this better
-    if(QCBORDecode_IsNotWellFormedError(error)) {
-        return CTOKEN_ERR_CBOR_NOT_WELL_FORMED;
-    } else if(error == QCBOR_ERR_LABEL_NOT_FOUND) {
-        return CTOKEN_ERR_CLAIM_NOT_PRESENT;
-    } else if(error == QCBOR_ERR_UNEXPECTED_TYPE) {
-        return CTOKEN_ERR_CBOR_TYPE;
-    } else if(error) {
-        return CTOKEN_ERR_GENERAL;
-    } else {
-        return CTOKEN_ERR_SUCCESS;
-    }
-}
-
-
 /**
-
- \brief Map t_cose errors into ctoken errors
-
- \param[in] t_cose_error  The t_cose error to map
-
- \return The ctoken error.
+ * \brief Map t_cose errors into ctoken errors
+ *
+ * \param[in] t_cose_error  The t_cose error to map
+ *
+ * \return The ctoken error.
  */
 static inline enum ctoken_err_t
 map_t_cose_errors(enum t_cose_err_t t_cose_error)
@@ -151,6 +132,27 @@ map_t_cose_errors(enum t_cose_err_t t_cose_error)
 }
 
 
+static inline enum ctoken_err_t map_qcbor_error(QCBORError error)
+{
+    // TODO: make this better
+    if(QCBORDecode_IsNotWellFormedError(error)) {
+        return CTOKEN_ERR_CBOR_NOT_WELL_FORMED;
+    } else if(error == QCBOR_ERR_LABEL_NOT_FOUND) {
+        return CTOKEN_ERR_CLAIM_NOT_PRESENT;
+    } else if(error == QCBOR_ERR_UNEXPECTED_TYPE) {
+        return CTOKEN_ERR_CBOR_TYPE;
+    } else if(error) {
+        return CTOKEN_ERR_GENERAL;
+    } else {
+        return CTOKEN_ERR_SUCCESS;
+    }
+}
+
+
+
+/*
+* Public function. See ctoken_decode.h
+*/
 enum ctoken_err_t
 ctoken_decode_get_kid(struct ctoken_decode_ctx *me,
                       struct q_useful_buf_c   token,
@@ -212,40 +214,17 @@ Done:
     return return_value;
 }
 
-#if 0
-// TODO: fix this
-/*
- * Public function. See ctoken_decode.h
- */
-enum ctoken_err_t
-ctoken_decode_get_map(struct ctoken_decode_ctx *me,
-                            int32_t                 label,
-                            QCBORItem              *item)
-{
-    if(me->last_error != CTOKEN_ERR_SUCCESS) {
-        item->uDataType = QCBOR_TYPE_NONE;
-        return me->last_error;
-    }
-
-    return qcbor_util_get_top_level_item_in_map(me->payload,
-                                                label,
-                                                QCBOR_TYPE_MAP,
-                                                item);
-}
-#endif
-
-
 
 /*
  * Public function. See ctoken_decode.h
  */
 enum ctoken_err_t
 ctoken_decode_get_bstr(struct ctoken_decode_ctx *me,
-                       int32_t                 label,
-                       struct q_useful_buf_c  *claim)
+                       int32_t                  label,
+                       struct q_useful_buf_c   *claim)
 {
     enum ctoken_err_t return_value;
-    QCBORError qcbor_error;
+    QCBORError        qcbor_error;
 
     if(me->last_error != CTOKEN_ERR_SUCCESS) {
         return_value = me->last_error;
@@ -272,7 +251,7 @@ ctoken_decode_get_tstr(struct ctoken_decode_ctx *me,
                        struct q_useful_buf_c    *claim)
 {
     enum ctoken_err_t return_value;
-    QCBORError qcbor_error;
+    QCBORError        qcbor_error;
 
     if(me->last_error != CTOKEN_ERR_SUCCESS) {
         return_value = me->last_error;
@@ -299,7 +278,7 @@ ctoken_decode_get_int(struct ctoken_decode_ctx *me,
                       int64_t                  *integer)
 {
     enum ctoken_err_t return_value;
-    QCBORError qcbor_error;
+    QCBORError        qcbor_error;
 
     if(me->last_error != CTOKEN_ERR_SUCCESS) {
         return_value = me->last_error;
@@ -326,7 +305,7 @@ ctoken_decode_get_uint(struct ctoken_decode_ctx *me,
                        uint64_t                 *integer)
 {
     enum ctoken_err_t return_value;
-    QCBORError qcbor_error;
+    QCBORError        qcbor_error;
 
     if(me->last_error != CTOKEN_ERR_SUCCESS) {
         return_value = me->last_error;
@@ -663,7 +642,9 @@ Done:
     return return_value;
 }
 
-
+/*
+* Public function. See ctoken_decode.h
+*/
 enum ctoken_err_t
 ctoken_decode_enter_submod_sz(struct ctoken_decode_ctx *me,
                               const char               *name)
