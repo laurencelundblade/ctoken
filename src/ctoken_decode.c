@@ -323,6 +323,33 @@ Done:
 }
 
 
+
+/*
+ * Public function. See ctoken_decode.h
+ */
+enum ctoken_err_t
+ctoken_decode_get_bool(struct ctoken_decode_ctx *me,
+                       int32_t                   label,
+                       bool                     *b)
+{
+    enum ctoken_err_t return_value;
+    QCBORError        qcbor_error;
+
+    if(me->last_error != CTOKEN_ERR_SUCCESS) {
+        return_value = me->last_error;
+        goto Done;
+    }
+
+    QCBORDecode_GetBoolInMapN(&(me->qcbor_decode_context), label, b);
+    qcbor_error = QCBORDecode_GetAndResetError(&(me->qcbor_decode_context));
+
+    return_value = map_qcbor_error(qcbor_error);
+
+Done:
+    return return_value;
+}
+
+
 /*
  * Public function. See ctoken_decode.h
  */
@@ -351,55 +378,42 @@ Done:
 }
 
 
-
 /*
  * Public function. See ctoken_eat_encode.h
  */
 enum ctoken_err_t
-ctoken_decode_boot_state(struct ctoken_decode_ctx *me,
-                             bool *secure_boot_enabled,
-                             enum ctoken_debug_level_t *debug_state)
+ctoken_decode_debug_state(struct ctoken_decode_ctx *me,
+                         enum ctoken_debug_level_t *debug_state)
 {
-    enum ctoken_err_t       return_value;
-    int64_t boot_state;
-
-    /* Note that this claim is still being debated in
-     the working group and may change.
-
-     This errors out ff the claim doesn't exist. It could
-     default to some values.
-
-     TODO: test this
-     */
+    enum ctoken_err_t   return_value;
+    int64_t             d_s;
+    QCBORError          error;
 
     if(me->last_error != CTOKEN_ERR_SUCCESS) {
         return_value = me->last_error;
         goto Done;
     }
 
-    QCBORDecode_EnterArrayFromMapN(&(me->qcbor_decode_context),
-                                   CTOKEN_EAT_LABEL_BOOT_STATE);
-    // TODO: error check here maybe
-
-    QCBORDecode_GetBool(&(me->qcbor_decode_context), secure_boot_enabled);
-    QCBORDecode_GetInt64(&(me->qcbor_decode_context), &boot_state);
-
-    QCBORDecode_ExitArray(&(me->qcbor_decode_context));
-
-    if(boot_state < EAT_DL_NOT_REPORTED ||
-       boot_state > EAT_DL_FULL_PERMANENT_DISABLE) {
-        // TODO: better error here
-        return_value = CTOKEN_ERR_CBOR_NOT_WELL_FORMED;
+    QCBORDecode_GetInt64InMapN(&(me->qcbor_decode_context), CTOKEN_EAT_LABEL_DEBUG_STATE, &d_s);
+    error = QCBORDecode_GetAndResetError(&(me->qcbor_decode_context));
+    if(error) {
+        return_value = map_qcbor_error(error);
         goto Done;
     }
 
-    *debug_state = (enum ctoken_debug_level_t)boot_state;
+    if(d_s < CTOKEN_DEBUG_ENABLED ||
+       d_s > CTOKEN_DEBUG_DISABLED_FULL_PERMANENT) {
+        return_value = CTOKEN_ERR_CLAIM_FORMAT;
+        goto Done;
+    }
 
+    *debug_state = (enum ctoken_debug_level_t)d_s;
     return_value = CTOKEN_ERR_SUCCESS;
 
 Done:
     return return_value;
 }
+
 
 
 /*

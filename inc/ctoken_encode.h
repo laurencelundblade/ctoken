@@ -527,24 +527,39 @@ ctoken_encode_security_level(struct ctoken_encode_ctx        *context,
 
 
 /**
- * \brief  Encode the EAT debug and boot state claim.
+ * \brief  Encode whether the entity booted securely or not.
  *
  * \param[in] context              The encoding context to output to.
- * \paran[in] secure_boot_enabled  This is \c true if secure boot
+ * \param[in] secure_boot_enabled  This is \c true if secure boot
  *                                 is enabled or \c false it no.
- * \param[out] debug_state         See \ref ctoken_debug_level_t for
- *                                 the different debug states.
  *
- * This outputs the debug and boot state claim.
+ * This outputs the secure boot claim.
  *
  * If there is an error like insufficient space in the output buffer,
  * the error state is entered. It is returned later when ctoken_encode_finish()
  * is called.
  */
-void
-ctoken_encode_boot_state(struct ctoken_encode_ctx     *context,
-                         bool                          secure_boot_enabled,
-                         enum ctoken_debug_level_t debug_state);
+static void
+ctoken_encode_secure_boot(struct ctoken_encode_ctx     *context,
+                          bool                          secure_boot_enabled);
+
+
+/**
+ * \brief  Encode the EAT debug state claim.
+ *
+ * \param[in] context              The encoding context to output to.
+ * \param[out] debug_state         See \ref ctoken_debug_level_t for
+ *                                 the different debug states.
+ *
+ * This outputs the debug state claim.
+ *
+ * If there is an error like insufficient space in the output buffer,
+ * the error state is entered. It is returned later when ctoken_encode_finish()
+ * is called.
+ */
+static void
+ctoken_encode_debug_state(struct ctoken_encode_ctx  *context,
+                          enum ctoken_debug_level_t  debug_state);
 
 
 /**
@@ -935,6 +950,26 @@ ctoken_encode_uptime(struct ctoken_encode_ctx  *me,
     ctoken_encode_add_integer(me, CTOKEN_EAT_LABEL_UPTIME, uptime);
 }
 
+
+static inline void
+ctoken_encode_secure_boot(struct ctoken_encode_ctx  *me,
+                          bool                       secure_boot_enabled)
+{
+    QCBOREncode_AddBoolToMapN(&(me->cbor_encode_context), CTOKEN_EAT_LABEL_SECURE_BOOT, secure_boot_enabled);
+}
+
+
+static inline void
+ctoken_encode_debug_state(struct ctoken_encode_ctx     *me,
+                          enum ctoken_debug_level_t debug_state)
+{
+    /* Good compilers should optimize this out if a constant is passed in */
+    if(debug_state < CTOKEN_DEBUG_ENABLED || debug_state > CTOKEN_DEBUG_DISABLED_FULL_PERMANENT) {
+        me->error = CTOKEN_ERR_CLAIM_FORMAT;
+        return;
+    }
+    ctoken_encode_add_integer(me, CTOKEN_EAT_LABEL_DEBUG_STATE, debug_state);
+}
 
 #ifdef __cplusplus
 }

@@ -76,7 +76,9 @@ int32_t basic_eat_test(void)
 
     ctoken_encode_security_level(&encode_ctx, EAT_SL_SECURE_RESTRICTED);
 
-    ctoken_encode_boot_state(&encode_ctx, true, EAT_DL_DISABLED_SINCE_BOOT);
+    ctoken_encode_secure_boot(&encode_ctx, true);
+
+    ctoken_encode_debug_state(&encode_ctx, CTOKEN_DEBUG_ENABLED);
 
     location.eat_loc_latitude = 34.88;
     location.eat_loc_longitude = 9.54;
@@ -162,13 +164,22 @@ int32_t basic_eat_test(void)
         return 899;
     }
 
-    result = ctoken_decode_boot_state(&decode_context, &secure_boot, &debug_level);
+    result = ctoken_decode_secure_boot(&decode_context, &secure_boot);
     if(result) {
         return 900 + (int32_t)result;
     }
-    if(secure_boot != true || debug_level != EAT_DL_DISABLED_SINCE_BOOT) {
+    if(secure_boot != true) {
         return 999;
     }
+
+    result = ctoken_decode_debug_state(&decode_context, &debug_level);
+    if(result) {
+        return 900 + (int32_t)result;
+    }
+    if(debug_level != CTOKEN_DEBUG_ENABLED) {
+        return 999;
+    }
+
 
     /* zero out to make sure results are tested correctly */
     memset(&location, 0, sizeof(location));
@@ -997,6 +1008,158 @@ int32_t location_test()
        location.time_stamp != 880000 ||
        location.age != 9900) {
         return 66;
+    }
+
+    return 0;
+}
+
+
+static const uint8_t expected_boot_and_debug[] = {
+    0xD2, 0x84, 0x43, 0xA1, 0x01, 0x26, 0xA1, 0x04, 0x58, 0x20, 0xEF, 0x95, 0x4B, 0x4B, 0xD9, 0xBD, 0xF6, 0x70, 0xD0, 0x33, 0x60, 0x82, 0xF5, 0xEF, 0x15, 0x2A, 0xF8, 0xF3, 0x5B, 0x6A, 0x6C, 0x00, 0xEF, 0xA6, 0xA9, 0xA7, 0x1F, 0x49, 0x51, 0x7E, 0x18, 0xC6, 0x4D, 0xA2, 0x3A, 0x00, 0x01, 0x28, 0xE7, 0x02, 0x3A, 0x00, 0x01, 0x28, 0xE6, 0xF5, 0x58, 0x40, 0x4D, 0xBF, 0x6B, 0x47, 0x59, 0x87, 0x2C, 0xD5, 0xA4, 0xD6, 0x3C, 0xF4, 0xDA, 0x2E, 0xC1, 0x20, 0xFF, 0x71, 0x8E, 0x88, 0x8B, 0x25, 0xA0, 0xFE, 0x19, 0x34, 0x4A, 0xE6, 0xB6, 0x79, 0x97, 0x23, 0x4D, 0xBF, 0x6B, 0x47, 0x59, 0x87, 0x2C, 0xD5, 0xA4, 0xD6, 0x3C, 0xF4, 0xDA, 0x2E, 0xC1, 0x20, 0xFF, 0x71, 0x8E, 0x88, 0x8B, 0x25, 0xA0, 0xFE, 0x19, 0x34, 0x4A, 0xE6, 0xB6, 0x79, 0x97, 0x23};
+
+static const uint8_t bad_debug1[] = {
+0xa1, 0x3a, 0x00, 0x01, 0x28, 0xe7, 0x62, 0x68, 0x69
+};
+
+static const uint8_t bad_debug2[] = {
+    0xa1, 0x3a, 0x00, 0x01, 0x28, 0xe7, 0x1c
+};
+
+static const uint8_t bad_debug3[] = {
+    0xa1, 0x3a, 0x00, 0x01, 0x28, 0xe7, 0x05
+};
+
+static const uint8_t bad_secure_boot1[] = {
+    0xa1, 0x3a, 0x00, 0x01, 0x28, 0xe6, 0xf6
+};
+
+static const uint8_t bad_secure_boot2[] = {
+    0xa1, 0x3a, 0x00, 0x01, 0x28, 0xe6, 0x1d
+};
+
+
+int32_t debug_and_boot_test()
+{
+    struct ctoken_decode_ctx  decode_context;
+    UsefulBuf_MAKE_STACK_UB(  out, 400);
+    enum ctoken_err_t         error;
+    struct ctoken_encode_ctx  encode_context;
+    struct q_useful_buf_c     completed_token;
+    bool                      secure_boot;
+    enum ctoken_debug_level_t debug_state;
+
+    /* --- simple test encoding boot and debug state --- */
+    ctoken_encode_init(&encode_context,
+                       T_COSE_OPT_SHORT_CIRCUIT_SIG,
+                       0,
+                       T_COSE_ALGORITHM_ES256);
+    error = ctoken_encode_start(&encode_context, out);
+    if(error) {
+        return 100 + (int32_t)error;
+    }
+
+    ctoken_encode_debug_state(&encode_context, CTOKEN_DEBUG_DISABLED_SINCE_BOOT);
+
+    ctoken_encode_secure_boot(&(encode_context), true);
+
+    error = ctoken_encode_finish(&encode_context, &completed_token);
+    if(error != CTOKEN_ERR_SUCCESS) {
+        return 200 + (int32_t)error;
+    }
+    if(q_useful_buf_compare(completed_token, Q_USEFUL_BUF_FROM_BYTE_ARRAY_LITERAL(expected_boot_and_debug))) {
+        return 300;
+    }
+
+    /* --- simple test decoding boot and debug state --- */
+    ctoken_decode_init(&decode_context, T_COSE_OPT_ALLOW_SHORT_CIRCUIT, 0);
+    error = ctoken_decode_validate_token(&decode_context, Q_USEFUL_BUF_FROM_BYTE_ARRAY_LITERAL(expected_boot_and_debug));
+    if(error != CTOKEN_ERR_SUCCESS) {
+        return 400 + (int32_t)error;
+    }
+
+    error = ctoken_decode_secure_boot(&decode_context, &secure_boot);
+    if(error != CTOKEN_ERR_SUCCESS || secure_boot != true) {
+        return 500 + (int32_t)error;
+    }
+
+    error = ctoken_decode_debug_state(&decode_context, &debug_state);
+    if(error != CTOKEN_ERR_SUCCESS || debug_state != CTOKEN_DEBUG_DISABLED_SINCE_BOOT) {
+        return 600 + (int32_t)error;
+    }
+
+
+    /* --- try to encode erroneous debug state and see error --- */
+    ctoken_encode_init(&encode_context,
+                       T_COSE_OPT_SHORT_CIRCUIT_SIG,
+                       0,
+                       T_COSE_ALGORITHM_ES256);
+    error = ctoken_encode_start(&encode_context, out);
+    if(error) {
+        return 700 + (int32_t)error;
+    }
+
+    ctoken_encode_debug_state(&encode_context, -1);
+
+    error = ctoken_encode_finish(&encode_context, &completed_token);
+    if(error != CTOKEN_ERR_CLAIM_FORMAT) {
+        return 800 + (int32_t)error;
+    }
+
+    /* --- try to encode another erroneous debug state and see error --- */
+    ctoken_encode_init(&encode_context,
+                       T_COSE_OPT_SHORT_CIRCUIT_SIG,
+                       0,
+                       T_COSE_ALGORITHM_ES256);
+    error = ctoken_encode_start(&encode_context, out);
+    if(error) {
+        return 900 + (int32_t)error;
+    }
+
+    ctoken_encode_debug_state(&encode_context, 5);
+
+    error = ctoken_encode_finish(&encode_context, &completed_token);
+    if(error != CTOKEN_ERR_CLAIM_FORMAT) {
+        return 1000 + (int32_t)error;
+    }
+
+
+    /* --- decode debug state that is wrong type --- */
+    setup_decode_test(UsefulBuf_FROM_BYTE_ARRAY_LITERAL(bad_debug1),  out, &decode_context);
+    error = ctoken_decode_debug_state(&decode_context, &debug_state);
+    if(error != CTOKEN_ERR_CBOR_TYPE) {
+        return 1100 + (int32_t)error;
+    }
+
+    /* --- decode debug state that is not well formed --- */
+    setup_decode_test(UsefulBuf_FROM_BYTE_ARRAY_LITERAL(bad_debug2),  out, &decode_context);
+    error = ctoken_decode_debug_state(&decode_context, &debug_state);
+    if(error != CTOKEN_ERR_CBOR_NOT_WELL_FORMED) {
+        return 1200 + (int32_t)error;
+    }
+
+
+    /* --- decode debug state that is not a valid value --- */
+    setup_decode_test(UsefulBuf_FROM_BYTE_ARRAY_LITERAL(bad_debug3),  out, &decode_context);
+    error = ctoken_decode_debug_state(&decode_context, &debug_state);
+    if(error != CTOKEN_ERR_CLAIM_FORMAT) {
+        return 1300 + (int32_t)error;
+    }
+
+
+    /* --- decode secure boot that is not a valid value --- */
+    setup_decode_test(UsefulBuf_FROM_BYTE_ARRAY_LITERAL(bad_secure_boot1),  out, &decode_context);
+    error = ctoken_decode_secure_boot(&decode_context, &secure_boot);
+    if(error != CTOKEN_ERR_CBOR_TYPE) {
+        return 1400 + (int32_t)error;
+    }
+
+
+    /* --- decode secure boot that is not well formed --- */
+    setup_decode_test(UsefulBuf_FROM_BYTE_ARRAY_LITERAL(bad_secure_boot2),  out, &decode_context);
+    error = ctoken_decode_secure_boot(&decode_context, &secure_boot);
+    /* Only check for fail as QCBOR error codes for getting bool needs work */
+    if(error == CTOKEN_ERR_SUCCESS) {
+        return 1500 + (int32_t)error;
     }
 
     return 0;
