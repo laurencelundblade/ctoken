@@ -408,6 +408,7 @@ ctoken_decode_debug_state(struct ctoken_decode_ctx *me,
 {
     enum ctoken_err_t   return_value;
     int64_t             d_s;
+    QCBORError          error;
 
     if(me->last_error != CTOKEN_ERR_SUCCESS) {
         return_value = me->last_error;
@@ -415,7 +416,11 @@ ctoken_decode_debug_state(struct ctoken_decode_ctx *me,
     }
 
     QCBORDecode_GetInt64InMapN(&(me->qcbor_decode_context), CTOKEN_EAT_LABEL_DEBUG_STATE, &d_s);
-    // TODO: error checking here, maybe call get_int().
+    error = QCBORDecode_GetAndResetError(&(me->qcbor_decode_context));
+    if(error) {
+        return_value = map_qcbor_error(error);
+        goto Done;
+    }
 
     if(d_s < CTOKEN_DEBUG_ENABLED ||
        d_s > CTOKEN_DEBUG_DISABLED_FULL_PERMANENT) {

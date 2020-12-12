@@ -963,6 +963,11 @@ static inline void
 ctoken_encode_debug_state(struct ctoken_encode_ctx     *me,
                           enum ctoken_debug_level_t debug_state)
 {
+    /* Good compilers should optimize this out if a constant is passed in */
+    if(debug_state < CTOKEN_DEBUG_ENABLED || debug_state > CTOKEN_DEBUG_DISABLED_FULL_PERMANENT) {
+        me->error = CTOKEN_ERR_CLAIM_FORMAT;
+        return;
+    }
     ctoken_encode_add_integer(me, CTOKEN_EAT_LABEL_DEBUG_STATE, debug_state);
 }
 
