@@ -357,6 +357,13 @@ ctoken_decode_get_int(struct ctoken_decode_ctx *context,
                       int32_t                   label,
                       int64_t                  *claim);
 
+enum ctoken_err_t
+ctoken_decode_get_int_constrained(struct ctoken_decode_ctx *context,
+                                  int32_t                   label,
+                                  int64_t                   min,
+                                  int64_t                   max,
+                                  int64_t                  *claim);
+
 
 /**
  * \brief Get a claim of type unsigned integer.
@@ -761,7 +768,7 @@ ctoken_decode_origination(struct ctoken_decode_ctx *context,
  * The security level gives a rough indication of how security
  * the HW and SW are.  See \ref ctoken_security_level_t.
  */
-static inline enum ctoken_err_t
+static enum ctoken_err_t
 ctoken_decode_security_level(struct ctoken_decode_ctx         *context,
                              enum ctoken_security_level_t *security_level);
 
@@ -821,7 +828,7 @@ ctoken_decode_secure_boot(struct ctoken_decode_ctx *context,
  * The security level gives a rough indication of how security
  * the HW and SW are.  See \ref ctoken_security_level_t.
  */
-enum ctoken_err_t
+static enum ctoken_err_t
 ctoken_decode_debug_state(struct ctoken_decode_ctx  *context,
                           enum ctoken_debug_level_t *debug_state);
 
@@ -857,7 +864,7 @@ ctoken_decode_location(struct ctoken_decode_ctx     *context,
  *
  * This decodes the uptime claim.
  *
- * This is the time in seconds since the device booted or started.
+ * This is the time in seconds since the devic  e booted or started.
  *
  * If there is an error like insufficient space in the output buffer,
  * the error state is entered. It is returned later when
@@ -867,6 +874,11 @@ static inline enum ctoken_err_t
 ctoken_decode_uptime(struct ctoken_decode_ctx *context,
                      uint64_t                 *uptime);
 
+
+
+static inline enum ctoken_err_t
+ctoken_decode_intended_use(struct ctoken_decode_ctx    *context,
+                           enum ctoken_intended_use_t  *use);
 
 
 /**
@@ -1092,7 +1104,11 @@ static inline enum ctoken_err_t
 ctoken_decode_security_level(struct ctoken_decode_ctx         *me,
                              enum ctoken_security_level_t *security_level)
 {
-    return ctoken_decode_get_int(me, CTOKEN_EAT_LABEL_SECURITY_LEVEL, (int64_t *)security_level);
+    return ctoken_decode_get_int_constrained(me,
+                                             CTOKEN_EAT_LABEL_SECURITY_LEVEL,
+                                             EAT_SL_UNRESTRICTED,
+                                             EAT_SL_HARDWARE,
+                                             (int64_t *)security_level);
 }
 
 
@@ -1109,6 +1125,30 @@ ctoken_decode_secure_boot(struct ctoken_decode_ctx *me,
                           bool                     *secure_boot_enabled)
 {
     return ctoken_decode_get_bool(me, CTOKEN_EAT_LABEL_SECURE_BOOT, secure_boot_enabled);
+}
+
+
+static inline enum ctoken_err_t
+ctoken_decode_debug_state(struct ctoken_decode_ctx  *me,
+                          enum ctoken_debug_level_t *debug_level)
+{
+    return ctoken_decode_get_int_constrained(me,
+                                             CTOKEN_EAT_LABEL_DEBUG_STATE,
+                                             CTOKEN_DEBUG_ENABLED,
+                                             CTOKEN_DEBUG_DISABLED_FULL_PERMANENT,
+                                             (int64_t *)debug_level);
+}
+
+
+static inline enum ctoken_err_t
+ctoken_decode_intended_use(struct ctoken_decode_ctx    *me,
+                           enum ctoken_intended_use_t  *use)
+{
+    return ctoken_decode_get_int_constrained(me,
+                                             CTOKEN_EAT_LABEL_INTENDED_USE,
+                                             CTOKEN_USE_GENERAL,
+                                             CTOKEN_USE_PROOF_OF_POSSSION,
+                                             (int64_t *)use);
 }
 
 

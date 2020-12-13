@@ -378,11 +378,33 @@ Done:
 }
 
 
+enum ctoken_err_t
+ctoken_decode_get_int_constrained(struct ctoken_decode_ctx *me,
+                                  int32_t                   label,
+                                  int64_t                   min,
+                                  int64_t                   max,
+                                  int64_t                  *claim)
+{
+    enum ctoken_err_t error;
+
+    error = ctoken_decode_get_int(me, label, claim);
+    if(error != CTOKEN_ERR_SUCCESS) {
+        goto Done;
+    }
+
+    if(*claim < min || *claim > max) {
+        error = CTOKEN_ERR_CLAIM_RANGE;
+    }
+
+Done:
+    return error;
+}
+
 /*
  * Public function. See ctoken_eat_encode.h
  */
 enum ctoken_err_t
-ctoken_decode_debug_state(struct ctoken_decode_ctx *me,
+ctoken_decode_debug_statex(struct ctoken_decode_ctx *me,
                          enum ctoken_debug_level_t *debug_state)
 {
     enum ctoken_err_t   return_value;

@@ -38,6 +38,7 @@ extern "C" {
 #define CTOKEN_EAT_LABEL_DEBUG_STATE -76008
 #define CTOKEN_EAT_LABEL_LOCATION -76004
 #define CTOKEN_EAT_LABEL_UPTIME -76006
+#define CTOKEN_EAT_LABEL_INTENDED_USE -76009
 
 
 #define CTOKEN_EAT_LABEL_SUBMODS -76000 // Not really a claim, but most have a label
@@ -115,6 +116,20 @@ enum ctoken_debug_level_t {
 #define CTOKEN_EAT_LABEL_AGE               9
 
 #define NUM_FLOAT_LOCATION_ITEMS CTOKEN_EAT_LABEL_SPEED
+
+
+/** Value for the Intended Use claim. */
+enum ctoken_intended_use_t {
+    /** The token is for general use. No specific use is given. */
+    CTOKEN_USE_GENERAL = 1,
+    /** The token is intended to be used for a registration step. */
+    CTOKEN_USE_REGISTRATION = 2,
+    /** Token is intended as part of a provisioning step, most likely provisioning cryptographic keys beyond those used for attestation.  */
+    CTOKEN_USE_PROVISIONING = 3,
+    /** This may be required by a CA before signing a CSR. */
+    CTOKEN_USE_CERTIFICATE_ISSUANCE = 4,
+    /** Used to prove the device has possesion of a key. */
+    CTOKEN_USE_PROOF_OF_POSSSION = 5};
 
 
 

@@ -33,6 +33,7 @@ int32_t basic_eat_test(void)
     enum ctoken_debug_level_t debug_level;
     struct ctoken_location_t location;
     uint64_t                     uptime;
+    enum ctoken_intended_use_t   use;
 
     uint8_t test_nonce_bytes[] = {0x05, 0x08, 0x33, 0x99};
     const struct q_useful_buf_c test_nonce = Q_USEFUL_BUF_FROM_BYTE_ARRAY_LITERAL(test_nonce_bytes);
@@ -86,6 +87,8 @@ int32_t basic_eat_test(void)
     ctoken_encode_location(&encode_ctx, &location);
 
     ctoken_encode_uptime(&encode_ctx, 886688);
+
+    ctoken_encode_intended_use(&encode_ctx, CTOKEN_USE_REGISTRATION);
 
     ctoken_encode_start_submod_section(&encode_ctx);
 
@@ -205,6 +208,13 @@ int32_t basic_eat_test(void)
         return 1299;
     }
 
+    result = ctoken_decode_intended_use(&decode_context, &use);
+    if(result) {
+        return 1500 + (int32_t)result;
+    }
+    if(use != CTOKEN_USE_REGISTRATION) {
+        return 1599;
+    }
 
     struct q_useful_buf_c submod_name;
     result = ctoken_decode_enter_nth_submod(&decode_context, 0, &submod_name);
@@ -1101,7 +1111,7 @@ int32_t debug_and_boot_test()
     ctoken_encode_debug_state(&encode_context, -1);
 
     error = ctoken_encode_finish(&encode_context, &completed_token);
-    if(error != CTOKEN_ERR_CLAIM_FORMAT) {
+    if(error != CTOKEN_ERR_CLAIM_RANGE) {
         return 800 + (int32_t)error;
     }
 
@@ -1118,7 +1128,7 @@ int32_t debug_and_boot_test()
     ctoken_encode_debug_state(&encode_context, 5);
 
     error = ctoken_encode_finish(&encode_context, &completed_token);
-    if(error != CTOKEN_ERR_CLAIM_FORMAT) {
+    if(error != CTOKEN_ERR_CLAIM_RANGE) {
         return 1000 + (int32_t)error;
     }
 
@@ -1141,7 +1151,7 @@ int32_t debug_and_boot_test()
     /* --- decode debug state that is not a valid value --- */
     setup_decode_test(UsefulBuf_FROM_BYTE_ARRAY_LITERAL(bad_debug3),  out, &decode_context);
     error = ctoken_decode_debug_state(&decode_context, &debug_state);
-    if(error != CTOKEN_ERR_CLAIM_FORMAT) {
+    if(error != CTOKEN_ERR_CLAIM_RANGE) {
         return 1300 + (int32_t)error;
     }
 

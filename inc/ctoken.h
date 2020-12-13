@@ -118,6 +118,9 @@ enum ctoken_err_t {
     CTOKEN_ERR_CLAIM_FORMAT,
     /** The latitude and longitude fields are required in the location claim */
     CTOKEN_ERR_LAT_LONG_REQUIRED,
+
+    /** The value of the claim is outside allowed range. */
+    CTOKEN_ERR_CLAIM_RANGE,
 };
 
 
