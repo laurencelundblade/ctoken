@@ -607,8 +607,8 @@ ctoken_encode_uptime(struct ctoken_encode_ctx  *context,
  * This outputs the intended use claim.
  *
  * If there is an error like insufficient space in the output buffer,
- * the error state is entered. It is returned later when ctoken_encode_finish()
- * is called.
+ * the error state is entered. It is returned later when
+ * ctoken_encode_finish() is called.
  */
 static void
 ctoken_encode_intended_use(struct ctoken_encode_ctx   *context,
@@ -955,7 +955,10 @@ static inline void
 ctoken_encode_security_level(struct ctoken_encode_ctx *me,
                                  enum ctoken_security_level_t security_level)
 {
-    /* Good compilers should optimize this out if a constant is passed in */
+    /* Good compilers should optimize this out if a constant is passed
+     * in reducing this whole function to just a call to
+     * QCBOREncode_AddInt64ToMapN().  This is why there is no
+     * ctoken_encode_add_integer_constrained(). */
     if(security_level < EAT_SL_UNRESTRICTED || security_level > EAT_SL_HARDWARE) {
         me->error = CTOKEN_ERR_CLAIM_RANGE;
         return;
@@ -986,7 +989,10 @@ static inline void
 ctoken_encode_debug_state(struct ctoken_encode_ctx  *me,
                           enum ctoken_debug_level_t  debug_state)
 {
-    /* Good compilers should optimize this out if a constant is passed in */
+    /* Good compilers should optimize this out if a constant is passed
+     * in reducing this whole function to just a call to
+     * QCBOREncode_AddInt64ToMapN().  This is why there is no
+     * ctoken_encode_add_integer_constrained(). */
     if(debug_state < CTOKEN_DEBUG_ENABLED || debug_state > CTOKEN_DEBUG_DISABLED_FULL_PERMANENT) {
         me->error = CTOKEN_ERR_CLAIM_RANGE;
         return;
@@ -999,9 +1005,10 @@ static inline void
 ctoken_encode_intended_use(struct ctoken_encode_ctx   *me,
                            enum ctoken_intended_use_t  use)
 {
-    /* Good compilers should optimize this out if a constant is passed in
-       reducing this whole function to just a call to QCBOREncode_AddInt64ToMapN().
-     This is why there is no ctoken_encode_add_integer_constrained(). */
+    /* Good compilers should optimize this out if a constant is passed
+     * in reducing this whole function to just a call to
+     * QCBOREncode_AddInt64ToMapN().  This is why there is no
+     * ctoken_encode_add_integer_constrained(). */
     if(use < CTOKEN_USE_GENERAL || use > CTOKEN_USE_PROOF_OF_POSSSION) {
         me->error = CTOKEN_ERR_CLAIM_RANGE;
         return;

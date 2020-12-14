@@ -369,12 +369,12 @@ ctoken_decode_get_int(struct ctoken_decode_ctx *context,
  *
  * \return An error from \ref CTOKEN_ERR_t.
  *
- * This is the same as ctoken_decode_get_int() except the error
- * \ref CTOKEN_ERR_CLAIM_RANGE is returned if the decoded value
- * is less than \c min or more than \c max.
+ * This is the same as ctoken_decode_get_int() except the error \ref
+ * CTOKEN_ERR_CLAIM_RANGE is returned if the decoded value is less
+ * than \c min or more than \c max.
  *
- * This is useful for claims that are a range of integer
- * values that usually fit into an enumerated type.
+ * This is useful for claims that are a range of integer values that
+ * usually fit into an enumerated type.
  */
 enum ctoken_err_t
 ctoken_decode_get_int_constrained(struct ctoken_decode_ctx *context,

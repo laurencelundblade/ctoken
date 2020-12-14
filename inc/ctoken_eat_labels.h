@@ -23,9 +23,10 @@ extern "C" {
 #endif
 #endif
 
-/* These are temporary labels until the real ones are assigned by IANA.
- * This is probably sometime in 2021 or 2022 when the EAT draft
- * becomes an RFC. Some are the same as defined in https://tools.ietf.org/id/draft-tschofenig-rats-psa-token-05.html,
+/* These are temporary labels until the real ones are assigned by
+ * IANA.  This is probably sometime in 2021 or 2022 when the EAT draft
+ * becomes an RFC. Some are the same as defined in
+ * https://tools.ietf.org/id/draft-tschofenig-rats-psa-token-05.html,
  * which has also defined some temporary labels.
  */
 #define CTOKEN_EAT_LABEL_UEID -75009 // Same as PSA
@@ -124,7 +125,9 @@ enum ctoken_intended_use_t {
     CTOKEN_USE_GENERAL = 1,
     /** The token is intended to be used for a registration step. */
     CTOKEN_USE_REGISTRATION = 2,
-    /** Token is intended as part of a provisioning step, most likely provisioning cryptographic keys beyond those used for attestation.  */
+    /** Token is intended as part of a provisioning step, most likely
+      * provisioning cryptographic keys beyond those used for
+      * attestation.  */
     CTOKEN_USE_PROVISIONING = 3,
     /** This may be required by a CA before signing a CSR. */
     CTOKEN_USE_CERTIFICATE_ISSUANCE = 4,
