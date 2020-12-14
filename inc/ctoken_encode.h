@@ -599,6 +599,23 @@ ctoken_encode_uptime(struct ctoken_encode_ctx  *context,
 
 
 /**
+ * \brief  Encode the EAT intended claim.
+ *
+ * \param[in] context  The encoding context to output to.
+ * \paran[in] use      See \ref ctoken_intended_use_t for possible values.
+ *
+ * This outputs the intended use claim.
+ *
+ * If there is an error like insufficient space in the output buffer,
+ * the error state is entered. It is returned later when
+ * ctoken_encode_finish() is called.
+ */
+static void
+ctoken_encode_intended_use(struct ctoken_encode_ctx   *context,
+                           enum ctoken_intended_use_t  use);
+
+
+/**
  * \brief  Start encoding EAT submodules.
  *
  * \param[in] context  Encoding context.
@@ -933,10 +950,19 @@ ctoken_encode_origination(struct ctoken_encode_ctx *me,
     ctoken_encode_add_tstr(me, CTOKEN_EAT_LABEL_ORIGINATION, origination);
 }
 
+
 static inline void
 ctoken_encode_security_level(struct ctoken_encode_ctx *me,
                                  enum ctoken_security_level_t security_level)
 {
+    /* Good compilers should optimize this out if a constant is passed
+     * in reducing this whole function to just a call to
+     * QCBOREncode_AddInt64ToMapN().  This is why there is no
+     * ctoken_encode_add_integer_constrained(). */
+    if(security_level < EAT_SL_UNRESTRICTED || security_level > EAT_SL_HARDWARE) {
+        me->error = CTOKEN_ERR_CLAIM_RANGE;
+        return;
+    }
     ctoken_encode_add_integer(me,
                               CTOKEN_EAT_LABEL_SECURITY_LEVEL,
                               (int64_t)security_level);
@@ -960,16 +986,36 @@ ctoken_encode_secure_boot(struct ctoken_encode_ctx  *me,
 
 
 static inline void
-ctoken_encode_debug_state(struct ctoken_encode_ctx     *me,
-                          enum ctoken_debug_level_t debug_state)
+ctoken_encode_debug_state(struct ctoken_encode_ctx  *me,
+                          enum ctoken_debug_level_t  debug_state)
 {
-    /* Good compilers should optimize this out if a constant is passed in */
+    /* Good compilers should optimize this out if a constant is passed
+     * in reducing this whole function to just a call to
+     * QCBOREncode_AddInt64ToMapN().  This is why there is no
+     * ctoken_encode_add_integer_constrained(). */
     if(debug_state < CTOKEN_DEBUG_ENABLED || debug_state > CTOKEN_DEBUG_DISABLED_FULL_PERMANENT) {
-        me->error = CTOKEN_ERR_CLAIM_FORMAT;
+        me->error = CTOKEN_ERR_CLAIM_RANGE;
         return;
     }
     ctoken_encode_add_integer(me, CTOKEN_EAT_LABEL_DEBUG_STATE, debug_state);
 }
+
+
+static inline void
+ctoken_encode_intended_use(struct ctoken_encode_ctx   *me,
+                           enum ctoken_intended_use_t  use)
+{
+    /* Good compilers should optimize this out if a constant is passed
+     * in reducing this whole function to just a call to
+     * QCBOREncode_AddInt64ToMapN().  This is why there is no
+     * ctoken_encode_add_integer_constrained(). */
+    if(use < CTOKEN_USE_GENERAL || use > CTOKEN_USE_PROOF_OF_POSSSION) {
+        me->error = CTOKEN_ERR_CLAIM_RANGE;
+        return;
+    }
+    ctoken_encode_add_integer(me, CTOKEN_EAT_LABEL_INTENDED_USE, use);
+}
+
 
 #ifdef __cplusplus
 }
