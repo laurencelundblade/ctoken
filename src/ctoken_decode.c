@@ -378,6 +378,9 @@ Done:
 }
 
 
+/*
+ * Public function. See ctoken_eat_encode.h
+ */
 enum ctoken_err_t
 ctoken_decode_get_int_constrained(struct ctoken_decode_ctx *me,
                                   int32_t                   label,
@@ -399,43 +402,6 @@ ctoken_decode_get_int_constrained(struct ctoken_decode_ctx *me,
 Done:
     return error;
 }
-
-/*
- * Public function. See ctoken_eat_encode.h
- */
-enum ctoken_err_t
-ctoken_decode_debug_statex(struct ctoken_decode_ctx *me,
-                         enum ctoken_debug_level_t *debug_state)
-{
-    enum ctoken_err_t   return_value;
-    int64_t             d_s;
-    QCBORError          error;
-
-    if(me->last_error != CTOKEN_ERR_SUCCESS) {
-        return_value = me->last_error;
-        goto Done;
-    }
-
-    QCBORDecode_GetInt64InMapN(&(me->qcbor_decode_context), CTOKEN_EAT_LABEL_DEBUG_STATE, &d_s);
-    error = QCBORDecode_GetAndResetError(&(me->qcbor_decode_context));
-    if(error) {
-        return_value = map_qcbor_error(error);
-        goto Done;
-    }
-
-    if(d_s < CTOKEN_DEBUG_ENABLED ||
-       d_s > CTOKEN_DEBUG_DISABLED_FULL_PERMANENT) {
-        return_value = CTOKEN_ERR_CLAIM_FORMAT;
-        goto Done;
-    }
-
-    *debug_state = (enum ctoken_debug_level_t)d_s;
-    return_value = CTOKEN_ERR_SUCCESS;
-
-Done:
-    return return_value;
-}
-
 
 
 /*

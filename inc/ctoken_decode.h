@@ -357,6 +357,25 @@ ctoken_decode_get_int(struct ctoken_decode_ctx *context,
                       int32_t                   label,
                       int64_t                  *claim);
 
+
+/**
+ * \brief Get a claim of type signed integer with constraints.
+ *
+ * \param[in]  context  The token decoder context.
+ * \param[in]  label    The integer label identifying the claim.
+ * \param[in]  min      The decoded claim must be smaller than this.
+ * \param[in]  max      The decoded claim must be larger than this.
+ * \param[out] claim    Place to return the claim value.
+ *
+ * \return An error from \ref CTOKEN_ERR_t.
+ *
+ * This is the same as ctoken_decode_get_int() except the error
+ * \ref CTOKEN_ERR_CLAIM_RANGE is returned if the decoded value
+ * is less than \c min or more than \c max.
+ *
+ * This is useful for claims that are a range of integer
+ * values that usually fit into an enumerated type.
+ */
 enum ctoken_err_t
 ctoken_decode_get_int_constrained(struct ctoken_decode_ctx *context,
                                   int32_t                   label,
@@ -833,8 +852,6 @@ ctoken_decode_debug_state(struct ctoken_decode_ctx  *context,
                           enum ctoken_debug_level_t *debug_state);
 
 
-
-
 /**
  * \brief Decode position location (e.g. GPS location)
  *
@@ -864,21 +881,32 @@ ctoken_decode_location(struct ctoken_decode_ctx     *context,
  *
  * This decodes the uptime claim.
  *
- * This is the time in seconds since the devic  e booted or started.
+ * This is the time in seconds since the device booted or started.
  *
  * If there is an error like insufficient space in the output buffer,
  * the error state is entered. It is returned later when
  * ctoken_encode_finish() is called.
  */
-static inline enum ctoken_err_t
+static enum ctoken_err_t
 ctoken_decode_uptime(struct ctoken_decode_ctx *context,
                      uint64_t                 *uptime);
 
 
-
-static inline enum ctoken_err_t
-ctoken_decode_intended_use(struct ctoken_decode_ctx    *context,
-                           enum ctoken_intended_use_t  *use);
+/**
+ * \brief  Decode the intended use claim.
+ *
+ * \param[in] context  The decoding context.
+ * \param[in] use      See \ref ctoken_intended_use_t for meaning of values.
+ *
+ * This decodes the uptime claim.
+ *
+ * If there is an error like insufficient space in the output buffer,
+ * the error state is entered. It is returned later when
+ * ctoken_encode_finish() is called.
+ */
+static enum ctoken_err_t
+ctoken_decode_intended_use(struct ctoken_decode_ctx   *context,
+                           enum ctoken_intended_use_t *use);
 
 
 /**

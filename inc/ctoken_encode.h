@@ -173,11 +173,6 @@ static void ctoken_encode_add_integer(struct ctoken_encode_ctx *context,
                                       int32_t                   label,
                                       int64_t                   value);
 
-void ctoken_encode_add_integer_constrained(struct ctoken_encode_ctx *context,
-int32_t                   label,
-                                           int64_t min,
-                                           int64_t max,
-int64_t                   value);
 
 /**
  * \brief Add a binary string claim
@@ -603,6 +598,18 @@ ctoken_encode_uptime(struct ctoken_encode_ctx  *context,
                          uint64_t                    uptime);
 
 
+/**
+ * \brief  Encode the EAT intended claim.
+ *
+ * \param[in] context  The encoding context to output to.
+ * \paran[in] use      See \ref ctoken_intended_use_t for possible values.
+ *
+ * This outputs the intended use claim.
+ *
+ * If there is an error like insufficient space in the output buffer,
+ * the error state is entered. It is returned later when ctoken_encode_finish()
+ * is called.
+ */
 static void
 ctoken_encode_intended_use(struct ctoken_encode_ctx   *context,
                            enum ctoken_intended_use_t  use);
