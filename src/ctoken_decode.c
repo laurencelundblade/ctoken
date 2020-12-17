@@ -44,11 +44,11 @@
  */
 void ctoken_decode_init(struct ctoken_decode_ctx *me,
                         uint32_t                  t_cose_options,
-                        uint32_t                  options,
+                        uint32_t                  ctoken_options,
                         enum ctoken_protection_t  protection_type)
 {
     memset(me, 0, sizeof(struct ctoken_decode_ctx));
-    me->token_options   = options;
+    me->ctoken_options  = ctoken_options;
     me->last_error      = CTOKEN_ERR_NO_VALID_TOKEN;
     me->protection_type = protection_type;
 
@@ -180,7 +180,7 @@ ctoken_decode_get_kid(struct ctoken_decode_ctx *me,
 }
 
 
-uint64_t foo(struct ctoken_decode_ctx *me, int protection_type, QCBORItem *item, size_t n)
+uint64_t foo(struct ctoken_decode_ctx *me, int protection_type, QCBORItem *item, uint32_t n)
 {
     uint64_t tag_number;
 
@@ -244,7 +244,7 @@ ctoken_decode_validate_token(struct ctoken_decode_ctx *me,
         } else if(tag_number == CBOR_TAG_CWT) {
             /* tag 61 content must always be a COSE tag per CWT RFC  so
              tag 61 can never be the inner tag here. */
-            return_value = CTOKEN_ERR_TAG_CONTENT; // Incorrect tag content.
+            return_value = CTOKEN_ERR_TAG_CONTENT;
             goto Done;
 
         } else {
@@ -253,7 +253,7 @@ ctoken_decode_validate_token(struct ctoken_decode_ctx *me,
         }
     } else {
         /* We were told that the protection type is CTOKEN_PROTECTION_COSE_SIGN1.
-         Let t_cose sort out the tags */
+         Let t_cose sort out the tags. */
     }
 
 
@@ -263,7 +263,6 @@ ctoken_decode_validate_token(struct ctoken_decode_ctx *me,
         goto Done;
 
     } else if(protection_type == CTOKEN_PROTECTION_COSE_SIGN1) {
-        // TODO: tell t_cose our tag preference
         t_cose_error = t_cose_sign1_verify(&(me->verify_context), token, &me->payload, NULL);
         if(t_cose_error != T_COSE_SUCCESS) {
             return_value = map_t_cose_errors(t_cose_error);
@@ -287,7 +286,7 @@ ctoken_decode_validate_token(struct ctoken_decode_ctx *me,
     }
 
     /* Check the top level tag and copy tags not processed */
-    int item_tag_index = 0;
+    uint32_t item_tag_index = 0;
     for(returned_tag_index = 0; returned_tag_index < CTOKEN_MAX_TAGS_TO_RETURN; returned_tag_index++) {
         tag_number = foo(me, protection_type, &item, item_tag_index);
         if(tag_number == CBOR_TAG_INVALID64) {
@@ -295,11 +294,11 @@ ctoken_decode_validate_token(struct ctoken_decode_ctx *me,
         }
 
         if(item_tag_index == 0 && tag_number == expected) {
-            if(me->token_options & CTOKEN_OPT_TOP_LEVEL_NOT_TAG) {
+            if(me->ctoken_options & CTOKEN_OPT_TOP_LEVEL_NOT_TAG) {
                 return_value = 99; // Not supposed to be a tag
                 goto Done;
             }
-            if(me->token_options & CTOKEN_OPT_REQUIRE_TOP_LEVEL_TAG) {
+            if(me->ctoken_options & CTOKEN_OPT_REQUIRE_TOP_LEVEL_TAG) {
                 return_value = 99;
                 goto Done;
             }

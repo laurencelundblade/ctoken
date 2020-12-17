@@ -133,6 +133,9 @@ enum ctoken_err_t {
 
     /** The value of the claim is outside allowed range. */
     CTOKEN_ERR_CLAIM_RANGE,
+
+    /** CWT requires a COSE tag be the content of a CWT tag */
+    CTOKEN_ERR_TAG_COMBO_NOT_ALLOWED
 };
 
 

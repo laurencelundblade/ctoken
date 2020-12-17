@@ -98,13 +98,13 @@ extern "C" {
  *
  * The structure is opaque for the caller.
  *
- * Aproximate size on 64-bit CPU: 48 bytes.
+ * Aproximate size on 64-bit CPU: 432 bytes.
  */
 struct ctoken_decode_ctx {
     /* PRIVATE DATA STRUCTURE */
     struct t_cose_sign1_verify_ctx verify_context;
     struct q_useful_buf_c          payload;
-    uint32_t                       token_options;
+    uint32_t                       ctoken_options;
     enum ctoken_err_t              last_error;
     QCBORDecodeContext             qcbor_decode_context;
     uint8_t                        in_submods;
@@ -118,7 +118,7 @@ struct ctoken_decode_ctx {
  *
  * \param[in] context        The token decoder context to be initialized.
  * \param[in] t_cose_options Options passed to t_cose verification.
- * \param[in] token_options  Decoding options.
+ * \param[in] ctoken_options  Decoding options.
  *
  * Must be called on a \ref attest_token_decode_context before
  * use. An instance of \ref attest_token_decode_context can
@@ -126,7 +126,7 @@ struct ctoken_decode_ctx {
  **/
 void ctoken_decode_init(struct ctoken_decode_ctx *context,
                         uint32_t                  t_cose_options,
-                        uint32_t                  token_options,
+                        uint32_t                  ctoken_options,
                         enum ctoken_protection_t  protection_type);
 
 

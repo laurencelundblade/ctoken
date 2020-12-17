@@ -95,3 +95,94 @@ int32_t cwt_test()
     /* Success! */
     return 0;
 }
+
+
+
+
+#define C_ARRAY_COUNT(array,type) (sizeof(array)/sizeof(type))
+
+
+struct encode_tag_test {
+    uint32_t                  test_number;
+    uint32_t                  top_level_tag;
+    uint32_t                  cose_tag;
+    enum ctoken_protection_t  protection_type;
+    struct q_useful_buf_c     first_bytes;
+};
+
+struct encode_tag_test encode_tag_tests[] =  {
+    {1, 0,                            0, CTOKEN_PROTECTION_NONE,       {(uint8_t[]){0xD9, 0x02, 0x59, 0xA1}, 4}},
+    {2, CTOKEN_OPT_TOP_LEVEL_NOT_TAG, 0, CTOKEN_PROTECTION_NONE,       {(uint8_t[]){0xA1}, 1}},
+    {3, 0,                            0, CTOKEN_PROTECTION_COSE_SIGN1, {(uint8_t[]){0xD8, 0x3D, 0xD2, 0x84}, 4}},
+    {4, CTOKEN_OPT_TOP_LEVEL_NOT_TAG, 0, CTOKEN_PROTECTION_COSE_SIGN1, {(uint8_t[]){0xD2, 0x84}, 2}},
+
+    {5, 0,                            T_COSE_OPT_OMIT_CBOR_TAG, CTOKEN_PROTECTION_NONE,       {(uint8_t[]){0xD9, 0x02, 0x59, 0xA1}, 4}},
+    {6, CTOKEN_OPT_TOP_LEVEL_NOT_TAG, T_COSE_OPT_OMIT_CBOR_TAG, CTOKEN_PROTECTION_NONE,       {(uint8_t[]){0xA1}, 1}},
+    {7, 0,                            T_COSE_OPT_OMIT_CBOR_TAG, CTOKEN_PROTECTION_COSE_SIGN1, {(uint8_t[]){0xD8, 0x3D, 0xD2, 0x84}, 4}},
+    {8, CTOKEN_OPT_TOP_LEVEL_NOT_TAG, T_COSE_OPT_OMIT_CBOR_TAG, CTOKEN_PROTECTION_COSE_SIGN1, {(uint8_t[]){0x84}, 1}},
+};
+
+
+
+/* Return code is
+ xxxyyyzzz where zz is the error code, yy is the test number and zz is
+ check being performed
+ */
+static inline int32_t test_result_code(uint32_t           test_case,
+                                        uint32_t           test_number,
+                                        enum ctoken_err_t  error_code)
+{
+    return (test_case * 1000000) + (test_number * 1000) + (int32_t)error_code;
+}
+
+
+int32_t cwt_tags_test()
+{
+    enum ctoken_err_t         result;
+    MakeUsefulBufOnStack(     token_out_buffer, 200);
+    struct q_useful_buf_c     completed_token;
+    struct ctoken_encode_ctx  encode_context;
+    struct q_useful_buf_c     token_head;
+
+    for(int i = 0; i < C_ARRAY_COUNT(encode_tag_tests, struct encode_tag_test); i++) {
+        if(encode_tag_tests[i].test_number == 7) {
+            // Does nothing. Allows setting break point for particular test.
+            result = 0;
+        }
+
+        ctoken_encode_init(&encode_context,
+                           encode_tag_tests[i].cose_tag | T_COSE_OPT_SHORT_CIRCUIT_SIG,
+                           encode_tag_tests[i].top_level_tag,
+                           encode_tag_tests[i].protection_type,
+                           T_COSE_ALGORITHM_ES256);
+
+        result = ctoken_encode_start(&encode_context, token_out_buffer);
+        if(encode_tag_tests[i].test_number == 7) {
+            /* Special case for test number 7 that should return an error */
+            if(result != CTOKEN_ERR_TAG_COMBO_NOT_ALLOWED) {
+                return test_result_code(4, encode_tag_tests[i].test_number, result);
+            } else {
+                continue;
+            }
+        }
+
+        if(result) {
+            return test_result_code(1, encode_tag_tests[i].test_number, result);
+        }
+
+        ctoken_encode_expiration(&encode_context, 9999);
+
+        result = ctoken_encode_finish(&encode_context, &completed_token);
+        if(result) {
+            return test_result_code(2, encode_tag_tests[i].test_number, result);
+        }
+
+        token_head = q_useful_buf_head(completed_token, encode_tag_tests[i].first_bytes.len);
+
+        if(q_useful_buf_compare(token_head, encode_tag_tests[i].first_bytes)) {
+            return test_result_code(3, encode_tag_tests[i].test_number, result);
+        }
+    }
+    
+    return 0;
+}

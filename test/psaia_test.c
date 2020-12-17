@@ -56,10 +56,10 @@ int32_t psaia_basic_test()
     /* --- Add the claims --- */
     /* Values are just made up for test */
 
-    psaia_claims.nonce = test_nonce;
-    psaia_claims.ueid = test_ueid;
+    psaia_claims.nonce       = test_nonce;
+    psaia_claims.ueid        = test_ueid;
     psaia_claims.origination = test_origination;
-    psaia_claims.item_flags =  ITEM_FLAG(NONCE_FLAG) |
+    psaia_claims.item_flags  = ITEM_FLAG(NONCE_FLAG) |
                                ITEM_FLAG(UEID_FLAG) |
                                ITEM_FLAG(ORIGINATION_FLAG);
 
@@ -71,7 +71,7 @@ int32_t psaia_basic_test()
      * and length of the completed token are returned
      */
     result = ctoken_encode_finish(&encode_ctx, &completed_token);
-    if(result) {
+    if(result != CTOKEN_ERR_SUCCESS) {
         return 200 + (int32_t)result;
     }
 

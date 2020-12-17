@@ -74,16 +74,17 @@ struct ctoken_submod_state {
  *
  * The structure is opaque for the caller.
  *
- * This is 304 bytes on a 64-bit x86 CPU with the System V ABI (MacOS)
+ * This is 312 bytes on a 64-bit x86 CPU with the System V ABI (MacOS)
  */
 struct ctoken_encode_ctx {
     /* Private data structure */
-    uint32_t                        opt_flags;
-    enum ctoken_err_t               error;
-    enum ctoken_protection_t   cose_protection_type;
-    QCBOREncodeContext              cbor_encode_context;
-    struct ctoken_submod_state      submod_state;
-    struct t_cose_sign1_sign_ctx    signer_ctx;
+    uint32_t                      ctoken_opt_flags;
+    uint32_t                      t_cose_opt_flags;
+    enum ctoken_err_t             error;
+    enum ctoken_protection_t      cose_protection_type;
+    struct ctoken_submod_state    submod_state;
+    QCBOREncodeContext            cbor_encode_context;
+    struct t_cose_sign1_sign_ctx  signer_ctx;
 };
 
 
@@ -767,30 +768,28 @@ ctoken_encode_one_shot(struct ctoken_encode_ctx   *context,
 /* ----- inline implementations ------ */
 
 static inline void
+ctoken_encode_init(struct ctoken_encode_ctx *me,
+                   uint32_t                 t_cose_opt_flags,
+                   uint32_t                 ctoken_opt_flags,
+                   enum ctoken_protection_t protection_type,
+                   int32_t                  cose_alg_id)
+{
+    memset(me, 0, sizeof(struct ctoken_encode_ctx));
+    me->ctoken_opt_flags     = ctoken_opt_flags;
+    me->t_cose_opt_flags     = t_cose_opt_flags;
+    me->cose_protection_type = protection_type;
+    if(protection_type == CTOKEN_PROTECTION_COSE_SIGN1) {
+        t_cose_sign1_sign_init(&(me->signer_ctx), me->t_cose_opt_flags, cose_alg_id);
+    }
+}
+
+
+static inline void
 ctoken_encode_set_key(struct ctoken_encode_ctx *me,
                       struct t_cose_key        signing_key,
                       struct q_useful_buf_c    key_id)
 {
     t_cose_sign1_set_signing_key(&(me->signer_ctx), signing_key, key_id);
-}
-
-
-static inline void
-ctoken_encode_init(struct ctoken_encode_ctx *me,
-                   uint32_t                 t_cose_opt_flags,
-                   uint32_t                 token_opt_flags,
-                   enum ctoken_protection_t protection_type,
-                   int32_t                  cose_alg_id)
-{
-    memset(me, 0, sizeof(struct ctoken_encode_ctx));
-    me->opt_flags = token_opt_flags;
-    me->cose_protection_type = protection_type;
-    if(protection_type == CTOKEN_PROTECTION_COSE_SIGN1) {
-        if(token_opt_flags & CTOKEN_OPT_COSE_MESSAGE_NOT_TAG) {
-            t_cose_opt_flags |= T_COSE_OPT_OMIT_CBOR_TAG;
-        }
-        t_cose_sign1_sign_init(&(me->signer_ctx), t_cose_opt_flags, cose_alg_id);
-    }
 }
 
 
