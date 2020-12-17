@@ -289,20 +289,21 @@ ctoken_decode_validate_token(struct ctoken_decode_ctx *me,
     uint32_t item_tag_index = 0;
     for(returned_tag_index = 0; returned_tag_index < CTOKEN_MAX_TAGS_TO_RETURN; returned_tag_index++) {
         tag_number = foo(me, protection_type, &item, item_tag_index);
-        if(tag_number == CBOR_TAG_INVALID64) {
-            break;
-        }
 
-        if(item_tag_index == 0 && tag_number == expected) {
-            if(me->ctoken_options & CTOKEN_OPT_TOP_LEVEL_NOT_TAG) {
-                return_value = 99; // Not supposed to be a tag
+        if(item_tag_index == 0) {
+            if(tag_number == expected && me->ctoken_options & CTOKEN_OPT_TOP_LEVEL_NOT_TAG) {
+                return_value = CTOKEN_ERR_SHOULD_NOT_BE_TAG;
                 goto Done;
             }
-            if(me->ctoken_options & CTOKEN_OPT_REQUIRE_TOP_LEVEL_TAG) {
-                return_value = 99;
+            if(tag_number != expected && me->ctoken_options & CTOKEN_OPT_REQUIRE_TOP_LEVEL_TAG) {
+                return_value = CTOKEN_ERR_SHOULD_BE_TAG;
                 goto Done;
             }
             continue;
+        }
+
+        if(tag_number == CBOR_TAG_INVALID64) {
+            break;
         }
 
         item_tag_index++;

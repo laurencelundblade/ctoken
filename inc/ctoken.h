@@ -135,7 +135,11 @@ enum ctoken_err_t {
     CTOKEN_ERR_CLAIM_RANGE,
 
     /** CWT requires a COSE tag be the content of a CWT tag */
-    CTOKEN_ERR_TAG_COMBO_NOT_ALLOWED
+    CTOKEN_ERR_TAG_COMBO_NOT_ALLOWED,
+
+    CTOKEN_ERR_SHOULD_NOT_BE_TAG,
+
+    CTOKEN_ERR_SHOULD_BE_TAG
 };
 
 

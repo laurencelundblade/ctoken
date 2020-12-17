@@ -110,7 +110,7 @@ struct encode_tag_test {
     struct q_useful_buf_c     first_bytes;
 };
 
-struct encode_tag_test encode_tag_tests[] =  {
+static const struct encode_tag_test encode_tag_tests[] =  {
     {1, 0,                            0, CTOKEN_PROTECTION_NONE,       {(uint8_t[]){0xD9, 0x02, 0x59, 0xA1}, 4}},
     {2, CTOKEN_OPT_TOP_LEVEL_NOT_TAG, 0, CTOKEN_PROTECTION_NONE,       {(uint8_t[]){0xA1}, 1}},
     {3, 0,                            0, CTOKEN_PROTECTION_COSE_SIGN1, {(uint8_t[]){0xD8, 0x3D, 0xD2, 0x84}, 4}},
@@ -122,13 +122,82 @@ struct encode_tag_test encode_tag_tests[] =  {
     {8, CTOKEN_OPT_TOP_LEVEL_NOT_TAG, T_COSE_OPT_OMIT_CBOR_TAG, CTOKEN_PROTECTION_COSE_SIGN1, {(uint8_t[]){0x84}, 1}},
 };
 
+static const uint8_t bare_uccs[] = {
+    0xA1, 0x04, 0x19, 0x27, 0x0F};
 
+
+static const uint8_t uccs_tag[] = {
+    0xD9, 0x02, 0x59, 0xA1, 0x04, 0x19, 0x27, 0x0F};
+
+
+
+struct decode_tag_test {
+    uint32_t                  test_number;
+    uint32_t                  top_level_tag;
+    uint32_t                  cose_tag;
+    enum ctoken_protection_t  protection_type;
+    struct q_useful_buf_c     token_to_decode;
+    enum ctoken_err_t         expected_error;
+};
+
+
+/* Use a function to initialize this array to not rely on the linker/loader
+ to know how to initialize a pointer in one static data structure to
+ other static data.
+ */
+static inline void init_decode_tag_tests(struct decode_tag_test test[])
+{
+    test[0] = (struct decode_tag_test) {
+        .test_number     = 1,
+        .top_level_tag   = CTOKEN_OPT_PROHIBIT_TOP_LEVEL_TAG,
+        .cose_tag        = 0,
+        .protection_type = CTOKEN_PROTECTION_NONE,
+        .token_to_decode = Q_USEFUL_BUF_FROM_BYTE_ARRAY_LITERAL(bare_uccs),
+        .expected_error  = CTOKEN_ERR_SUCCESS
+    };
+
+    test[1] = (struct decode_tag_test) {
+        .test_number     = 2,
+        .top_level_tag   = CTOKEN_OPT_REQUIRE_TOP_LEVEL_TAG,
+        .cose_tag        = 0,
+        .protection_type = CTOKEN_PROTECTION_NONE,
+        .token_to_decode = Q_USEFUL_BUF_FROM_BYTE_ARRAY_LITERAL(uccs_tag),
+        .expected_error  = CTOKEN_ERR_SUCCESS
+    };
+
+    test[2] = (struct decode_tag_test) {
+        .test_number     = 3,
+        .top_level_tag   = CTOKEN_OPT_PROHIBIT_TOP_LEVEL_TAG,
+        .cose_tag        = 0,
+        .protection_type = CTOKEN_PROTECTION_NONE,
+        .token_to_decode = Q_USEFUL_BUF_FROM_BYTE_ARRAY_LITERAL(uccs_tag),
+        .expected_error  = CTOKEN_ERR_SHOULD_NOT_BE_TAG
+    };
+
+    test[2] = (struct decode_tag_test) {
+        .test_number     = 3,
+        .top_level_tag   = CTOKEN_OPT_REQUIRE_TOP_LEVEL_TAG,
+        .cose_tag        = 0,
+        .protection_type = CTOKEN_PROTECTION_NONE,
+        .token_to_decode = Q_USEFUL_BUF_FROM_BYTE_ARRAY_LITERAL(bare_uccs),
+        .expected_error  = CTOKEN_ERR_SHOULD_BE_TAG
+    };
+
+    test[3] = (struct decode_tag_test) {
+        .test_number     = 2,
+        .top_level_tag   = 0,
+        .cose_tag        = 0,
+        .protection_type = CTOKEN_PROTECTION_NONE,
+        .token_to_decode = NULL_Q_USEFUL_BUF_C,
+        .expected_error  = CTOKEN_ERR_SUCCESS
+    };
+}
 
 /* Return code is
  xxxyyyzzz where zz is the error code, yy is the test number and zz is
  check being performed
  */
-static inline int32_t test_result_code(uint32_t           test_case,
+static inline int32_t test_result_code(uint32_t            test_case,
                                         uint32_t           test_number,
                                         enum ctoken_err_t  error_code)
 {
@@ -142,10 +211,11 @@ int32_t cwt_tags_test()
     MakeUsefulBufOnStack(     token_out_buffer, 200);
     struct q_useful_buf_c     completed_token;
     struct ctoken_encode_ctx  encode_context;
+    struct ctoken_decode_ctx  decode_context;
     struct q_useful_buf_c     token_head;
 
     for(int i = 0; i < C_ARRAY_COUNT(encode_tag_tests, struct encode_tag_test); i++) {
-        if(encode_tag_tests[i].test_number == 7) {
+        if(encode_tag_tests[i].test_number == 2) {
             // Does nothing. Allows setting break point for particular test.
             result = 0;
         }
@@ -183,6 +253,35 @@ int32_t cwt_tags_test()
             return test_result_code(3, encode_tag_tests[i].test_number, result);
         }
     }
-    
+
+    struct decode_tag_test decode_tag_tests[9];
+
+    init_decode_tag_tests(decode_tag_tests);
+
+    for(int i = 0; ; i++) {
+        const struct decode_tag_test *test = &decode_tag_tests[i];
+
+        if(q_useful_buf_c_is_null(test->token_to_decode)) {
+            break;
+        }
+
+        if(test->test_number == 2) {
+            // Does nothing. Allows setting break point for particular test.
+            result = 0;
+        }
+        ctoken_decode_init(&decode_context,
+                           test->cose_tag,
+                           test->top_level_tag,
+                           test->protection_type);
+
+        result = ctoken_decode_validate_token(&decode_context, test->token_to_decode);
+
+        if(result != test->expected_error) {
+            return test_result_code(5, test->test_number, result);
+        }
+
+    }
+
+
     return 0;
 }
