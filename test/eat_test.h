@@ -38,6 +38,9 @@ int32_t submod_decode_errors_test(void);
 int32_t location_test(void);
 
 
+int32_t debug_and_boot_test(void);
+
+
 #ifdef __cplusplus
 }
 #endif

@@ -110,7 +110,6 @@ static enum ctoken_err_t t_cose_verify_error_map[] = {
 };
 
 
-
 static inline enum ctoken_err_t map_qcbor_error(QCBORError error)
 {
     // TODO: make this better
@@ -129,12 +128,11 @@ static inline enum ctoken_err_t map_qcbor_error(QCBORError error)
 
 
 /**
-
- \brief Map t_cose errors into ctoken errors
-
- \param[in] t_cose_error  The t_cose error to map
-
- \return The ctoken error.
+ * \brief Map t_cose errors into ctoken errors
+ *
+ * \param[in] t_cose_error  The t_cose error to map
+ *
+ * \return The ctoken error.
  */
 static inline enum ctoken_err_t
 map_t_cose_errors(enum t_cose_err_t t_cose_error)
@@ -156,6 +154,9 @@ map_t_cose_errors(enum t_cose_err_t t_cose_error)
 }
 
 
+/*
+* Public function. See ctoken_decode.h
+*/
 enum ctoken_err_t
 ctoken_decode_get_kid(struct ctoken_decode_ctx *me,
                       struct q_useful_buf_c   token,
@@ -326,40 +327,17 @@ Done:
     return return_value;
 }
 
-#if 0
-// TODO: fix this
-/*
- * Public function. See ctoken_decode.h
- */
-enum ctoken_err_t
-ctoken_decode_get_map(struct ctoken_decode_ctx *me,
-                            int32_t                 label,
-                            QCBORItem              *item)
-{
-    if(me->last_error != CTOKEN_ERR_SUCCESS) {
-        item->uDataType = QCBOR_TYPE_NONE;
-        return me->last_error;
-    }
-
-    return qcbor_util_get_top_level_item_in_map(me->payload,
-                                                label,
-                                                QCBOR_TYPE_MAP,
-                                                item);
-}
-#endif
-
-
 
 /*
  * Public function. See ctoken_decode.h
  */
 enum ctoken_err_t
 ctoken_decode_get_bstr(struct ctoken_decode_ctx *me,
-                       int32_t                 label,
-                       struct q_useful_buf_c  *claim)
+                       int32_t                  label,
+                       struct q_useful_buf_c   *claim)
 {
     enum ctoken_err_t return_value;
-    QCBORError qcbor_error;
+    QCBORError        qcbor_error;
 
     if(me->last_error != CTOKEN_ERR_SUCCESS) {
         return_value = me->last_error;
@@ -386,7 +364,7 @@ ctoken_decode_get_tstr(struct ctoken_decode_ctx *me,
                        struct q_useful_buf_c    *claim)
 {
     enum ctoken_err_t return_value;
-    QCBORError qcbor_error;
+    QCBORError        qcbor_error;
 
     if(me->last_error != CTOKEN_ERR_SUCCESS) {
         return_value = me->last_error;
@@ -413,7 +391,7 @@ ctoken_decode_get_int(struct ctoken_decode_ctx *me,
                       int64_t                  *integer)
 {
     enum ctoken_err_t return_value;
-    QCBORError qcbor_error;
+    QCBORError        qcbor_error;
 
     if(me->last_error != CTOKEN_ERR_SUCCESS) {
         return_value = me->last_error;
@@ -440,7 +418,7 @@ ctoken_decode_get_uint(struct ctoken_decode_ctx *me,
                        uint64_t                 *integer)
 {
     enum ctoken_err_t return_value;
-    QCBORError qcbor_error;
+    QCBORError        qcbor_error;
 
     if(me->last_error != CTOKEN_ERR_SUCCESS) {
         return_value = me->last_error;
@@ -449,6 +427,33 @@ ctoken_decode_get_uint(struct ctoken_decode_ctx *me,
     }
 
     QCBORDecode_GetUInt64InMapN(&(me->qcbor_decode_context), label, integer);
+    qcbor_error = QCBORDecode_GetAndResetError(&(me->qcbor_decode_context));
+
+    return_value = map_qcbor_error(qcbor_error);
+
+Done:
+    return return_value;
+}
+
+
+
+/*
+ * Public function. See ctoken_decode.h
+ */
+enum ctoken_err_t
+ctoken_decode_get_bool(struct ctoken_decode_ctx *me,
+                       int32_t                   label,
+                       bool                     *b)
+{
+    enum ctoken_err_t return_value;
+    QCBORError        qcbor_error;
+
+    if(me->last_error != CTOKEN_ERR_SUCCESS) {
+        return_value = me->last_error;
+        goto Done;
+    }
+
+    QCBORDecode_GetBoolInMapN(&(me->qcbor_decode_context), label, b);
     qcbor_error = QCBORDecode_GetAndResetError(&(me->qcbor_decode_context));
 
     return_value = map_qcbor_error(qcbor_error);
@@ -486,54 +491,29 @@ Done:
 }
 
 
-
 /*
  * Public function. See ctoken_eat_encode.h
  */
 enum ctoken_err_t
-ctoken_decode_boot_state(struct ctoken_decode_ctx *me,
-                             bool *secure_boot_enabled,
-                             enum ctoken_debug_level_t *debug_state)
+ctoken_decode_get_int_constrained(struct ctoken_decode_ctx *me,
+                                  int32_t                   label,
+                                  int64_t                   min,
+                                  int64_t                   max,
+                                  int64_t                  *claim)
 {
-    enum ctoken_err_t       return_value;
-    int64_t boot_state;
+    enum ctoken_err_t error;
 
-    /* Note that this claim is still being debated in
-     the working group and may change.
-
-     This errors out ff the claim doesn't exist. It could
-     default to some values.
-
-     TODO: test this
-     */
-
-    if(me->last_error != CTOKEN_ERR_SUCCESS) {
-        return_value = me->last_error;
+    error = ctoken_decode_get_int(me, label, claim);
+    if(error != CTOKEN_ERR_SUCCESS) {
         goto Done;
     }
 
-    QCBORDecode_EnterArrayFromMapN(&(me->qcbor_decode_context),
-                                   CTOKEN_EAT_LABEL_BOOT_STATE);
-    // TODO: error check here maybe
-
-    QCBORDecode_GetBool(&(me->qcbor_decode_context), secure_boot_enabled);
-    QCBORDecode_GetInt64(&(me->qcbor_decode_context), &boot_state);
-
-    QCBORDecode_ExitArray(&(me->qcbor_decode_context));
-
-    if(boot_state < EAT_DL_NOT_REPORTED ||
-       boot_state > EAT_DL_FULL_PERMANENT_DISABLE) {
-        // TODO: better error here
-        return_value = CTOKEN_ERR_CBOR_NOT_WELL_FORMED;
-        goto Done;
+    if(*claim < min || *claim > max) {
+        error = CTOKEN_ERR_CLAIM_RANGE;
     }
-
-    *debug_state = (enum ctoken_debug_level_t)boot_state;
-
-    return_value = CTOKEN_ERR_SUCCESS;
 
 Done:
-    return return_value;
+    return error;
 }
 
 
@@ -777,7 +757,9 @@ Done:
     return return_value;
 }
 
-
+/*
+* Public function. See ctoken_decode.h
+*/
 enum ctoken_err_t
 ctoken_decode_enter_submod_sz(struct ctoken_decode_ctx *me,
                               const char               *name)

@@ -118,6 +118,7 @@ enum ctoken_err_t {
     CTOKEN_ERR_CLAIM_FORMAT,
     /** The latitude and longitude fields are required in the location claim */
     CTOKEN_ERR_LAT_LONG_REQUIRED,
+
     CTOKEN_ERR_TOO_MANY_TAGS,
     /** The @ref ctoken_protection_t type passed to encode or decode is not supported. */
     CTOKEN_ERR_UNSUPPORTED_PROTECTION_TYPE,
@@ -127,13 +128,17 @@ enum ctoken_err_t {
     /** The content of a tag is not of the right type. In particular, this
      occurs when the content of a CWT tag is not a COSE tag.
      */
-    CTOKEN_ERR_TAG_CONTENT
+    CTOKEN_ERR_TAG_CONTENT,
 
+
+    /** The value of the claim is outside allowed range. */
+    CTOKEN_ERR_CLAIM_RANGE,
 };
 
 
 /** The maximum nesting depth for submodules. */
 #define CTOKEN_MAX_SUBMOD_NESTING  (QCBOR_MAX_ARRAY_NESTING/2)
+
 
 
 /*
@@ -216,6 +221,7 @@ enum ctoken_protection_t {
     CTOKEN_PROTECTION_SIGN1_ENCRYPT0,
 
 };
+
 
 
 /**
