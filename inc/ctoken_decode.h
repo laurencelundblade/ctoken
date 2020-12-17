@@ -86,6 +86,9 @@ extern "C" {
  */
 
 
+#define CTOKEN_MAX_TAGS_TO_RETURN 3
+
+
 /**
  * The context for decoding a CBOR token. The caller of ctoken must
  * create one of these and pass it to the functions here. It is small
@@ -101,17 +104,19 @@ struct ctoken_decode_ctx {
     /* PRIVATE DATA STRUCTURE */
     struct t_cose_sign1_verify_ctx verify_context;
     struct q_useful_buf_c          payload;
-    uint32_t                       options;
+    uint32_t                       token_options;
     enum ctoken_err_t              last_error;
     QCBORDecodeContext             qcbor_decode_context;
     uint8_t                        in_submods;
+    uint64_t                       auTags[CTOKEN_MAX_TAGS_TO_RETURN];
+    enum ctoken_protection_t       protection_type;
 };
 
 
 /**
  * \brief Initialize token decoder.
  *
- * \param[in] me             gtThe token decoder context to be initialized.
+ * \param[in] context        The token decoder context to be initialized.
  * \param[in] t_cose_options Options passed to t_cose verification.
  * \param[in] token_options  Decoding options.
  *
@@ -119,9 +124,10 @@ struct ctoken_decode_ctx {
  * use. An instance of \ref attest_token_decode_context can
  * be used again by calling this on it again.
  **/
-void ctoken_decode_init(struct ctoken_decode_ctx *me,
+void ctoken_decode_init(struct ctoken_decode_ctx *context,
                         uint32_t                  t_cose_options,
-                        uint32_t                  token_options);
+                        uint32_t                  token_options,
+                        enum ctoken_protection_t  protection_type);
 
 
 /**
@@ -225,6 +231,24 @@ ctoken_decode_validate_token(struct ctoken_decode_ctx *me,
  */
 static enum ctoken_err_t
 ctoken_decode_get_error(struct ctoken_decode_ctx *me);
+
+
+/**
+ * \brief Return unprocessed tags from most recent token validation
+ *
+ * \param[in] context   The t_cose signature verification context.
+ * \param[in] n         Index of the tag to return.
+ *
+ * \return  The tag value or \ref CBOR_TAG_INVALID64 if there is no tag
+ *          at the index or the index is too large.
+ *
+ * The 0th tag is the one for which the CWT or UCCS message is the content. Loop
+ * from 0 up until \ref CBOR_TAG_INVALID64 is returned. The maximum
+ * is \ref T_COSE_MAX_TAGS_TO_RETURN.
+ */
+uint64_t
+ctoken_decode_get_nth_tag(const struct ctoken_decode_ctx *context,
+                          size_t                          n);
 
 
 /**

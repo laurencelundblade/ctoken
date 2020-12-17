@@ -44,13 +44,18 @@
  */
 void ctoken_decode_init(struct ctoken_decode_ctx *me,
                         uint32_t                  t_cose_options,
-                        uint32_t                  options)
+                        uint32_t                  options,
+                        enum ctoken_protection_t  protection_type)
 {
     memset(me, 0, sizeof(struct ctoken_decode_ctx));
-    me->options    = options;
-    me->last_error = CTOKEN_ERR_NO_VALID_TOKEN;
+    me->token_options   = options;
+    me->last_error      = CTOKEN_ERR_NO_VALID_TOKEN;
+    me->protection_type = protection_type;
 
-    t_cose_sign1_verify_init(&(me->verify_context), t_cose_options);
+    if(protection_type == CTOKEN_PROTECTION_COSE_SIGN1 ||
+       protection_type == CTOKEN_PROTECTION_BY_TAG) {
+        t_cose_sign1_verify_init(&(me->verify_context), t_cose_options);
+    }
 }
 
 
@@ -174,6 +179,27 @@ ctoken_decode_get_kid(struct ctoken_decode_ctx *me,
 }
 
 
+uint64_t foo(struct ctoken_decode_ctx *me, int protection_type, QCBORItem *item, size_t n)
+{
+    uint64_t tag_number;
+
+    switch(protection_type) {
+        case CTOKEN_PROTECTION_NONE:
+            tag_number = QCBORDecode_GetNthTag(&(me->qcbor_decode_context), item, n);
+            break;
+
+        case CTOKEN_PROTECTION_COSE_SIGN1:
+            tag_number = t_cose_sign1_get_nth_tag(&(me->verify_context), n);
+            break;
+
+        default:
+            tag_number = CBOR_TAG_INVALID64;
+    }
+
+    return tag_number;
+}
+
+
 /*
  * Public function. See ctoken_decode.h
  */
@@ -184,19 +210,107 @@ ctoken_decode_validate_token(struct ctoken_decode_ctx *me,
     enum t_cose_err_t t_cose_error;
     enum ctoken_err_t return_value;
     QCBORError        qcbor_error;
+    enum ctoken_protection_t protection_type = me->protection_type;
+    bool                     tag_processed;
+    int                      returned_tag_index;
+    uint64_t                 tag_number;
+    uint64_t                 expected;
+    QCBORItem item;
 
-    t_cose_error = t_cose_sign1_verify(&(me->verify_context), token, &me->payload, NULL);
-    if(t_cose_error != T_COSE_SUCCESS) {
-        return_value = map_t_cose_errors(t_cose_error);
-        goto Done;
+    memset(me->auTags, 0xff, sizeof(me->auTags));
+
+    /* First pass at tags to determine the protection type */
+    tag_processed = false;
+    if(protection_type != CTOKEN_PROTECTION_COSE_SIGN1) {
+        /* It is either unprotected, determined by tag or a format not supported.
+         Have to decode the first item to find out what tag it is, or
+         if it is not a tag.
+         */
+        QCBORDecode_Init(&(me->qcbor_decode_context), token, 0);
+        QCBORDecode_PeekNext(&(me->qcbor_decode_context), &item);
+
+        tag_number = QCBORDecode_GetNthTag(&(me->qcbor_decode_context), &item, 0);
+
+        if(tag_number == CBOR_TAG_COSE_SIGN1) {
+            protection_type = CTOKEN_PROTECTION_COSE_SIGN1;
+            /* It's definitely a COSE sign 1 */
+
+        } else if (tag_number == 601) {
+            /* It's a UCCS and nothing else */
+            tag_processed = true;
+            protection_type = CTOKEN_PROTECTION_NONE;
+
+        } else if(tag_number == CBOR_TAG_CWT) {
+            /* tag 61 content must always be a COSE tag per CWT RFC  so
+             tag 61 can never be the inner tag here. */
+            return_value = CTOKEN_ERR_TAG_CONTENT; // Incorrect tag content.
+            goto Done;
+
+        } else {
+            /* Tag is something to be passed on or a COSE type that is not supported here.
+             In this case, caller has to specify the protection type. */
+        }
+    } else {
+        /* We were told that the protection type is CTOKEN_PROTECTION_COSE_SIGN1.
+         Let t_cose sort out the tags */
     }
 
 
-    /*
-     * FIXME: check for CWT/EAT CBOR tag if requested
-     */
+    /* Now the processing for the particular protection type */
+    if(protection_type == CTOKEN_PROTECTION_BY_TAG) {
+        return_value = CTOKEN_ERR_UNDETERMINED_PROTECTION_TYPE;
+        goto Done;
 
-    QCBORDecode_Init(&(me->qcbor_decode_context), me->payload, 0);
+    } else if(protection_type == CTOKEN_PROTECTION_COSE_SIGN1) {
+        // TODO: tell t_cose our tag preference
+        t_cose_error = t_cose_sign1_verify(&(me->verify_context), token, &me->payload, NULL);
+        if(t_cose_error != T_COSE_SUCCESS) {
+            return_value = map_t_cose_errors(t_cose_error);
+            goto Done;
+        }
+
+        expected = CBOR_TAG_CWT;
+
+        /* Re-initialize with the payload of the sign1 */
+        QCBORDecode_Init(&(me->qcbor_decode_context), me->payload, 0);
+
+    } else if(protection_type == CTOKEN_PROTECTION_NONE) {
+        /* It's a UCCS */
+        expected = 601;
+
+        me->payload = token;
+
+    } else {
+        return_value = CTOKEN_ERR_UNSUPPORTED_PROTECTION_TYPE;
+        goto Done;
+    }
+
+    /* Check the top level tag and copy tags not processed */
+    int item_tag_index = 0;
+    for(returned_tag_index = 0; returned_tag_index < CTOKEN_MAX_TAGS_TO_RETURN; returned_tag_index++) {
+        tag_number = foo(me, protection_type, &item, item_tag_index);
+        if(tag_number == CBOR_TAG_INVALID64) {
+            break;
+        }
+
+        if(item_tag_index == 0 && tag_number == expected) {
+            if(me->token_options & CTOKEN_OPT_TOP_LEVEL_NOT_TAG) {
+                return_value = 99; // Not supposed to be a tag
+                goto Done;
+            }
+            if(me->token_options & CTOKEN_OPT_REQUIRE_TOP_LEVEL_TAG) {
+                return_value = 99;
+                goto Done;
+            }
+            continue;
+        }
+
+        item_tag_index++;
+
+        me->auTags[returned_tag_index] = tag_number;
+    }
+
+    
     QCBORDecode_EnterMap(&(me->qcbor_decode_context), NULL);
     qcbor_error = QCBORDecode_GetError(&(me->qcbor_decode_context));
     if(qcbor_error != QCBOR_SUCCESS) {

@@ -37,6 +37,7 @@ int32_t cwt_test()
     ctoken_encode_init(&encode_ctx,
                         T_COSE_OPT_SHORT_CIRCUIT_SIG,
                         0,
+                       CTOKEN_PROTECTION_COSE_SIGN1,
                         T_COSE_ALGORITHM_ES256);
 
     /* Get started on a particular token by giving an out buffer.
@@ -68,7 +69,10 @@ int32_t cwt_test()
 
     /* Initialize the decoder / verifier context. 
      */
-    ctoken_decode_init(&decode_context, T_COSE_OPT_ALLOW_SHORT_CIRCUIT, 0);
+    ctoken_decode_init(&decode_context,
+                       T_COSE_OPT_ALLOW_SHORT_CIRCUIT,
+                       0,
+                       CTOKEN_PROTECTION_BY_TAG);
 
     /* Pass in the token and have it validated. If the token was corrupt
      * or the signature check failed, it will be returned here

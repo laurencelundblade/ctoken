@@ -80,11 +80,11 @@ struct ctoken_encode_ctx {
     /* Private data structure */
     uint32_t                        opt_flags;
     enum ctoken_err_t               error;
+    enum ctoken_protection_t   cose_protection_type;
     QCBOREncodeContext              cbor_encode_context;
     struct ctoken_submod_state      submod_state;
     struct t_cose_sign1_sign_ctx    signer_ctx;
 };
-
 
 
 
@@ -104,10 +104,11 @@ struct ctoken_encode_ctx {
  *
  */
 static void
-ctoken_encode_init(struct ctoken_encode_ctx *context,
-                   uint32_t                  t_cose_opt_flags,
-                   uint32_t                  token_opt_flags,
-                   int32_t                   cose_alg_id);
+ctoken_encode_init(struct ctoken_encode_ctx     *context,
+                   uint32_t                      t_cose_opt_flags,
+                   uint32_t                      token_opt_flags,
+                   enum ctoken_protection_t protection_type,
+                   int32_t                       cose_alg_id);
 
 
 /**
@@ -746,16 +747,18 @@ static inline void
 ctoken_encode_init(struct ctoken_encode_ctx *me,
                    uint32_t                 t_cose_opt_flags,
                    uint32_t                 token_opt_flags,
+                   enum ctoken_protection_t protection_type,
                    int32_t                  cose_alg_id)
 {
-    /*
-       me->in_submod_mode = 0
-       me->submod_nest_level = 0
-       me->error = CTOKEN_ERR_SUCCESS
-     */
     memset(me, 0, sizeof(struct ctoken_encode_ctx));
     me->opt_flags = token_opt_flags;
-    t_cose_sign1_sign_init(&(me->signer_ctx), t_cose_opt_flags, cose_alg_id);
+    me->cose_protection_type = protection_type;
+    if(protection_type == CTOKEN_PROTECTION_COSE_SIGN1) {
+        if(token_opt_flags & CTOKEN_OPT_COSE_MESSAGE_NOT_TAG) {
+            t_cose_opt_flags |= T_COSE_OPT_OMIT_CBOR_TAG;
+        }
+        t_cose_sign1_sign_init(&(me->signer_ctx), t_cose_opt_flags, cose_alg_id);
+    }
 }
 
 

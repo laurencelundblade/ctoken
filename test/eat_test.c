@@ -52,9 +52,10 @@ int32_t basic_eat_test(void)
      * one or more tokens.
      */
     ctoken_encode_init(&encode_ctx,
-                           T_COSE_OPT_SHORT_CIRCUIT_SIG,
-                           0,
-                           T_COSE_ALGORITHM_ES256);
+                       T_COSE_OPT_SHORT_CIRCUIT_SIG,
+                       0,
+                       CTOKEN_PROTECTION_COSE_SIGN1,
+                       T_COSE_ALGORITHM_ES256);
 
     /* Get started on a particular token by giving an out buffer.
      */
@@ -112,7 +113,10 @@ int32_t basic_eat_test(void)
     /* Initialize the decoder / verifier context. No options are set
      * so two 0's are passed
      */
-    ctoken_decode_init(&decode_context, T_COSE_OPT_ALLOW_SHORT_CIRCUIT, 0);
+    ctoken_decode_init(&decode_context,
+                       T_COSE_OPT_ALLOW_SHORT_CIRCUIT,
+                       0,
+                       CTOKEN_PROTECTION_BY_TAG);
 
     /* Pass in the token and have it validated. If the token was corrupt
      * or the signature check failed, it will be returned here
@@ -241,9 +245,10 @@ int32_t submods_test(void)
     const struct q_useful_buf_c test_oemid = Q_USEFUL_BUF_FROM_BYTE_ARRAY_LITERAL(test_oemid_bytes);
 
     ctoken_encode_init(&encode_ctx,
-                           T_COSE_OPT_SHORT_CIRCUIT_SIG,
-                           0,
-                           T_COSE_ALGORITHM_ES256);
+                       T_COSE_OPT_SHORT_CIRCUIT_SIG,
+                       0,
+                       CTOKEN_PROTECTION_COSE_SIGN1,
+                       T_COSE_ALGORITHM_ES256);
 
     /* Get started on a particular token by giving an out buffer.
      */
@@ -288,7 +293,10 @@ int32_t submods_test(void)
      /* Initialize the decoder / verifier context. No options are set
       * so two 0's are passed
       */
-     ctoken_decode_init(&decode_context, T_COSE_OPT_ALLOW_SHORT_CIRCUIT, 0);
+     ctoken_decode_init(&decode_context,
+                        T_COSE_OPT_ALLOW_SHORT_CIRCUIT,
+                        CTOKEN_PROTECTION_BY_TAG,
+                        0);
 
      /* Pass in the token and have it validated. If the token was corrupt
       * or the signature check failed, it will be returned here
@@ -367,6 +375,7 @@ int32_t submods_errors_test(void)
     ctoken_encode_init(&encode_ctx,
                        T_COSE_OPT_SHORT_CIRCUIT_SIG,
                        0,
+                       CTOKEN_PROTECTION_COSE_SIGN1,
                        T_COSE_ALGORITHM_ES256);
 
     result = ctoken_encode_start(&encode_ctx, token_out_buffer);
@@ -386,6 +395,7 @@ int32_t submods_errors_test(void)
     ctoken_encode_init(&encode_ctx,
                        T_COSE_OPT_SHORT_CIRCUIT_SIG,
                        0,
+                       CTOKEN_PROTECTION_COSE_SIGN1,
                        T_COSE_ALGORITHM_ES256);
 
     result = ctoken_encode_start(&encode_ctx, token_out_buffer);
@@ -404,6 +414,7 @@ int32_t submods_errors_test(void)
     ctoken_encode_init(&encode_ctx,
                        T_COSE_OPT_SHORT_CIRCUIT_SIG,
                        0,
+                       CTOKEN_PROTECTION_COSE_SIGN1,
                        T_COSE_ALGORITHM_ES256);
 
     result = ctoken_encode_start(&encode_ctx, token_out_buffer);
@@ -422,6 +433,7 @@ int32_t submods_errors_test(void)
     ctoken_encode_init(&encode_ctx,
                        T_COSE_OPT_SHORT_CIRCUIT_SIG,
                        0,
+                       CTOKEN_PROTECTION_COSE_SIGN1,
                        T_COSE_ALGORITHM_ES256);
 
     result = ctoken_encode_start(&encode_ctx, token_out_buffer);
@@ -443,6 +455,7 @@ int32_t submods_errors_test(void)
     ctoken_encode_init(&encode_ctx,
                        T_COSE_OPT_SHORT_CIRCUIT_SIG,
                        0,
+                       CTOKEN_PROTECTION_COSE_SIGN1,
                        T_COSE_ALGORITHM_ES256);
 
     result = ctoken_encode_start(&encode_ctx, token_out_buffer);
@@ -461,9 +474,10 @@ int32_t submods_errors_test(void)
 
 
     ctoken_encode_init(&encode_ctx,
-                        T_COSE_OPT_SHORT_CIRCUIT_SIG,
-                        0,
-                        T_COSE_ALGORITHM_ES256);
+                       T_COSE_OPT_SHORT_CIRCUIT_SIG,
+                       0,
+                       CTOKEN_PROTECTION_COSE_SIGN1,
+                       T_COSE_ALGORITHM_ES256);
 
      result = ctoken_encode_start(&encode_ctx, token_out_buffer);
      if(result) {
@@ -492,9 +506,10 @@ int32_t submods_errors_test(void)
 
 
     ctoken_encode_init(&encode_ctx,
-                        T_COSE_OPT_SHORT_CIRCUIT_SIG,
-                        0,
-                        T_COSE_ALGORITHM_ES256);
+                       T_COSE_OPT_SHORT_CIRCUIT_SIG,
+                       0,
+                       CTOKEN_PROTECTION_COSE_SIGN1,
+                       T_COSE_ALGORITHM_ES256);
 
      result = ctoken_encode_start(&encode_ctx, token_out_buffer);
      if(result) {
@@ -535,6 +550,7 @@ int32_t sign_cbor(struct q_useful_buf_c  cbor_input,
     ctoken_encode_init(&encode_ctx,
                        T_COSE_OPT_SHORT_CIRCUIT_SIG,
                        0,
+                       CTOKEN_PROTECTION_COSE_SIGN1,
                        T_COSE_ALGORITHM_ES256);
 
     ctoken_encode_one_shot(&encode_ctx, out_buf, cbor_input, completed_token);
@@ -667,7 +683,10 @@ int32_t submod_decode_errors_test()
     uint32_t uNum;
 
 
-    ctoken_decode_init(&decode_context, T_COSE_OPT_ALLOW_SHORT_CIRCUIT, 0);
+    ctoken_decode_init(&decode_context,
+                       T_COSE_OPT_ALLOW_SHORT_CIRCUIT,
+                       CTOKEN_PROTECTION_BY_TAG,
+                       0);
 
     ctoken_result = ctoken_decode_validate_token(&decode_context, UsefulBuf_FROM_BYTE_ARRAY_LITERAL(some_good_submods));
     if(ctoken_result) {
@@ -697,7 +716,10 @@ int32_t submod_decode_errors_test()
 
     sign_cbor(UsefulBuf_FROM_BYTE_ARRAY_LITERAL(some_bad_submods), out, &token);
 
-    ctoken_decode_init(&decode_context, T_COSE_OPT_ALLOW_SHORT_CIRCUIT, 0);
+    ctoken_decode_init(&decode_context,
+                       T_COSE_OPT_ALLOW_SHORT_CIRCUIT,
+                       CTOKEN_PROTECTION_BY_TAG,
+                       0);
 
     ctoken_result = ctoken_decode_validate_token(&decode_context, token);
     if(ctoken_result) {
@@ -771,7 +793,10 @@ int32_t submod_decode_errors_test()
     /* A not-well-formed submodule */
     sign_cbor(UsefulBuf_FROM_BYTE_ARRAY_LITERAL(nwf_submod), out, &token);
 
-    ctoken_decode_init(&decode_context, T_COSE_OPT_ALLOW_SHORT_CIRCUIT, 0);
+    ctoken_decode_init(&decode_context,
+                       T_COSE_OPT_ALLOW_SHORT_CIRCUIT,
+                       CTOKEN_PROTECTION_BY_TAG,
+                       0);
 
     ctoken_result = ctoken_decode_validate_token(&decode_context, token);
     if(ctoken_result) {
@@ -812,11 +837,15 @@ int32_t setup_decode_test(struct q_useful_buf_c     cbor_input,
     ctoken_encode_init(&encode_ctx,
                        T_COSE_OPT_SHORT_CIRCUIT_SIG,
                        0,
+                       CTOKEN_PROTECTION_COSE_SIGN1,
                        T_COSE_ALGORITHM_ES256);
 
     ctoken_encode_one_shot(&encode_ctx, out_buf, cbor_input, &completed_token);
 
-    ctoken_decode_init(decode_context, T_COSE_OPT_ALLOW_SHORT_CIRCUIT, 0);
+    ctoken_decode_init(decode_context,
+                       T_COSE_OPT_ALLOW_SHORT_CIRCUIT,
+                       CTOKEN_PROTECTION_BY_TAG,
+                       0);
 
      ctoken_result = ctoken_decode_validate_token(decode_context, completed_token);
      if(ctoken_result) {
@@ -859,7 +888,7 @@ static const uint8_t location_not_well_formed[] = {
  {-76004: {1: 1.1, 2: 2.2, 3: 3.3, 4: 4.4, 5: 5.5, 6: 6.6, 7: 7.7, 8: 880000, 9: 9900}}
  */
 static const uint8_t expected_full_location[] = {
-    0xD2, 0x84, 0x43, 0xA1, 0x01, 0x26, 0xA1, 0x04, 0x58, 0x20, 0xEF, 0x95, 0x4B, 0x4B, 0xD9, 0xBD, 0xF6, 0x70, 0xD0, 0x33, 0x60, 0x82, 0xF5, 0xEF, 0x15, 0x2A, 0xF8, 0xF3, 0x5B, 0x6A, 0x6C, 0x00, 0xEF, 0xA6, 0xA9, 0xA7, 0x1F, 0x49, 0x51, 0x7E, 0x18, 0xC6, 0x58, 0x51, 0xA1, 0x3A, 0x00, 0x01, 0x28, 0xE3, 0xA9, 0x01, 0xFB, 0x3F, 0xF1, 0x99, 0x99, 0x99, 0x99, 0x99, 0x9A, 0x02, 0xFB, 0x40, 0x01, 0x99, 0x99, 0x99, 0x99, 0x99, 0x9A, 0x03, 0xFB, 0x40, 0x0A, 0x66, 0x66, 0x66, 0x66, 0x66, 0x66, 0x04, 0xFB, 0x40, 0x11, 0x99, 0x99, 0x99, 0x99, 0x99, 0x9A, 0x05, 0xF9, 0x45, 0x80, 0x06, 0xFB, 0x40, 0x1A, 0x66, 0x66, 0x66, 0x66, 0x66, 0x66, 0x07, 0xFB, 0x40, 0x1E, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCD, 0x08, 0x1A, 0x00, 0x0D, 0x6D, 0x80, 0x09, 0x19, 0x26, 0xAC, 0x58, 0x40, 0x2F, 0x52, 0xC2, 0x4A, 0xAC, 0x8C, 0x01, 0xDD, 0x17, 0xDE, 0x3B, 0x34, 0x54, 0x90, 0xA9, 0x83, 0x6A, 0x1B, 0x68, 0xA4, 0x40, 0xF9, 0x1E, 0x97, 0x35, 0x88, 0xBC, 0x8A, 0x59, 0x8C, 0xD6, 0x69, 0x2F, 0x52, 0xC2, 0x4A, 0xAC, 0x8C, 0x01, 0xDD, 0x17, 0xDE, 0x3B, 0x34, 0x54, 0x90, 0xA9, 0x83, 0x6A, 0x1B, 0x68, 0xA4, 0x40, 0xF9, 0x1E, 0x97, 0x35, 0x88, 0xBC, 0x8A, 0x59, 0x8C, 0xD6, 0x69};
+    0xD8, 0x3D, 0xD2, 0x84, 0x43, 0xA1, 0x01, 0x26, 0xA1, 0x04, 0x58, 0x20, 0xEF, 0x95, 0x4B, 0x4B, 0xD9, 0xBD, 0xF6, 0x70, 0xD0, 0x33, 0x60, 0x82, 0xF5, 0xEF, 0x15, 0x2A, 0xF8, 0xF3, 0x5B, 0x6A, 0x6C, 0x00, 0xEF, 0xA6, 0xA9, 0xA7, 0x1F, 0x49, 0x51, 0x7E, 0x18, 0xC6, 0x58, 0x51, 0xA1, 0x3A, 0x00, 0x01, 0x28, 0xE3, 0xA9, 0x01, 0xFB, 0x3F, 0xF1, 0x99, 0x99, 0x99, 0x99, 0x99, 0x9A, 0x02, 0xFB, 0x40, 0x01, 0x99, 0x99, 0x99, 0x99, 0x99, 0x9A, 0x03, 0xFB, 0x40, 0x0A, 0x66, 0x66, 0x66, 0x66, 0x66, 0x66, 0x04, 0xFB, 0x40, 0x11, 0x99, 0x99, 0x99, 0x99, 0x99, 0x9A, 0x05, 0xF9, 0x45, 0x80, 0x06, 0xFB, 0x40, 0x1A, 0x66, 0x66, 0x66, 0x66, 0x66, 0x66, 0x07, 0xFB, 0x40, 0x1E, 0xCC, 0xCC, 0xCC, 0xCC, 0xCC, 0xCD, 0x08, 0x1A, 0x00, 0x0D, 0x6D, 0x80, 0x09, 0x19, 0x26, 0xAC, 0x58, 0x40, 0x2F, 0x52, 0xC2, 0x4A, 0xAC, 0x8C, 0x01, 0xDD, 0x17, 0xDE, 0x3B, 0x34, 0x54, 0x90, 0xA9, 0x83, 0x6A, 0x1B, 0x68, 0xA4, 0x40, 0xF9, 0x1E, 0x97, 0x35, 0x88, 0xBC, 0x8A, 0x59, 0x8C, 0xD6, 0x69, 0x2F, 0x52, 0xC2, 0x4A, 0xAC, 0x8C, 0x01, 0xDD, 0x17, 0xDE, 0x3B, 0x34, 0x54, 0x90, 0xA9, 0x83, 0x6A, 0x1B, 0x68, 0xA4, 0x40, 0xF9, 0x1E, 0x97, 0x35, 0x88, 0xBC, 0x8A, 0x59, 0x8C, 0xD6, 0x69};
 
 
 int32_t location_test()
@@ -916,6 +945,7 @@ int32_t location_test()
     ctoken_encode_init(&encode_context,
                        T_COSE_OPT_SHORT_CIRCUIT_SIG,
                        0,
+                       CTOKEN_PROTECTION_COSE_SIGN1,
                        T_COSE_ALGORITHM_ES256);
 
     /* Get started on a particular token by giving an out buffer.
@@ -953,6 +983,7 @@ int32_t location_test()
     ctoken_encode_init(&encode_context,
                        T_COSE_OPT_SHORT_CIRCUIT_SIG,
                        0,
+                       CTOKEN_PROTECTION_COSE_SIGN1,
                        T_COSE_ALGORITHM_ES256);
 
     error = ctoken_encode_start(&encode_context, out);
@@ -969,7 +1000,10 @@ int32_t location_test()
         return 77;
     }
 
-    ctoken_decode_init(&decode_context, T_COSE_OPT_ALLOW_SHORT_CIRCUIT, 0);
+    ctoken_decode_init(&decode_context,
+                       T_COSE_OPT_ALLOW_SHORT_CIRCUIT,
+                       CTOKEN_PROTECTION_BY_TAG,
+                       0);
 
     error = ctoken_decode_validate_token(&decode_context, Q_USEFUL_BUF_FROM_BYTE_ARRAY_LITERAL(expected_full_location));
     if(error) {

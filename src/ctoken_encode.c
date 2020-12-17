@@ -199,17 +199,37 @@ ctoken_encode_start2(struct ctoken_encode_ctx *me, const struct q_useful_buf out
 
     submodstate_init(&(me->submod_state));
 
-    // TODO: add the CBOR tag if requested
-
     // TODO: other option proessing
 
-    /* Initialize COSE signer. This will cause the cose headers to be
-     * encoded and written into out_buf using me->cbor_enc_ctx
-     */
-    cose_return_value = t_cose_sign1_encode_parameters(&(me->signer_ctx),
-                                                       &(me->cbor_encode_context));
-    return_value = t_cose_err_to_attest_err(cose_return_value);
+    if(me->cose_protection_type == CTOKEN_PROTECTION_COSE_SIGN1) {
+        /* Is to be a CWT */
 
+        if(!(me->opt_flags & CTOKEN_OPT_TOP_LEVEL_NOT_TAG)) {
+            QCBOREncode_AddTag(&(me->cbor_encode_context), CBOR_TAG_CWT);
+        }
+        /* First work for COSE signing. This will cause the cose headers to be
+         * encoded and written into out_buf using me->cbor_encode_context
+         */
+        cose_return_value = t_cose_sign1_encode_parameters(&(me->signer_ctx),
+                                                           &(me->cbor_encode_context));
+        return_value = t_cose_err_to_attest_err(cose_return_value);
+        if(return_value != CTOKEN_ERR_SUCCESS) {
+            goto Done;
+        }
+
+    } else if(me->cose_protection_type == CTOKEN_PROTECTION_NONE) {
+        /* UCCS -- not much to do */
+        if(!(me->opt_flags & CTOKEN_OPT_TOP_LEVEL_NOT_TAG)) {
+            QCBOREncode_AddTag(&(me->cbor_encode_context), 601); // TODO: proper define for UCCS tag
+        }
+        return_value = CTOKEN_ERR_SUCCESS;
+        
+    } else {
+        return_value = CTOKEN_ERR_UNSUPPORTED_PROTECTION_TYPE;
+    }
+
+
+Done:
     return return_value;
 }
 

@@ -118,6 +118,17 @@ enum ctoken_err_t {
     CTOKEN_ERR_CLAIM_FORMAT,
     /** The latitude and longitude fields are required in the location claim */
     CTOKEN_ERR_LAT_LONG_REQUIRED,
+    CTOKEN_ERR_TOO_MANY_TAGS,
+    /** The @ref ctoken_protection_t type passed to encode or decode is not supported. */
+    CTOKEN_ERR_UNSUPPORTED_PROTECTION_TYPE,
+    /** When decoding the token is not a tag that specifies a protection type (e.g. CWT/COSE)
+     nor was a protection type given as an argument. */
+    CTOKEN_ERR_UNDETERMINED_PROTECTION_TYPE,
+    /** The content of a tag is not of the right type. In particular, this
+     occurs when the content of a CWT tag is not a COSE tag.
+     */
+    CTOKEN_ERR_TAG_CONTENT
+
 };
 
 
@@ -125,6 +136,86 @@ enum ctoken_err_t {
 #define CTOKEN_MAX_SUBMOD_NESTING  (QCBOR_MAX_ARRAY_NESTING/2)
 
 
+/*
+ An EAT can be protected (signed and/or encrypted) by COSE in several ways or not at all.
+ The manner of protection can be recorded in the EAT or not.
+ If it is not recorded in the EAT it must be recorded in or implied by the protocol carrying the EAT.
+ For example, the EAT might be in a labeled map item in a CBOR protocol whose content is always COSE_Sign1 protected CWT, in which case there no need to record the protection type in the EAT.
+ This implementation accommodates all scenarios, but is a little complicated for it.
+
+ When encoding an EAT, the type of protection must always be given.
+ This is by protection_type parameter to ctoken_encode_init().
+ Whether or not the type of protection is recorded in the EAT is by token_opt_flags parameter, also given to ctoken_encode_init().
+ By default the type of protection is recorded in the EAT and must be explicitly excluded using flags in token_opt_flags.
+
+ When decoding an EAT, the type of protection to decode can be given as a parameter or come from what is recorded in the EAT.
+ If it is known from the protocol carrying the EAT then it should be given as the protection_type parameter to ctoken_decode_init().
+ If it is not known from the carrying protocol, then the protection_type given should be CTOKEN_PROTECTION_BY_TAG.
+
+ It is also possible to expliclitly record in the EAT that it is an EAT/CWT or an EAT/UCCS or not record this and this interelates to the recording of the protection.
+
+ This "recording" is by the CBOR tag mechanism which sounds and seems like a tacked-on "tag", but is officially is not.
+ In CBOR a "tag" made up of both the tag number and the tag content.
+ It's not just the tag number, but here one doesn't go too far wrong thinking of it a just the tag number.
+
+ Here's the table of possibilities for encoding.
+
+   TAGS
+ TOP COSE    PROTECTION                      OUTPUT
+  0    X   CTOKEN_PROTECTION_NONE        601(claim-set)
+  1    X   CTOKEN_PROTECTION_NONE        claim-set
+  0    0   CTOKEN_PROTECTION_COSE_SIGN1  61(18(sign1-protected-claim-set))
+  0    1   CTOKEN_PROTECTION_COSE_SIGN1  prohibited by RFC 8392
+  1    0   CTOKEN_PROTECTION_COSE_SIGN1  18(sign1-protected-claim-set)
+  1    1   CTOKEN_PROTECTION_COSE_SIGN1  sign1-protected-claim-set
+
+
+ COSE_Sign1 array
+ UCCS map
+ 601(map)
+ 18(COSE_Sign1 array)
+ 61(18(COSE_Sign1 array))
+ 61(COSE_Sign1 array)
+ X(COSE_Sign1 array)
+ X(UCCS map)
+
+
+
+ */
+
+// While encoding, says the top-level is not a CWT or UCCS tag. It is a bare message. The decoder has to figure out what it is from context other than the tag.
+#define CTOKEN_OPT_TOP_LEVEL_NOT_TAG 0x04
+
+// While encoding indicates the COSE part should not be a COSE tag. It should be a bare message.
+#define CTOKEN_OPT_COSE_MESSAGE_NOT_TAG 0x08
+
+// While decoding a UCCS or CWT tag is required. It cannot be a bare CWT/UCCS.
+#define CTOKEN_OPT_REQUIRE_TOP_LEVEL_TAG 0x10
+
+// While decoding a UCCS or CWT tag is not accepted. It must be a bare CWT/UCCS.
+#define CTOKEN_OPT_PROHIBIT_TOP_LEVEL_TAG 0x20
+
+
+
+enum ctoken_protection_t {
+    /** When decoding, the CBOR protection processed is based on CBOR tag input.
+     Or put another way, the caller has no way to know the protection, so
+     the EAT better have been explicitly tagged with the type or protection. */
+    CTOKEN_PROTECTION_BY_TAG,
+
+    /** There is no COSE signing or encryption. The UCCS format is used. */
+    CTOKEN_PROTECTION_NONE,
+
+    /** The token is authenticity-protected using a COSE_Sign1 */
+    CTOKEN_PROTECTION_COSE_SIGN1,
+
+    /** The token is authenticity-protected using a COSE_Mac0. Not yet supported. */
+    CTOKEN_PROTECTION_COSE_MAC0,
+
+    /** The token is authenticity-protected using a COSE_Sign1 and privacy-protected by COSE_Encrypt0. Not yet supported. */
+    CTOKEN_PROTECTION_SIGN1_ENCRYPT0,
+
+};
 
 
 /**
