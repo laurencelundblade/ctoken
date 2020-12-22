@@ -132,7 +132,8 @@ enum ctoken_intended_use_t {
     /** This may be required by a CA before signing a CSR. */
     CTOKEN_USE_CERTIFICATE_ISSUANCE = 4,
     /** Used to prove the device has possesion of a key. */
-    CTOKEN_USE_PROOF_OF_POSSSION = 5};
+    CTOKEN_USE_PROOF_OF_POSSSION = 5
+};
 
 
 

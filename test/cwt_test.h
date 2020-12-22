@@ -26,6 +26,9 @@ extern "C" {
 int32_t cwt_test(void);
 
 
+int32_t cwt_tags_test(void);
+
+
 #ifdef __cplusplus
 }
 #endif

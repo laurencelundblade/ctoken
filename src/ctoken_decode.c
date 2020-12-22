@@ -44,12 +44,17 @@
  */
 void ctoken_decode_init(struct ctoken_decode_ctx *me,
                         uint32_t                  t_cose_options,
-                        uint32_t                  options)
+                        uint32_t                  ctoken_options,
+                        enum ctoken_protection_t  protection_type)
 {
     memset(me, 0, sizeof(struct ctoken_decode_ctx));
-    me->options    = options;
-    me->last_error = CTOKEN_ERR_NO_VALID_TOKEN;
+    me->ctoken_options         = ctoken_options;
+    me->last_error             = CTOKEN_ERR_NO_VALID_TOKEN;
+    me->protection_type        = protection_type;
+    me->actual_protection_type = CTOKEN_PROTECTION_UNKNOWN;
 
+
+    /* Always initialize, even if we turn out not to use COSE */
     t_cose_sign1_verify_init(&(me->verify_context), t_cose_options);
 }
 
@@ -105,6 +110,23 @@ static enum ctoken_err_t t_cose_verify_error_map[] = {
 };
 
 
+static inline enum ctoken_err_t map_qcbor_error(QCBORError error)
+{
+    // TODO: make this better
+    if(QCBORDecode_IsNotWellFormedError(error)) {
+        return CTOKEN_ERR_CBOR_NOT_WELL_FORMED;
+    } else if(error == QCBOR_ERR_LABEL_NOT_FOUND) {
+        return CTOKEN_ERR_CLAIM_NOT_PRESENT;
+    } else if(error == QCBOR_ERR_UNEXPECTED_TYPE) {
+        return CTOKEN_ERR_CBOR_TYPE;
+    } else if(error) {
+        return CTOKEN_ERR_GENERAL;
+    } else {
+        return CTOKEN_ERR_SUCCESS;
+    }
+}
+
+
 /**
  * \brief Map t_cose errors into ctoken errors
  *
@@ -130,24 +152,6 @@ map_t_cose_errors(enum t_cose_err_t t_cose_error)
 
     return return_value;
 }
-
-
-static inline enum ctoken_err_t map_qcbor_error(QCBORError error)
-{
-    // TODO: make this better
-    if(QCBORDecode_IsNotWellFormedError(error)) {
-        return CTOKEN_ERR_CBOR_NOT_WELL_FORMED;
-    } else if(error == QCBOR_ERR_LABEL_NOT_FOUND) {
-        return CTOKEN_ERR_CLAIM_NOT_PRESENT;
-    } else if(error == QCBOR_ERR_UNEXPECTED_TYPE) {
-        return CTOKEN_ERR_CBOR_TYPE;
-    } else if(error) {
-        return CTOKEN_ERR_GENERAL;
-    } else {
-        return CTOKEN_ERR_SUCCESS;
-    }
-}
-
 
 
 /*
@@ -176,29 +180,118 @@ ctoken_decode_get_kid(struct ctoken_decode_ctx *me,
 }
 
 
+uint64_t get_nth_tag(struct ctoken_decode_ctx *me, int protection_type, QCBORItem *item, uint32_t n)
+{
+    uint64_t tag_number;
+
+    switch(protection_type) {
+        case CTOKEN_PROTECTION_NONE:
+            tag_number = QCBORDecode_GetNthTag(&(me->qcbor_decode_context), item, n);
+            break;
+
+        case CTOKEN_PROTECTION_COSE_SIGN1:
+            tag_number = t_cose_sign1_get_nth_tag(&(me->verify_context), n);
+            break;
+
+        default:
+            tag_number = CBOR_TAG_INVALID64;
+    }
+
+    return tag_number;
+}
+
+
 /*
  * Public function. See ctoken_decode.h
  */
 enum ctoken_err_t
 ctoken_decode_validate_token(struct ctoken_decode_ctx *me,
-                             struct q_useful_buf_c         token)
+                             struct q_useful_buf_c     token)
 {
-    enum t_cose_err_t t_cose_error;
-    enum ctoken_err_t return_value;
-    QCBORError        qcbor_error;
+    enum t_cose_err_t        t_cose_error;
+    enum ctoken_err_t        return_value;
+    QCBORError               qcbor_error;
+    enum ctoken_protection_t protection_type;
+    int                      returned_tag_index;
+    uint64_t                 tag_number;
+    uint64_t                 expected_tag;
+    QCBORItem                item;
+    uint32_t                 item_tag_index;
 
-    t_cose_error = t_cose_sign1_verify(&(me->verify_context), token, &me->payload, NULL);
-    if(t_cose_error != T_COSE_SUCCESS) {
-        return_value = map_t_cose_errors(t_cose_error);
+    memset(me->auTags, 0xff, sizeof(me->auTags));
+    tag_number      = CBOR_TAG_INVALID64;
+    protection_type = me->protection_type;
+    expected_tag    = CBOR_TAG_INVALID32; /* to be different from CBOR_TAG_INVALID64 */
+
+    /* Peek to get the tag number from the first item if there is one.
+     * This also
+     * initializes the decoder for UCCS decoding (the same decoder is re initialized for COSE decoding. */
+    QCBORDecode_Init(&(me->qcbor_decode_context), token, 0);
+    QCBORDecode_PeekNext(&(me->qcbor_decode_context), &item);
+
+    tag_number = QCBORDecode_GetNthTag(&(me->qcbor_decode_context), &item, 0);
+
+
+    if(tag_number == CBOR_TAG_COSE_SIGN1 ||
+       tag_number == CBOR_TAG_CWT ||
+       (tag_number == CBOR_TAG_INVALID64 && protection_type == CTOKEN_PROTECTION_COSE_SIGN1)) {
+        /* It is a case where COSE protection is expected. Call COSE and let it work. */
+
+        t_cose_error = t_cose_sign1_verify(&(me->verify_context), token, &me->payload, NULL);
+        if(t_cose_error != T_COSE_SUCCESS) {
+            return_value = map_t_cose_errors(t_cose_error);
+            goto Done;
+        }
+
+        expected_tag = CBOR_TAG_CWT;
+
+        me->actual_protection_type = CTOKEN_PROTECTION_COSE_SIGN1;
+
+        /* Re-initialize with the payload of the COSE_sign1 */
+        QCBORDecode_Init(&(me->qcbor_decode_context), me->payload, 0);
+
+    } else if(tag_number == 601 || protection_type == CTOKEN_PROTECTION_NONE) {
+        /* Seems to be an unprotected token, a UCCS, either a tag or not. */
+
+        me->payload = token;
+
+        me->actual_protection_type = CTOKEN_PROTECTION_NONE;
+
+        expected_tag = 601;
+        
+    } else {
+        /* Neither the tag nor the argument told us the protection type */
+        return_value = CTOKEN_ERR_UNDETERMINED_PROTECTION_TYPE;
         goto Done;
     }
 
+    /* Copy the tags not processed so they are available to caller and do check on innermost tag */
+    item_tag_index = 0;
+    for(returned_tag_index = 0; returned_tag_index < CTOKEN_MAX_TAGS_TO_RETURN; returned_tag_index++) {
+        tag_number = get_nth_tag(me, protection_type, &item, item_tag_index);
 
-    /*
-     * FIXME: check for CWT/EAT CBOR tag if requested
-     */
+        if(item_tag_index == 0) {
+            if(tag_number == expected_tag && (me->ctoken_options & CTOKEN_OPT_PROHIBIT_TOP_LEVEL_TAG)) {
+                return_value = CTOKEN_ERR_SHOULD_NOT_BE_TAG;
+                goto Done;
+            }
+            if(tag_number != expected_tag && (me->ctoken_options & CTOKEN_OPT_REQUIRE_TOP_LEVEL_TAG)) {
+                return_value = CTOKEN_ERR_SHOULD_BE_TAG;
+                goto Done;
+            }
+            continue;
+        }
 
-    QCBORDecode_Init(&(me->qcbor_decode_context), me->payload, 0);
+        if(tag_number == CBOR_TAG_INVALID64) {
+            break;
+        }
+
+        item_tag_index++;
+
+        me->auTags[returned_tag_index] = tag_number;
+    }
+
+    /* Now processing for either COSE-secured or UCCS. Enter the map that holds all the claims */
     QCBORDecode_EnterMap(&(me->qcbor_decode_context), NULL);
     qcbor_error = QCBORDecode_GetError(&(me->qcbor_decode_context));
     if(qcbor_error != QCBOR_SUCCESS) {
@@ -211,6 +304,9 @@ ctoken_decode_validate_token(struct ctoken_decode_ctx *me,
 
 Done:
     me->last_error = return_value;
+    if(return_value != CTOKEN_ERR_SUCCESS) {
+        me->actual_protection_type = CTOKEN_PROTECTION_UNKNOWN;
+    }
     return return_value;
 }
 

@@ -43,6 +43,7 @@ int32_t psaia_basic_test()
     ctoken_encode_init(&encode_ctx,
                        T_COSE_OPT_SHORT_CIRCUIT_SIG,
                        0,
+                       CTOKEN_PROTECTION_COSE_SIGN1,
                        T_COSE_ALGORITHM_ES256);
 
     /* Get started on a particular token by giving an out buffer.
@@ -55,10 +56,10 @@ int32_t psaia_basic_test()
     /* --- Add the claims --- */
     /* Values are just made up for test */
 
-    psaia_claims.nonce = test_nonce;
-    psaia_claims.ueid = test_ueid;
+    psaia_claims.nonce       = test_nonce;
+    psaia_claims.ueid        = test_ueid;
     psaia_claims.origination = test_origination;
-    psaia_claims.item_flags =  ITEM_FLAG(NONCE_FLAG) |
+    psaia_claims.item_flags  = ITEM_FLAG(NONCE_FLAG) |
                                ITEM_FLAG(UEID_FLAG) |
                                ITEM_FLAG(ORIGINATION_FLAG);
 
@@ -70,7 +71,7 @@ int32_t psaia_basic_test()
      * and length of the completed token are returned
      */
     result = ctoken_encode_finish(&encode_ctx, &completed_token);
-    if(result) {
+    if(result != CTOKEN_ERR_SUCCESS) {
         return 200 + (int32_t)result;
     }
 
@@ -80,7 +81,10 @@ int32_t psaia_basic_test()
     /* Initialize the decoder / verifier context. No options are set
      * so two 0's are passed
      */
-    ctoken_decode_init(&decode_context, T_COSE_OPT_ALLOW_SHORT_CIRCUIT, 0);
+    ctoken_decode_init(&decode_context,
+                       T_COSE_OPT_ALLOW_SHORT_CIRCUIT,
+                       0,
+                       CTOKEN_PROTECTION_BY_TAG);
 
     /* Pass in the token and have it validated. If the token was corrupt
      * or the signature check failed, it will be returned here

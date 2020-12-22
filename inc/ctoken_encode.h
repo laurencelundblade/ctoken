@@ -74,27 +74,41 @@ struct ctoken_submod_state {
  *
  * The structure is opaque for the caller.
  *
- * This is 304 bytes on a 64-bit x86 CPU with the System V ABI (MacOS)
+ * This is 312 bytes on a 64-bit x86 CPU with the System V ABI (MacOS)
  */
 struct ctoken_encode_ctx {
     /* Private data structure */
-    uint32_t                        opt_flags;
-    enum ctoken_err_t               error;
-    QCBOREncodeContext              cbor_encode_context;
-    struct ctoken_submod_state      submod_state;
-    struct t_cose_sign1_sign_ctx    signer_ctx;
+    uint32_t                      ctoken_opt_flags;
+    uint32_t                      t_cose_opt_flags;
+    enum ctoken_err_t             error;
+    enum ctoken_protection_t      cose_protection_type;
+    struct ctoken_submod_state    submod_state;
+    QCBOREncodeContext            cbor_encode_context;
+    struct t_cose_sign1_sign_ctx  signer_ctx;
 };
 
 
 
 
+/** While encoding, indicates the top-level is not a CWT or UCCS tag. It is a
+ bare message. The decoder has to figure out what it is from context other
+ than the tag.
+ */
+#define CTOKEN_OPT_TOP_LEVEL_NOT_TAG 0x01
+
+
 /**
  * \brief Initialize a token creation context.
  *
- * \param[in] context                The token creation context to be initialized.
+ * \param[in] context           The token creation context to be initialized.
  * \param[in] token_opt_flags   Flags to select different custom options,
- *                              for example \ref TOKEN_OPT_OMIT_CLAIMS.
+ *                              for example \ref CTOKEN_OPT_TOP_LEVEL_NOT_TAG.
  * \param[in] t_cose_opt_flags  Option flags passed on to t_cose.
+ * \param[in] protection_type   Indicates which of \ref ctoken_protection_t is
+ *                              to be applied to the token created.
+ *                              It must be one of the explicit protection types
+                                like \ref CTOKEN_PROTECTION_NONE or
+ *                              \ref CTOKEN_PROTECTION_COSE_SIGN1.
  * \param[in] cose_alg_id       The algorithm to sign with. The IDs are
  *                              defined in [COSE (RFC 8152)]
  *                              (https://tools.ietf.org/html/rfc8152) or
@@ -102,12 +116,23 @@ struct ctoken_encode_ctx {
  *                              (https://www.iana.org/assignments/cose/cose.xhtml).
  *                              See T_COSE_ALGORITHM_XXX in t_cose_common.h.
  *
+ * If \c protection_type is \ref CTOKEN_PROTECTION_NONE a UCCS
+ * will be produced. If it is one of the COSE protection types like
+ * \ref CTOKEN_PROTECTION_COSE_SIGN1 a CWT will be produced.
+ *
+ * To produce a bare/unwrapped UCCS or CWT (not a tag) set the
+ * \ref CTOKEN_OPT_TOP_LEVEL_NOT_TAG flat in \c token_opt_flags. In
+ * addtion the COSE protection can be bare/unwrapped by setting
+ * \c T_COSE_OPT_OMIT_CBOR_TAG in \c t_cose_opt_flags.
+ *
+ * See also \ref TagsAndProtection
  */
 static void
-ctoken_encode_init(struct ctoken_encode_ctx *context,
-                   uint32_t                  t_cose_opt_flags,
-                   uint32_t                  token_opt_flags,
-                   int32_t                   cose_alg_id);
+ctoken_encode_init(struct ctoken_encode_ctx  *context,
+                   uint32_t                   t_cose_opt_flags,
+                   uint32_t                   token_opt_flags,
+                   enum ctoken_protection_t   protection_type,
+                   int32_t                    cose_alg_id);
 
 
 /**
@@ -766,28 +791,28 @@ ctoken_encode_one_shot(struct ctoken_encode_ctx   *context,
 /* ----- inline implementations ------ */
 
 static inline void
+ctoken_encode_init(struct ctoken_encode_ctx *me,
+                   uint32_t                 t_cose_opt_flags,
+                   uint32_t                 ctoken_opt_flags,
+                   enum ctoken_protection_t protection_type,
+                   int32_t                  cose_alg_id)
+{
+    memset(me, 0, sizeof(struct ctoken_encode_ctx));
+    me->ctoken_opt_flags     = ctoken_opt_flags;
+    me->t_cose_opt_flags     = t_cose_opt_flags;
+    me->cose_protection_type = protection_type;
+    if(protection_type == CTOKEN_PROTECTION_COSE_SIGN1) {
+        t_cose_sign1_sign_init(&(me->signer_ctx), me->t_cose_opt_flags, cose_alg_id);
+    }
+}
+
+
+static inline void
 ctoken_encode_set_key(struct ctoken_encode_ctx *me,
                       struct t_cose_key        signing_key,
                       struct q_useful_buf_c    key_id)
 {
     t_cose_sign1_set_signing_key(&(me->signer_ctx), signing_key, key_id);
-}
-
-
-static inline void
-ctoken_encode_init(struct ctoken_encode_ctx *me,
-                   uint32_t                 t_cose_opt_flags,
-                   uint32_t                 token_opt_flags,
-                   int32_t                  cose_alg_id)
-{
-    /*
-       me->in_submod_mode = 0
-       me->submod_nest_level = 0
-       me->error = CTOKEN_ERR_SUCCESS
-     */
-    memset(me, 0, sizeof(struct ctoken_encode_ctx));
-    me->opt_flags = token_opt_flags;
-    t_cose_sign1_sign_init(&(me->signer_ctx), t_cose_opt_flags, cose_alg_id);
 }
 
 
