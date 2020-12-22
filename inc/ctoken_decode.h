@@ -163,7 +163,9 @@ struct ctoken_decode_ctx {
  * Whether the COSE part of a CWT is a tag or not is governed by the
  * t_cose tag options given in \ref t_cose_options. See T_COSE_OPT_TAG_REQUIRED
  * and T_COSE_OPT_TAG_PROHIBITED in the t_cose documentation.
- **/
+ *
+ * See also \ref TagsAndProtection
+ */
 void ctoken_decode_init(struct ctoken_decode_ctx *context,
                         uint32_t                  t_cose_options,
                         uint32_t                  ctoken_options,

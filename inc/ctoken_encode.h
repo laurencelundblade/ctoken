@@ -93,7 +93,7 @@ struct ctoken_encode_ctx {
  */
 #define CTOKEN_OPT_TOP_LEVEL_NOT_TAG 0x01
 
-/*
+/**
  * \brief Initialize a token creation context.
  *
  * \param[in] context           The token creation context to be initialized.
@@ -120,6 +120,8 @@ struct ctoken_encode_ctx {
  * \ref CTOKEN_OPT_TOP_LEVEL_NOT_TAG flat in \c token_opt_flags. In
  * addtion the COSE protection can be bare/unwrapped by setting
  * \c T_COSE_OPT_OMIT_CBOR_TAG in \c t_cose_opt_flags.
+ *
+ * See also \ref TagsAndProtection
  */
 static void
 ctoken_encode_init(struct ctoken_encode_ctx  *context,
