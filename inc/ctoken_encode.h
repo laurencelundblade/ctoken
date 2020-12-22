@@ -105,11 +105,11 @@ struct ctoken_encode_ctx {
  *
  */
 static void
-ctoken_encode_init(struct ctoken_encode_ctx     *context,
-                   uint32_t                      t_cose_opt_flags,
-                   uint32_t                      token_opt_flags,
-                   enum ctoken_protection_t protection_type,
-                   int32_t                       cose_alg_id);
+ctoken_encode_init(struct ctoken_encode_ctx  *context,
+                   uint32_t                   t_cose_opt_flags,
+                   uint32_t                   token_opt_flags,
+                   enum ctoken_protection_t   protection_type,
+                   int32_t                    cose_alg_id);
 
 
 /**
