@@ -89,13 +89,22 @@ struct ctoken_encode_ctx {
 
 
 
-/**
+/** While encoding, indicates the top-level is not a CWT or UCCS tag. It is a bare message. The decoder has to figure out what it is from context other than the tag.
+ */
+#define CTOKEN_OPT_TOP_LEVEL_NOT_TAG 0x01
+
+/*
  * \brief Initialize a token creation context.
  *
- * \param[in] context                The token creation context to be initialized.
+ * \param[in] context           The token creation context to be initialized.
  * \param[in] token_opt_flags   Flags to select different custom options,
- *                              for example \ref TOKEN_OPT_OMIT_CLAIMS.
+ *                              for example \ref CTOKEN_OPT_TOP_LEVEL_NOT_TAG.
  * \param[in] t_cose_opt_flags  Option flags passed on to t_cose.
+ * \param[in] protection_type   Indicates which of \ref ctoken_protection_t is
+ *                              to be applied to the token created.
+ *                              It must be one of the explicit protection types
+                                like \ref CTOKEN_PROTECTION_NONE or
+ *                              \ref CTOKEN_PROTECTION_COSE_SIGN1.
  * \param[in] cose_alg_id       The algorithm to sign with. The IDs are
  *                              defined in [COSE (RFC 8152)]
  *                              (https://tools.ietf.org/html/rfc8152) or
@@ -103,13 +112,21 @@ struct ctoken_encode_ctx {
  *                              (https://www.iana.org/assignments/cose/cose.xhtml).
  *                              See T_COSE_ALGORITHM_XXX in t_cose_common.h.
  *
+ * If \c protection_type is \ref CTOKEN_PROTECTION_NONE a UCCS
+ * will be produced. If it is one of the COSE protection types like
+ * \ref CTOKEN_PROTECTION_COSE_SIGN1 a CWT will be produced.
+ *
+ * To produce a bare/unwrapped UCCS or CWT (not a tag) set the
+ * \ref CTOKEN_OPT_TOP_LEVEL_NOT_TAG flat in \c token_opt_flags. In
+ * addtion the COSE protection can be bare/unwrapped by setting
+ * \c T_COSE_OPT_OMIT_CBOR_TAG in \c t_cose_opt_flags.
  */
 static void
-ctoken_encode_init(struct ctoken_encode_ctx     *context,
-                   uint32_t                      t_cose_opt_flags,
-                   uint32_t                      token_opt_flags,
-                   enum ctoken_protection_t protection_type,
-                   int32_t                       cose_alg_id);
+ctoken_encode_init(struct ctoken_encode_ctx  *context,
+                   uint32_t                   t_cose_opt_flags,
+                   uint32_t                   token_opt_flags,
+                   enum ctoken_protection_t   protection_type,
+                   int32_t                    cose_alg_id);
 
 
 /**

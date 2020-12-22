@@ -48,7 +48,7 @@ extern "C" {
  *    ctoken_decode_validate_token().
  *
  * -# Call the various \c ctoken_get_xxx() methods in any
- * order. Also call the ctoken_decode_xxx(), ctoken_cwt_decode_xxx() and
+ * order. Also call the ctoken_decode_xxx() and
  * other methods in any order. The strings returned by the these functions
  * will point into
  * the token passed to ctoken_decode_validate_token(). A copy is
@@ -115,16 +115,54 @@ struct ctoken_decode_ctx {
 };
 
 
+
+
+/** Passed to ctoken_decode_init(). Decoding requires a UCCS or CWT tag. It cannot be a bare CWT or UCCS.
+ */
+#define CTOKEN_OPT_REQUIRE_TOP_LEVEL_TAG 0x01
+
+/**
+ Passed to ctoken_decode_init(). Decoding requires a bare CWT or UCCS. The input can't be
+ a UCCS or CWT tag. When the input is a bare CWT, it can still be a COSE tag.
+ */
+#define CTOKEN_OPT_PROHIBIT_TOP_LEVEL_TAG 0x02
+
+
 /**
  * \brief Initialize token decoder.
  *
- * \param[in] context        The token decoder context to be initialized.
- * \param[in] t_cose_options Options passed to t_cose verification.
- * \param[in] ctoken_options  Decoding options.
+ * \param[in] context          The token decoder context to be initialized.
+ * \param[in] t_cose_options   Options passed to t_cose verification.
+ * \param[in] ctoken_options   Decoding options.
+ * \param[in] protection_type  The protection type if indicated by tag.
  *
- * Must be called on a \ref attest_token_decode_context before
- * use. An instance of \ref attest_token_decode_context can
+ * Must be called on a \ref ctoken_decode_ctx before
+ * use. An instance of \ref ctoken_decode_ctx can
  * be used again by calling this on it again.
+ *
+ * The protection type may or may not be indicated by the CBOR tag(s)
+ * on the token passed to ctoken_decode_validate_token(). If it is indicated
+ * \c protection_type given here is ignored. If the CBOR tag(s) don't
+ * indicate the protection type, then it must be given here for the decoder
+ * to know what to do. The value for this parameter usually comes from
+ * the file type, content type, MIME type or such associated with the
+ * transmission of the token.
+ *
+ * If the token itself indicates the protection
+ * type, that indication overrides the \c protection_type parameter
+ * given here. Use ctoken_decode_get_protection_type() to know
+ * the actual protection type that was decoded.
+ *
+ * By default, the input token can be a tag or not as long as the protection
+ * type can be determined. To require it to always be a tag pass
+ * \ref CTOKEN_OPT_REQUIRE_TOP_LEVEL_TAG for
+ * \c ctoken_options. To prohibit it from being a tag, pass
+ * \ref CTOKEN_OPT_PROHIBIT_TOP_LEVEL_TAG. These
+ * options work on the CWT tag and the UCCS tag.
+ *
+ * Whether the COSE part of a CWT is a tag or not is governed by the
+ * t_cose tag options given in \ref t_cose_options. See T_COSE_OPT_TAG_REQUIRED
+ * and T_COSE_OPT_TAG_PROHIBITED in the t_cose documentation.
  **/
 void ctoken_decode_init(struct ctoken_decode_ctx *context,
                         uint32_t                  t_cose_options,
@@ -138,9 +176,6 @@ void ctoken_decode_init(struct ctoken_decode_ctx *context,
  * \param[in] context           The token decoder context to configure.
  * \param[in] verification_key  TODO: reference to t_cose.
  *
- *
- * (This has not been implemented yet)
- *
  * The key type must work with the signing algorithm in the token
  * being verified.
  *
@@ -152,8 +187,7 @@ void ctoken_decode_init(struct ctoken_decode_ctx *context,
  * Once set, a key can be used for multiple verifications.
  *
  * Calling this again will replace the previous key that was
- * configured. It will also replace the key set by
- * attest_token_decode_set_pub_key_select().
+ * configured.
  */
 static inline void
 ctoken_decode_set_verification_key(struct ctoken_decode_ctx *context,
@@ -223,12 +257,16 @@ enum ctoken_err_t
 ctoken_decode_validate_token(struct ctoken_decode_ctx *context,
                              struct q_useful_buf_c     token);
 
+
 /**
  * \brief Get the actual protection type that was used on the token.
  *
  * \param[in] me The token decoder context.
  *
- * \return An error from \ref CTOKEN_ERR_t.
+ * \return The protection type from \ref ctoken_protection_t.
+ *
+ * This must be called after ctoken_decode_validate_token() and it must have
+ * succeeded.
  */
 static enum ctoken_protection_t
 ctoken_decode_get_protection_type(const struct ctoken_decode_ctx *me);
@@ -284,6 +322,8 @@ enum ctoken_err_t
 ctoken_decode_get_payload(struct ctoken_decode_ctx *context,
                           struct q_useful_buf_c    *payload);
 
+
+// TODO: s method to iterate over all claims present
 
 /**
  *

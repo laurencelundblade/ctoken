@@ -267,17 +267,11 @@ Make a protected EAT
 
  */
 
-// While encoding, says the top-level is not a CWT or UCCS tag. It is a bare message. The decoder has to figure out what it is from context other than the tag.
-#define CTOKEN_OPT_TOP_LEVEL_NOT_TAG 0x02
-
-// While decoding a UCCS or CWT tag is required. It cannot be a bare CWT/UCCS.
-#define CTOKEN_OPT_REQUIRE_TOP_LEVEL_TAG 0x40
-
-// While decoding a UCCS or CWT tag is not accepted. It must be a bare CWT/UCCS.
-#define CTOKEN_OPT_PROHIBIT_TOP_LEVEL_TAG 0x80
 
 
-
+/** Indicates whether COSE was used or not and if used, the type of COSE protection.
+ CTOKEN_PROTECTION_NONE corresponds to a UCCS-format token. The other
+ specific protections are COSE protection in a CWT format token. */
 enum ctoken_protection_t {
     /** When decoding, the CBOR protection processed is based on CBOR tag input.
      Or put another way, the caller has no way to know the protection, so
@@ -287,16 +281,16 @@ enum ctoken_protection_t {
     /** There is no COSE signing or encryption. The UCCS format is used. */
     CTOKEN_PROTECTION_NONE,
 
-    /** The token is authenticity-protected using a COSE_Sign1 */
+    /** The token is a CWT with authenticity protected using a COSE_Sign1 */
     CTOKEN_PROTECTION_COSE_SIGN1,
 
-    /** The token is authenticity-protected using a COSE_Mac0. Not yet supported. */
+    /** The token is a CWT with authenticity protected using a COSE_Mac0. Not yet supported. */
     CTOKEN_PROTECTION_COSE_MAC0,
 
-    /** The token is authenticity-protected using a COSE_Sign1 and privacy-protected by COSE_Encrypt0. Not yet supported. */
+    /** The token is a CWT with authenticity protected using a COSE_Sign1 and privacy protected by COSE_Encrypt0. Not yet supported. */
     CTOKEN_PROTECTION_SIGN1_ENCRYPT0,
 
-    /** Returned from decoder if the protection type is not yet know or can't be known */
+    /** Returned from decoder if the protection type is not yet know or can't be known .*/
     CTOKEN_PROTECTION_UNKNOWN,
 };
 
