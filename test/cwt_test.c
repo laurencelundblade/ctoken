@@ -142,6 +142,40 @@ static const uint8_t cwt_cose_tag[] = {
     0x7D, 0x21, 0x08, 0xB8, 0xA6, 0x4A, 0x72, 0xB0,
     0xFA, 0xD8, 0x88, 0x75};
 
+static const uint8_t bare_cwt_cose_tag[] = {
+    0xD2, 0x84, 0x43, 0xA1, 0x01, 0x26,
+    0xA1, 0x04, 0x58, 0x20, 0xEF, 0x95, 0x4B, 0x4B,
+    0xD9, 0xBD, 0xF6, 0x70, 0xD0, 0x33, 0x60, 0x82,
+    0xF5, 0xEF, 0x15, 0x2A, 0xF8, 0xF3, 0x5B, 0x6A,
+    0x6C, 0x00, 0xEF, 0xA6, 0xA9, 0xA7, 0x1F, 0x49,
+    0x51, 0x7E, 0x18, 0xC6, 0x45, 0xA1, 0x04, 0x19,
+    0x27, 0x0F, 0x58, 0x40, 0x2C, 0x70, 0xDD, 0xAE,
+    0x8E, 0x68, 0xB5, 0x20, 0x73, 0xE8, 0xC6, 0xD8,
+    0xFA, 0xB6, 0xD0, 0xB8, 0x43, 0x97, 0xC9, 0xAE,
+    0x7D, 0x21, 0x08, 0xB8, 0xA6, 0x4A, 0x72, 0xB0,
+    0xFA, 0xD8, 0x88, 0x75, 0x2C, 0x70, 0xDD, 0xAE,
+    0x8E, 0x68, 0xB5, 0x20, 0x73, 0xE8, 0xC6, 0xD8,
+    0xFA, 0xB6, 0xD0, 0xB8, 0x43, 0x97, 0xC9, 0xAE,
+    0x7D, 0x21, 0x08, 0xB8, 0xA6, 0x4A, 0x72, 0xB0,
+    0xFA, 0xD8, 0x88, 0x75};
+
+static const uint8_t bare_cwt[] = {
+    0x84, 0x43, 0xA1, 0x01, 0x26,
+    0xA1, 0x04, 0x58, 0x20, 0xEF, 0x95, 0x4B, 0x4B,
+    0xD9, 0xBD, 0xF6, 0x70, 0xD0, 0x33, 0x60, 0x82,
+    0xF5, 0xEF, 0x15, 0x2A, 0xF8, 0xF3, 0x5B, 0x6A,
+    0x6C, 0x00, 0xEF, 0xA6, 0xA9, 0xA7, 0x1F, 0x49,
+    0x51, 0x7E, 0x18, 0xC6, 0x45, 0xA1, 0x04, 0x19,
+    0x27, 0x0F, 0x58, 0x40, 0x2C, 0x70, 0xDD, 0xAE,
+    0x8E, 0x68, 0xB5, 0x20, 0x73, 0xE8, 0xC6, 0xD8,
+    0xFA, 0xB6, 0xD0, 0xB8, 0x43, 0x97, 0xC9, 0xAE,
+    0x7D, 0x21, 0x08, 0xB8, 0xA6, 0x4A, 0x72, 0xB0,
+    0xFA, 0xD8, 0x88, 0x75, 0x2C, 0x70, 0xDD, 0xAE,
+    0x8E, 0x68, 0xB5, 0x20, 0x73, 0xE8, 0xC6, 0xD8,
+    0xFA, 0xB6, 0xD0, 0xB8, 0x43, 0x97, 0xC9, 0xAE,
+    0x7D, 0x21, 0x08, 0xB8, 0xA6, 0x4A, 0x72, 0xB0,
+    0xFA, 0xD8, 0x88, 0x75};
+
 
 struct decode_tag_test {
     uint32_t                  test_number;
@@ -216,7 +250,6 @@ static inline void init_decode_tag_tests(struct decode_tag_test test[])
         .token_to_decode = Q_USEFUL_BUF_FROM_BYTE_ARRAY_LITERAL(cwt_cose_tag),
         .expected_error  = CTOKEN_ERR_SUCCESS,
         .expected_protection_type = CTOKEN_PROTECTION_COSE_SIGN1
-
     };
 
     test[6] = (struct decode_tag_test) {
@@ -239,6 +272,55 @@ static inline void init_decode_tag_tests(struct decode_tag_test test[])
     };
 
     test[8] = (struct decode_tag_test) {
+        .test_number     = 9,
+        .top_level_tag   = 0,
+        .cose_tag        = 0,
+        .protection_type = CTOKEN_PROTECTION_BY_TAG,
+        .token_to_decode = Q_USEFUL_BUF_FROM_BYTE_ARRAY_LITERAL(bare_cwt_cose_tag),
+        .expected_error  = CTOKEN_ERR_SUCCESS,
+        .expected_protection_type = CTOKEN_PROTECTION_COSE_SIGN1
+    };
+
+    test[9] = (struct decode_tag_test) {
+        .test_number     = 10,
+        .top_level_tag   = 0,
+        .cose_tag        = 0,
+        .protection_type = CTOKEN_PROTECTION_BY_TAG,
+        .token_to_decode = Q_USEFUL_BUF_FROM_BYTE_ARRAY_LITERAL(bare_cwt),
+        .expected_error  = CTOKEN_ERR_UNDETERMINED_PROTECTION_TYPE,
+    };
+
+    test[10] = (struct decode_tag_test) {
+        .test_number     = 11,
+        .top_level_tag   = 0,
+        .cose_tag        = 0,
+        .protection_type = CTOKEN_PROTECTION_COSE_SIGN1,
+        .token_to_decode = Q_USEFUL_BUF_FROM_BYTE_ARRAY_LITERAL(bare_cwt),
+        .expected_error  = CTOKEN_ERR_SUCCESS,
+        .expected_protection_type = CTOKEN_PROTECTION_COSE_SIGN1
+    };
+
+    test[11] = (struct decode_tag_test) {
+        .test_number     = 12,
+        .top_level_tag   = CTOKEN_OPT_REQUIRE_TOP_LEVEL_TAG,
+        .cose_tag        = 0,
+        .protection_type = CTOKEN_PROTECTION_COSE_SIGN1,
+        .token_to_decode = Q_USEFUL_BUF_FROM_BYTE_ARRAY_LITERAL(bare_cwt),
+        .expected_error  = CTOKEN_ERR_SHOULD_BE_TAG,
+        .expected_protection_type = CTOKEN_PROTECTION_COSE_SIGN1
+    };
+
+    test[12] = (struct decode_tag_test) {
+        .test_number     = 13,
+        .top_level_tag   = CTOKEN_OPT_REQUIRE_TOP_LEVEL_TAG,
+        .cose_tag        = 0,
+        .protection_type = CTOKEN_PROTECTION_COSE_SIGN1,
+        .token_to_decode = Q_USEFUL_BUF_FROM_BYTE_ARRAY_LITERAL(bare_cwt_cose_tag),
+        .expected_error  = CTOKEN_ERR_SHOULD_BE_TAG,
+        .expected_protection_type = CTOKEN_PROTECTION_COSE_SIGN1
+    };
+
+    test[13] = (struct decode_tag_test) {
         .test_number     = 1000,
         .top_level_tag   = 0,
         .cose_tag        = 0,
@@ -309,7 +391,7 @@ int32_t cwt_tags_test()
         }
     }
 
-    struct decode_tag_test decode_tag_tests[9];
+    struct decode_tag_test decode_tag_tests[14];
 
     init_decode_tag_tests(decode_tag_tests);
 
@@ -322,7 +404,7 @@ int32_t cwt_tags_test()
         }
 
         /* Does nothing; just for setting break point on particular test */
-        if(test->test_number == 3) {
+        if(test->test_number == 12) {
             result = 0;
         }
         ctoken_decode_init(&decode_context,

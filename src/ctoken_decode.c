@@ -243,9 +243,7 @@ ctoken_decode_validate_token(struct ctoken_decode_ctx *me,
             goto Done;
         }
 
-        if(tag_number != CBOR_TAG_INVALID64) {
-            expected_tag = tag_number;
-        }
+        expected_tag = CBOR_TAG_CWT;
 
         me->actual_protection_type = CTOKEN_PROTECTION_COSE_SIGN1;
 
@@ -259,9 +257,7 @@ ctoken_decode_validate_token(struct ctoken_decode_ctx *me,
 
         me->actual_protection_type = CTOKEN_PROTECTION_NONE;
 
-        if(tag_number == 601) {
-            expected_tag = 601;
-        }
+        expected_tag = 601;
         
     } else {
         /* Neither the tag nor the argument told us the protection type */

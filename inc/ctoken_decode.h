@@ -85,7 +85,10 @@ extern "C" {
  * structures made up of maps and arrays.
  */
 
-
+/** The maximum number of tag numbers on the token that were not processed.
+ * Any tag number that is not supported by ctoken will be returned so
+ * the caller can try to processed them.
+ */
 #define CTOKEN_MAX_TAGS_TO_RETURN 3
 
 

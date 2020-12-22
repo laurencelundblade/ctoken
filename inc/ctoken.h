@@ -120,25 +120,31 @@ enum ctoken_err_t {
     CTOKEN_ERR_LAT_LONG_REQUIRED,
 
     CTOKEN_ERR_TOO_MANY_TAGS,
-    /** The @ref ctoken_protection_t type passed to encode or decode is not supported. */
-    CTOKEN_ERR_UNSUPPORTED_PROTECTION_TYPE,
-    /** When decoding the token is not a tag that specifies a protection type (e.g. CWT/COSE)
-     nor was a protection type given as an argument. */
-    CTOKEN_ERR_UNDETERMINED_PROTECTION_TYPE,
-    /** The content of a tag is not of the right type. In particular, this
-     occurs when the content of a CWT tag is not a COSE tag.
-     */
-    CTOKEN_ERR_TAG_CONTENT,
 
+    /** The @ref ctoken_protection_t type passed to encode or decode
+	is not supported. */
+    CTOKEN_ERR_UNSUPPORTED_PROTECTION_TYPE,
+
+    /** When decoding the token is not a tag that specifies a
+     protection type (e.g. CWT/COSE) nor was a protection type given
+     as an argument. */
+    CTOKEN_ERR_UNDETERMINED_PROTECTION_TYPE,
+
+    /** The content of a tag is not of the right type. */
+    CTOKEN_ERR_TAG_CONTENT,
 
     /** The value of the claim is outside allowed range. */
     CTOKEN_ERR_CLAIM_RANGE,
 
-    /** CWT requires a COSE tag be the content of a CWT tag */
+    /** CWT requires a COSE tag be the content of a CWT tag. */
     CTOKEN_ERR_TAG_COMBO_NOT_ALLOWED,
 
+    /** The input token was a tag when a decode options was set to
+	prohibit a tag and accept only bare/unwrapped tag content. */
     CTOKEN_ERR_SHOULD_NOT_BE_TAG,
 
+    /** The input token was bare/unwrapped tag content when a decode
+	options was set to require a tag. */
     CTOKEN_ERR_SHOULD_BE_TAG
 };
 
@@ -156,6 +162,8 @@ enum ctoken_err_t {
  unprotected form, CWT does not. To compensate for this UCCS was
  created. It is purely a CWT with no protection. The discussion below
  is just for CWT and UCCS as this implementation doesn’t support JWT.
+
+ TODO: explain the confusing use of "tag" in CBOR.
 
  This describes the configuration parameters for encoding and decoding
  that control what sort of CBOR tag and protection type
