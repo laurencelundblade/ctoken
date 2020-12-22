@@ -422,6 +422,8 @@ int32_t cwt_tags_test()
            ctoken_decode_get_protection_type(&decode_context) != test->expected_protection_type) {
             return test_result_code(6, test->test_number, result);
         }
+
+        // TODO: add tests for returned unprocessed tag numbers
     }
 
     return 0;

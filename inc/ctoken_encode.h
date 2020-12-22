@@ -89,9 +89,13 @@ struct ctoken_encode_ctx {
 
 
 
-/** While encoding, indicates the top-level is not a CWT or UCCS tag. It is a bare message. The decoder has to figure out what it is from context other than the tag.
+
+/** While encoding, indicates the top-level is not a CWT or UCCS tag. It is a
+ bare message. The decoder has to figure out what it is from context other
+ than the tag.
  */
 #define CTOKEN_OPT_TOP_LEVEL_NOT_TAG 0x01
+
 
 /**
  * \brief Initialize a token creation context.

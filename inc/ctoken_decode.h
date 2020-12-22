@@ -328,7 +328,7 @@ ctoken_decode_get_payload(struct ctoken_decode_ctx *context,
                           struct q_useful_buf_c    *payload);
 
 
-// TODO: s method to iterate over all claims present
+// TODO: A method to iterate over all claims present
 
 /**
  *
