@@ -110,6 +110,8 @@ struct ctoken_decode_ctx {
     uint8_t                        in_submods;
     uint64_t                       auTags[CTOKEN_MAX_TAGS_TO_RETURN];
     enum ctoken_protection_t       protection_type;
+    enum ctoken_protection_t       actual_protection_type;
+
 };
 
 
@@ -186,8 +188,8 @@ ctoken_decode_get_kid(struct ctoken_decode_ctx *context,
 /**
  * \brief Set the token to work on and validate its signature.
  *
- * \param[in] context     The token decoder context to validate with.
- * \param[in] token  The CBOR-encoded token to validate and decode.
+ * \param[in] context           The token decoder context to validate with.
+ * \param[in] token             The CBOR-encoded token to validate and decode.
  *
  * \return An error from \ref CTOKEN_ERR_t.
  *
@@ -220,6 +222,16 @@ ctoken_decode_get_kid(struct ctoken_decode_ctx *context,
 enum ctoken_err_t
 ctoken_decode_validate_token(struct ctoken_decode_ctx *context,
                              struct q_useful_buf_c     token);
+
+/**
+ * \brief Get the actual protection type that was used on the token.
+ *
+ * \param[in] me The token decoder context.
+ *
+ * \return An error from \ref CTOKEN_ERR_t.
+ */
+static enum ctoken_protection_t
+ctoken_decode_get_protection_type(const struct ctoken_decode_ctx *me);
 
 
 /**
@@ -1062,6 +1074,13 @@ static inline enum ctoken_err_t
 ctoken_decode_get_error(struct ctoken_decode_ctx *me)
 {
     return me->last_error;
+}
+
+
+static inline enum ctoken_protection_t
+ctoken_decode_get_protection_type(const struct ctoken_decode_ctx *me)
+{
+    return me->actual_protection_type;
 }
 
 

@@ -149,6 +149,14 @@ enum ctoken_err_t {
 
 
 /*
+
+ When encoding, the protection type must always be given.
+
+ The encoded
+
+ The encoded output can identified as an EAT/CWT by making it either a CWT tag or a UCCS tag. A CWT
+
+
  An EAT can be protected (signed and/or encrypted) by COSE in several ways or not at all.
  The manner of protection can be recorded in the EAT or not.
  If it is not recorded in the EAT it must be recorded in or implied by the protocol carrying the EAT.
@@ -192,20 +200,81 @@ enum ctoken_err_t {
  X(UCCS map)
 
 
+ Make an unprotected EAT
+     Make an unprotected EAT that is a UCCS tag
+         601(map containing claims)
+         ctoken_encode_init(context, 0, 0, CTOKEN_PROTECTION_NONE, 0);
+
+    Make an uprotected EAT that is not a tag (AKA an unwrapped UCCS tag)
+         map containing claims
+         ctoken_encode_init(context, 0, CTOKEN_OPT_TOP_LEVEL_NOT_TAG, CTOKEN_PROTECTION_NONE, 0);
+
+Make a protected EAT
+    Make a protected EAT that is a COSE tag nested in an CWT tag
+         61(18(Cose_Sign1 array, claims map in the payload))
+         ctoken_encode_init(context, 0, 0, CTOKEN_PROTECTION_COSE_SIGN1, ECDSA256);
+
+    Make a protected EAT that is just a COSE tag, not an CEWT tag
+         18(Cose_Sign1 array, claims map in the payload)
+         ctoken_encode_init(context, 0, CTOKEN_OPT_TOP_LEVEL_NOT_TAG, CTOKEN_PROTECTION_COSE_SIGN1, ECDSA256);
+
+    Make a protected EAT that is not a tag at all, just a bare COSE_Sign1
+         Cose_Sign1 array, claims map in the payload
+         ctoken_encode_init(context, T_COSE_OPT_OMIT_CBOR_TAG, CTOKEN_OPT_TOP_LEVEL_NOT_TAG, CTOKEN_PROTECTION_COSE_SIGN1, ECDSA256);
+
+
+ Decode an EAT of any protection type by what tag it is
+    ctoken_decode_init(context, 0, 0, CTOKEN_PROTECTION_BY_TAG)
+    This will error out if the input token isn't tag well enough
+        601(map) -- OK, unprotected
+        61(18(array)) -- OK, protected
+        18(array) -- OK protected
+        map containing claims -- fail
+        Cose_Sign1 array, claims map in the payload -- fail
+
+ Decode EAT that is known to be a CWT and expected to have COSE protection of varying type
+
+
+ Decode an EAT that is must be a bare UCCS
+     ctoken_decode_init(context, 0, CTOKEN_OPT_PROHIBIT_TOP_LEVEL_TAG, CTOKEN_PROTECTION_NONE)
+        map containing claims -- OK
+        601(map) -- fail because it is a tag
+        Cose_Sign1 array, claims map in the payload -- fail because it is protected
+        18(array) -- fail because it is protected and it is a tag
+
+
+ Does the protocol your putting EAT into provide the signing and encryption
+ needed. Note that signing should be by an attestation key, so an ordinary
+ TLS cert won't do.
+
+ If yes, then you can use UCCS.
+
+ Will the protocol identify the EAT as an EAT? For example will it go in to a field
+ in a protocol message that only can contain an EAT?
+
+ Do you want to be liberal in what you accept?
+
+ If yes, then you can accept unwrapped UCCS or tag UCCS.
+
+ If no, then accept only unwrapped UCCS.
+
+ If your protocol doesn't identify EATs
+
+
+
+
+
 
  */
 
 // While encoding, says the top-level is not a CWT or UCCS tag. It is a bare message. The decoder has to figure out what it is from context other than the tag.
-#define CTOKEN_OPT_TOP_LEVEL_NOT_TAG 0x04
-
-// While encoding indicates the COSE part should not be a COSE tag. It should be a bare message.
-#define CTOKEN_OPT_COSE_MESSAGE_NOT_TAG 0x08
+#define CTOKEN_OPT_TOP_LEVEL_NOT_TAG 0x02
 
 // While decoding a UCCS or CWT tag is required. It cannot be a bare CWT/UCCS.
-#define CTOKEN_OPT_REQUIRE_TOP_LEVEL_TAG 0x10
+#define CTOKEN_OPT_REQUIRE_TOP_LEVEL_TAG 0x40
 
 // While decoding a UCCS or CWT tag is not accepted. It must be a bare CWT/UCCS.
-#define CTOKEN_OPT_PROHIBIT_TOP_LEVEL_TAG 0x20
+#define CTOKEN_OPT_PROHIBIT_TOP_LEVEL_TAG 0x80
 
 
 
@@ -227,6 +296,8 @@ enum ctoken_protection_t {
     /** The token is authenticity-protected using a COSE_Sign1 and privacy-protected by COSE_Encrypt0. Not yet supported. */
     CTOKEN_PROTECTION_SIGN1_ENCRYPT0,
 
+    /** Returned from decoder if the protection type is not yet know or can't be known */
+    CTOKEN_PROTECTION_UNKNOWN,
 };
 
 
