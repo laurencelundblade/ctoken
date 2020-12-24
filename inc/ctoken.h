@@ -32,6 +32,11 @@ extern "C" {
  */
 
 
+#ifndef C_ARRAY_COUNT
+#define C_ARRAY_COUNT(array, type) (sizeof(array)/sizeof(type))
+#endif
+
+
 /**
  * Error codes returned from CBOR token creation.
  */
