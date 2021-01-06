@@ -32,11 +32,6 @@
 		0FBE2D9723FA147600A31C46 /* libt_cose.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0F3AF36B23EE522A00A60561 /* libt_cose.a */; };
 		0FBE2DA123FA14A000A31C46 /* eat_example_psa.c in Sources */ = {isa = PBXBuildFile; fileRef = 0FBE2D9F23FA149200A31C46 /* eat_example_psa.c */; };
 		0FBE2DA423FA17B200A31C46 /* libmbedcrypto.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0FBE2DA223FA17A700A31C46 /* libmbedcrypto.a */; };
-		E76A6E5525662EDA00DEBB41 /* UsefulBuf.c in Sources */ = {isa = PBXBuildFile; fileRef = E76A6E4A25662EDA00DEBB41 /* UsefulBuf.c */; };
-		E76A6E5925662EDA00DEBB41 /* qcbor_decode.c in Sources */ = {isa = PBXBuildFile; fileRef = E76A6E4E25662EDA00DEBB41 /* qcbor_decode.c */; };
-		E76A6E5A25662EDA00DEBB41 /* qcbor_encode.c in Sources */ = {isa = PBXBuildFile; fileRef = E76A6E4F25662EDA00DEBB41 /* qcbor_encode.c */; };
-		E76A6E5B25662EDA00DEBB41 /* ieee754.c in Sources */ = {isa = PBXBuildFile; fileRef = E76A6E5025662EDA00DEBB41 /* ieee754.c */; };
-		E76A6E5D25662EDA00DEBB41 /* qcbor_err_to_str.c in Sources */ = {isa = PBXBuildFile; fileRef = E76A6E5325662EDA00DEBB41 /* qcbor_err_to_str.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -84,7 +79,6 @@
 		0F3AF34323E5008100A60561 /* psaia_test.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = psaia_test.h; path = test/psaia_test.h; sourceTree = "<group>"; };
 		0F3AF34423E5008100A60561 /* run_tests.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = run_tests.c; path = test/run_tests.c; sourceTree = "<group>"; };
 		0F3AF34523E5008100A60561 /* run_tests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = run_tests.h; path = test/run_tests.h; sourceTree = "<group>"; };
-		0F3AF34623E5008100A60561 /* attest_token_test_values.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = attest_token_test_values.h; path = test/attest_token_test_values.h; sourceTree = "<group>"; };
 		0F3AF34923E5039300A60561 /* q_useful_buf.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = q_useful_buf.h; path = ../../t_cose/master/inc/q_useful_buf.h; sourceTree = "<group>"; };
 		0F3AF34B23E53BCF00A60561 /* ctoken_psaia_decode.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = ctoken_psaia_decode.c; path = src/ctoken_psaia_decode.c; sourceTree = SOURCE_ROOT; };
 		0F3AF35123E5463300A60561 /* ctoken_psaia_encode.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = ctoken_psaia_encode.c; path = src/ctoken_psaia_encode.c; sourceTree = SOURCE_ROOT; };
@@ -105,13 +99,6 @@
 		0FBE2D9E23FA147600A31C46 /* PSA Example */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "PSA Example"; sourceTree = BUILT_PRODUCTS_DIR; };
 		0FBE2D9F23FA149200A31C46 /* eat_example_psa.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = eat_example_psa.c; sourceTree = "<group>"; };
 		0FBE2DA223FA17A700A31C46 /* libmbedcrypto.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libmbedcrypto.a; path = "../../mbed-crypto/library/libmbedcrypto.a"; sourceTree = "<group>"; };
-		E76A6E4825662EAF00DEBB41 /* qcbor */ = {isa = PBXFileReference; lastKnownFileType = folder; name = qcbor; path = ../../QCBOR/master/inc/qcbor; sourceTree = "<group>"; };
-		E76A6E4A25662EDA00DEBB41 /* UsefulBuf.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = UsefulBuf.c; path = ../../QCBOR/master/src/UsefulBuf.c; sourceTree = "<group>"; };
-		E76A6E4E25662EDA00DEBB41 /* qcbor_decode.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = qcbor_decode.c; path = ../../QCBOR/master/src/qcbor_decode.c; sourceTree = "<group>"; };
-		E76A6E4F25662EDA00DEBB41 /* qcbor_encode.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = qcbor_encode.c; path = ../../QCBOR/master/src/qcbor_encode.c; sourceTree = "<group>"; };
-		E76A6E5025662EDA00DEBB41 /* ieee754.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = ieee754.c; path = ../../QCBOR/master/src/ieee754.c; sourceTree = "<group>"; };
-		E76A6E5125662EDA00DEBB41 /* ieee754.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ieee754.h; path = ../../QCBOR/master/src/ieee754.h; sourceTree = "<group>"; };
-		E76A6E5325662EDA00DEBB41 /* qcbor_err_to_str.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = qcbor_err_to_str.c; path = ../../QCBOR/master/src/qcbor_err_to_str.c; sourceTree = "<group>"; };
 		E7FDBF1725787DD1007138A8 /* t_cose */ = {isa = PBXFileReference; lastKnownFileType = folder; name = t_cose; path = ../../t_cose/master/inc/t_cose; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -156,7 +143,6 @@
 				0F3AF32C23E4FD4C00A60561 /* src */,
 				0F3AF34123E5006300A60561 /* test */,
 				0F3AF32323E4E86A00A60561 /* t_cose */,
-				0F3AF33B23E4FF7C00A60561 /* QBOR */,
 				0F3AF36823EE513100A60561 /* Frameworks */,
 				0F3AF31A23E4DB6100A60561 /* Products */,
 			);
@@ -219,29 +205,11 @@
 			name = inc;
 			sourceTree = "<group>";
 		};
-		0F3AF33B23E4FF7C00A60561 /* QBOR */ = {
-			isa = PBXGroup;
-			children = (
-				E76A6E4925662EB600DEBB41 /* src */,
-				0F3AF33C23E4FF8700A60561 /* inc */,
-			);
-			name = QBOR;
-			sourceTree = "<group>";
-		};
-		0F3AF33C23E4FF8700A60561 /* inc */ = {
-			isa = PBXGroup;
-			children = (
-				E76A6E4825662EAF00DEBB41 /* qcbor */,
-			);
-			name = inc;
-			sourceTree = "<group>";
-		};
 		0F3AF34123E5006300A60561 /* test */ = {
 			isa = PBXGroup;
 			children = (
 				0F3AF34423E5008100A60561 /* run_tests.c */,
 				0F3AF34523E5008100A60561 /* run_tests.h */,
-				0F3AF34623E5008100A60561 /* attest_token_test_values.h */,
 				0F3AF34223E5008100A60561 /* psaia_test.c */,
 				0F3AF34323E5008100A60561 /* psaia_test.h */,
 				0F3AF36F23EF5C4700A60561 /* cwt_test.h */,
@@ -269,19 +237,6 @@
 				0F3AF37523F1BACE00A60561 /* eat_example_ossl.c */,
 			);
 			path = examples;
-			sourceTree = "<group>";
-		};
-		E76A6E4925662EB600DEBB41 /* src */ = {
-			isa = PBXGroup;
-			children = (
-				E76A6E5025662EDA00DEBB41 /* ieee754.c */,
-				E76A6E5125662EDA00DEBB41 /* ieee754.h */,
-				E76A6E4E25662EDA00DEBB41 /* qcbor_decode.c */,
-				E76A6E4F25662EDA00DEBB41 /* qcbor_encode.c */,
-				E76A6E5325662EDA00DEBB41 /* qcbor_err_to_str.c */,
-				E76A6E4A25662EDA00DEBB41 /* UsefulBuf.c */,
-			);
-			name = src;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -378,14 +333,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				0F3AF37123EF5C4700A60561 /* cwt_test.c in Sources */,
-				E76A6E5925662EDA00DEBB41 /* qcbor_decode.c in Sources */,
 				0F3AF35223E5463300A60561 /* ctoken_psaia_encode.c in Sources */,
-				E76A6E5A25662EDA00DEBB41 /* qcbor_encode.c in Sources */,
-				E76A6E5B25662EDA00DEBB41 /* ieee754.c in Sources */,
-				E76A6E5D25662EDA00DEBB41 /* qcbor_err_to_str.c in Sources */,
 				0F3AF34823E5008200A60561 /* run_tests.c in Sources */,
 				0FBE2D8923F976BF00A31C46 /* psaia_test.c in Sources */,
-				E76A6E5525662EDA00DEBB41 /* UsefulBuf.c in Sources */,
 				0F3AF34C23E53BCF00A60561 /* ctoken_psaia_decode.c in Sources */,
 				0FBE2D8823F5D9C800A31C46 /* eat_test.c in Sources */,
 				0FBE2D8523F1BC7B00A31C46 /* main.c in Sources */,
@@ -538,11 +488,9 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				HEADER_SEARCH_PATHS = (
-					../../QCBOR/master/inc,
-					/usr/local/include,
-				);
+				HEADER_SEARCH_PATHS = /usr/local/include;
 				"LIBRARY_SEARCH_PATHS[arch=*]" = /usr/local/lib;
+				"OTHER_LDFLAGS[arch=*]" = "-lqcbor";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -551,10 +499,8 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				HEADER_SEARCH_PATHS = (
-					../../QCBOR/master/inc,
-					/usr/local/include,
-				);
+				HEADER_SEARCH_PATHS = /usr/local/include;
+				"OTHER_LDFLAGS[arch=*]" = "-lqcbor";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
