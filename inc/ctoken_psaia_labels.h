@@ -74,7 +74,7 @@ struct ctoken_psaia_simple_claims_t {
 
 
 /** Label for bits in \c item_flags in \ref
- attest_token_iat_simple_t */
+ ctoken_psaia_simple_claims_t */
 // TODO: prefix these names
 enum ctoken_psaia_item_index_t {
     NONCE_FLAG =              0,
@@ -92,7 +92,7 @@ enum ctoken_psaia_item_index_t {
 
 /**
  * Macro to determine if data item is present in \ref
- * attest_token_iat_simple_t
+ * ctoken_psaia_simple_claims_t
  */
 #define ITEM_FLAG(index)  (0x01U << (index))
 

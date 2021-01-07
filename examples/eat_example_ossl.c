@@ -291,7 +291,8 @@ int32_t eat_encode(struct t_cose_key signing_key,
     /* Initialize, telling is the option (there are none) and
      * the signing algorithm to use.
      */
-    ctoken_encode_init(&encode_ctx, 0, 0, T_COSE_ALGORITHM_ES256);
+
+    
 
     /* Next give it the signing key. No kid (key id) is given so
      * NULL_Q_USEFUL_BUF_C is passed.
@@ -351,7 +352,10 @@ int32_t eat_decode(struct t_cose_key     verification_key,
      * The algorithm in use comes from the header in the token
      * so it is not specified here
      */
-    ctoken_decode_init(&decode_context, 0, 0);
+    ctoken_decode_init(&decode_context,
+                       0,
+                       0,
+                       CTOKEN_PROTECTION_BY_TAG);
 
     /* Set the verification key to use. It must be a key that works
      * with the algorithm the token was signed with. (This can be

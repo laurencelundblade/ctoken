@@ -239,7 +239,7 @@ Done:
 
 
 /*
- * Public function. See attest_token_decode.h
+ * Public function. See ctoken_decode.h
  */
 enum ctoken_err_t
 ctoken_encode_start(struct ctoken_encode_ctx  *me,
