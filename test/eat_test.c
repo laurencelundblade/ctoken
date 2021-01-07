@@ -1279,7 +1279,7 @@ int32_t get_next_test()
     QCBORItem                 claim;
     enum ctoken_err_t         result;
     uint32_t                  num_sub_mods;
-
+    struct q_useful_buf_c     submod_name;
 
 
     ctoken_decode_init(&decode_context,
@@ -1356,7 +1356,6 @@ int32_t get_next_test()
        return test_result_code(9, 0, result);
     }
 
-    struct q_useful_buf_c submod_name;
     result = ctoken_decode_enter_nth_submod(&decode_context, 0, &submod_name);
     if(result != CTOKEN_ERR_SUCCESS) {
         return test_result_code(10, 0, result);
