@@ -1,7 +1,7 @@
 /*==============================================================================
  run_tests.c -- test aggregator and results reporting
 
- Copyright (c) 2018-2020, Laurence Lundblade. All rights reserved.
+ Copyright (c) 2018-2021, Laurence Lundblade. All rights reserved.
 
  SPDX-License-Identifier: BSD-3-Clause
 
@@ -58,7 +58,8 @@ static test_entry s_tests[] = {
     TEST_ENTRY(submod_decode_errors_test),
     TEST_ENTRY(location_test),
     TEST_ENTRY(debug_and_boot_test),
-    TEST_ENTRY(cwt_tags_test)
+    TEST_ENTRY(cwt_tags_test),
+    TEST_ENTRY(get_next_test)
 };
 
 
