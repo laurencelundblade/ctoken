@@ -233,8 +233,8 @@ ctoken_decode_get_kid(struct ctoken_decode_ctx *context,
  *
  * The signature on the token is validated. If it is successful the
  * token and its payload is remembered in the \ref
- * attest_token_decode_context \c me so the \c
- * attest_token_decode_get_xxx() functions can be called to get the
+ * ctoken_decode_ctx \c context so the \c
+ * ctoken_decode_get_xxx() functions can be called to get the
  * various claims out of it.
  *
  * Generally, a public key has to be configured for this to work. It
@@ -242,15 +242,15 @@ ctoken_decode_get_kid(struct ctoken_decode_ctx *context,
  * set.
  *
  * The code for any error that occurs during validation is remembered
- * in decode context. The \c attest_token_decode_get_xxx() functions
+ * in decode context. The \c ctoken_decode_get_xxx() functions
  * can be called and they will just return this error. The \c
- * attest_token_decode_get_xxx() functions will generally return 0 or
+ * ctoken_decode_get_xxx() functions will generally return 0 or
  * \c NULL if the token is in error.
  *
- * It is thus possible to call attest_token_decode_validate_token()
- * and all the \c attest_token_decode_get_xxx() functions to parse the
+ * It is thus possible to call ctoken_decode_validate_token()
+ * and all the \c ctoken_decode_get_xxx() functions to parse the
  * token and ignore the error codes as long as
- * attest_token_decode_get_error() is called before any of the claim
+ * ctoken_decode_get_error() is called before any of the claim
  * data returned is used.
  *
  * TODO: this may need an option to be able to decode fields in the
@@ -265,7 +265,7 @@ ctoken_decode_validate_token(struct ctoken_decode_ctx *context,
 /**
  * \brief Get the actual protection type that was used on the token.
  *
- * \param[in] me The token decoder context.
+ * \param[in] context The token decoder context.
  *
  * \return The protection type from \ref ctoken_protection_t.
  *
@@ -273,18 +273,18 @@ ctoken_decode_validate_token(struct ctoken_decode_ctx *context,
  * succeeded.
  */
 static enum ctoken_protection_t
-ctoken_decode_get_protection_type(const struct ctoken_decode_ctx *me);
+ctoken_decode_get_protection_type(const struct ctoken_decode_ctx *context);
 
 
 /**
  * \brief Get the last decode error.
  *
- * \param[in] me The token decoder context.
+ * \param[in] context The token decoder context.
  *
  * \return An error from \ref CTOKEN_ERR_t.
  */
 static enum ctoken_err_t
-ctoken_decode_get_error(struct ctoken_decode_ctx *me);
+ctoken_decode_get_error(struct ctoken_decode_ctx *context);
 
 
 /**
@@ -353,7 +353,7 @@ ctoken_decode_get_payload(struct ctoken_decode_ctx *context,
  *         Data item for \c label was not found in token.
  *
  * If an error occurs, the claim will be set to \c NULL_Q_USEFUL_BUF_C
- * and the error state inside \c attest_token_decode_context will
+ * and the error state inside \c ctoken_decode_ctx will
  * be set.
  */
 enum ctoken_err_t
@@ -388,7 +388,7 @@ ctoken_decode_get_bstr(struct ctoken_decode_ctx  *context,
  * Even though this is a text string, it is not NULL-terminated.
  *
  * If an error occurs, the claim will be set to \c NULL_Q_USEFUL_BUF_C
- * and the error state inside \c attest_token_decode_context will
+ * and the error state inside \c ctoken_decode_ctx will
  * be set.
  */
 enum ctoken_err_t
@@ -427,10 +427,10 @@ ctoken_decode_get_tstr(struct ctoken_decode_ctx *context,
  * positive or negative integer as long as the value is between \c
  * INT64_MIN and \c INT64_MAX.
  *
- * See also attest_token_decode_get_uint().
+ * See also ctoken_decode_get_uint().
  *
  * If an error occurs the value 0 will be returned and the error
- * inside the \c attest_token_decode_context will be set.
+ * inside the \c ctoken_decode_ctx will be set.
  */
 enum ctoken_err_t
 ctoken_decode_get_int(struct ctoken_decode_ctx *context,
@@ -493,10 +493,10 @@ ctoken_decode_get_int_constrained(struct ctoken_decode_ctx *context,
  * positive or negative integer as long as the value is between 0 and
  * \c MAX_UINT64.
  *
- * See also attest_token_decode_get_int().
+ * See also ctoken_decode_get_int().
  *
  *  If an error occurs the value 0 will be returned and the error
- *  inside the \c attest_token_decode_context will be set.
+ *  inside the \c ctoken_decode_ctx will be set.
  */
 enum ctoken_err_t
 ctoken_decode_get_uint(struct ctoken_decode_ctx *context,

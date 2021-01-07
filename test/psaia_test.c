@@ -136,7 +136,6 @@ int32_t psaia_basic_test()
 
 #if REFACTOR_THIS
 
-#include "attest_token_test_values.h"
 
 /**
  * \file psaiai_test.c

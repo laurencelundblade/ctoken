@@ -15,7 +15,6 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-//#include "attest_token_test.h"
 #include "cwt_test.h"
 #include "eat_test.h"
 #include "psaia_test.h"
