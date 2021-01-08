@@ -1,7 +1,7 @@
 /*
  * ctoken_decode.c (formerly attest_token_decode.c)
  *
- * Copyright (c) 2019-2020, Laurence Lundblade.
+ * Copyright (c) 2019-2021, Laurence Lundblade.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -578,6 +578,99 @@ Done:
 }
 
 
+static inline bool
+QCBORItem_IsMapOrArray(const QCBORItem *pMe)
+{
+   const uint8_t uDataType = pMe->uDataType;
+   return uDataType == QCBOR_TYPE_MAP ||
+          uDataType == QCBOR_TYPE_ARRAY ||
+          uDataType == QCBOR_TYPE_MAP_AS_ARRAY;
+}
+
+
+static inline QCBORError
+consume_item(QCBORDecodeContext *decode_context, const QCBORItem  *first_item)
+{
+   QCBORError return_value;
+   QCBORItem  Item;
+
+   /* If it is a map or array, this will tell if it is empty. */
+   const bool is_empty = (first_item->uNextNestLevel <= first_item->uNestingLevel);
+
+   if(QCBORItem_IsMapOrArray(first_item) && !is_empty) {
+      /* There is only real work to do for non-empty maps and arrays */
+
+      /* This works for definite and indefinite length
+       * maps and arrays by using the nesting level
+       */
+      do {
+          return_value = QCBORDecode_GetNext(decode_context, &Item);
+          if(QCBORDecode_IsUnrecoverableError(return_value) ||
+              return_value == QCBOR_ERR_NO_MORE_ITEMS) {
+              goto Done;
+          }
+
+      } while(Item.uNextNestLevel >= first_item->uNextNestLevel);
+
+      return_value = QCBOR_SUCCESS;
+
+   } else {
+      return_value = QCBOR_SUCCESS;
+   }
+
+Done:
+    return return_value;
+}
+
+
+/*
+ * Public function. See ctoken_eat_encode.h
+ */
+enum ctoken_err_t
+ctoken_decode_next_claim(struct ctoken_decode_ctx   *me,
+                         QCBORItem                  *claim)
+{
+    QCBORError        cbor_error;
+    enum ctoken_err_t return_value;
+
+    /* Loop is only to skip the submods section and executes only
+     * once in most cases. It executes twice is there is  submods section.
+     */
+    do {
+        cbor_error = QCBORDecode_GetNext(&(me->qcbor_decode_context), claim);
+        if(cbor_error == QCBOR_ERR_NO_MORE_ITEMS) {
+            return_value = CTOKEN_ERR_NO_MORE_CLAIMS;
+            goto Done;
+        }
+        if(cbor_error) {
+            // TODO: refine this error.
+            return_value = CTOKEN_ERR_CBOR_NOT_WELL_FORMED;
+            goto Done;
+        }
+
+        cbor_error = consume_item(&(me->qcbor_decode_context), claim);
+        if(cbor_error == QCBOR_ERR_NO_MORE_ITEMS) {
+             return_value = CTOKEN_ERR_NO_MORE_CLAIMS;
+             goto Done;
+         }
+        if(cbor_error) {
+            // TODO: refine this error.
+            return_value = CTOKEN_ERR_CBOR_NOT_WELL_FORMED;
+            goto Done;
+        }
+
+    } while(claim->label.int64 == CTOKEN_EAT_LABEL_SUBMODS &&
+            claim->uLabelType == QCBOR_TYPE_INT64);
+
+    return_value = CTOKEN_ERR_SUCCESS;
+
+    claim->uNestingLevel = 0;
+    claim->uNextNestLevel = 0;
+
+Done:
+    return return_value;
+}
+
 
 
 static enum ctoken_err_t
@@ -722,6 +815,7 @@ ctoken_decode_enter_nth_submod(struct ctoken_decode_ctx *me,
     qcbor_error = QCBORDecode_GetAndResetError(&(me->qcbor_decode_context));
     if(qcbor_error != QCBOR_SUCCESS) {
         return_value = map_qcbor_error(qcbor_error);
+        leave_submod_section(me);
         goto Done;
     }
 

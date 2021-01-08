@@ -1,7 +1,7 @@
 /*
  * ctoken_decode.h (formerly attest_token_decode.h)
  *
- * Copyright (c) 2019-2020, Laurence Lundblade.
+ * Copyright (c) 2019-2021, Laurence Lundblade.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -116,7 +116,6 @@ struct ctoken_decode_ctx {
     enum ctoken_protection_t       actual_protection_type;
 
 };
-
 
 
 
@@ -328,7 +327,26 @@ ctoken_decode_get_payload(struct ctoken_decode_ctx *context,
                           struct q_useful_buf_c    *payload);
 
 
-// TODO: A method to iterate over all claims present
+/*
+ * \brief Get the QCBOR decoder context.
+ *
+ * \param[in]  context    The token decoder context.
+ * \returns The QCBOR decoder context
+ *
+ * Use this to decode claims that are not supported
+ * by ctoken. This allows use of all the QCBORDecode
+ * functions.
+ *
+ * Some care is needed when using this to avoid confusing
+ * ctokens internal state, particularly when decoding
+ * submodules. Use of spiffy decode functions to find
+ * data items in the map works well. The CBOR nesting
+ * level must be left the same as it was before the
+ * claim(s) were decoded.
+ */
+static QCBORDecodeContext *
+ctoken_decode_borrow_context(struct ctoken_decode_ctx *context);
+
 
 /**
  *
@@ -990,6 +1008,52 @@ ctoken_decode_intended_use(struct ctoken_decode_ctx   *context,
                            enum ctoken_intended_use_t *use);
 
 
+
+
+/**
+ * \brief Decode next claim in token or submodule
+ *
+ * \param[in] context  The decoding context.
+ * \param[out] claim      The decoded claim.
+ *
+ * All the claims in a token or submodule can be iterated over by
+ * calling this until the end is indicated.  This will not decsend in
+ * to submodules. The various submodule-related tunctions must be
+ * called to enter the submodule. Once a submodule is entered this can
+ * be used to iterate over all the claims in it.
+ *
+ * This always returns the label for a claim, but can only return the
+ * value for a claim that is a common non-aggregate type. For example,
+ * the value for the UEID claim is returned because it is a byte
+ * string, but the value for the location claim is not returned
+ * because it is a map made up of several values.
+ *
+ * To decode values that aren't decoded by this function call the
+ * specific function to decode that type of claim. Alternately, use
+ * QCBOR decode functions to decode it. See
+ * ctoken_decode_borrow_context().
+ *
+ * This uses \ref QCBORItem to return the claims. The nest level
+ * fields are never filled in and should be ignored. The other fields
+ * work as documented. In particular pay attention to uDataType to
+ * know the type of value of the claim.
+ *
+ * When the claim is an aggregate type, and array or map, the data
+ * type will indicate an array or map however iteration will not
+ * desened into the array or mpa. Instead the whole content of the
+ * array or map will be skipped over with the iteration going on to
+ * the next claim. This is the main difference between this function
+ * and QCBORDecode_GetNext().
+ *
+ * Note that this maintains its own iteration cursor indepdent of the
+ * other functions for getting claims so calls to this can be
+ * intermixed with the other calls.
+*/
+enum ctoken_err_t
+ctoken_decode_next_claim(struct ctoken_decode_ctx   *context,
+                         QCBORItem                  *claim);
+
+
 /**
  * \brief Get the number of submodules.
  *
@@ -1004,6 +1068,7 @@ ctoken_decode_intended_use(struct ctoken_decode_ctx   *context,
 enum ctoken_err_t
 ctoken_decode_get_num_submods(struct ctoken_decode_ctx *context,
                               uint32_t                 *num_submods);
+
 
 /**
  * \brief Enter the nth submodule.
@@ -1126,6 +1191,13 @@ static inline enum ctoken_protection_t
 ctoken_decode_get_protection_type(const struct ctoken_decode_ctx *me)
 {
     return me->actual_protection_type;
+}
+
+
+static inline QCBORDecodeContext *
+ctoken_decode_borrow_context(struct ctoken_decode_ctx *me)
+{
+    return &me->qcbor_decode_context;
 }
 
 

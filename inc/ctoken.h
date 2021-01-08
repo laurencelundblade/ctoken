@@ -1,7 +1,7 @@
 /*
  * ctoken.h (formerly attest_token.h)
  *
- * Copyright (c) 2018-2020, Laurence Lundblade.
+ * Copyright (c) 2018-2021, Laurence Lundblade.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -150,7 +150,10 @@ enum ctoken_err_t {
 
     /** The input token was bare/unwrapped tag content when a decode
 	options was set to require a tag. */
-    CTOKEN_ERR_SHOULD_BE_TAG
+    CTOKEN_ERR_SHOULD_BE_TAG,
+
+    /** When calling ctoken_decode_next_claim(), no more claims in the token or submodule. */
+    CTOKEN_ERR_NO_MORE_CLAIMS,
 };
 
 

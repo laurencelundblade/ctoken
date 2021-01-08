@@ -1,7 +1,7 @@
 /*
  * eat_test.c
  *
- * Copyright (c) 2020 Laurence Lundblade.
+ * Copyright (c) 2020-2021 Laurence Lundblade.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -16,6 +16,23 @@
 #include "ctoken_decode.h"
 
 
+/* Return code is
+ xxxyyyzzz where zz is the error code, yy is the test number and zz is
+ check being performed
+ */
+static inline int32_t test_result_code(uint32_t            test_case,
+                                        uint32_t           test_number,
+                                        enum ctoken_err_t  error_code)
+{
+    return (test_case * 1000000) + (test_number * 1000) + (int32_t)error_code;
+}
+
+
+static inline int
+ub_compare_sz(const char *string, const struct q_useful_buf_c buf1)
+{
+    return q_useful_buf_compare(q_useful_buf_from_sz(string), buf1);
+}
 
 
 int32_t basic_eat_test(void)
@@ -1217,3 +1234,193 @@ int32_t debug_and_boot_test()
     return 0;
 }
 
+
+
+/*
+
+ {10: h'948F8860D13A463E8E',
+  11: h'0198F50A4FF6C05861C8860D13A638EA4FE2FA',
+  15: true,
+  16: 3,
+  6: 1(1526542894),
+  14: 3,
+  -76000: {"Android App Foo":
+         {14: 1},
+       "Secure Element Eat": h'420123',
+       "Linux Android":
+          {14: 1}}}
+
+ */
+static const uint8_t submods_uccs[] = {
+    0xa7, 0x0a, 0x49, 0x94, 0x8f, 0x88, 0x60, 0xd1,
+    0x3a, 0x46, 0x3e, 0x8e, 0x0b, 0x53, 0x01, 0x98,
+    0xf5, 0x0a, 0x4f, 0xf6, 0xc0, 0x58, 0x61, 0xc8,
+    0x86, 0x0d, 0x13, 0xa6, 0x38, 0xea, 0x4f, 0xe2,
+    0xfa, 0x0f, 0xf5, 0x10, 0x03, 0x06, 0xc1, 0x1a,
+    0x5a, 0xfd, 0x32, 0x2e, 0x0e, 0x03, 0x3a, 0x00,
+    0x01, 0x28, 0xdf, 0xa3, 0x6f, 0x41, 0x6e, 0x64,
+    0x72, 0x6f, 0x69, 0x64, 0x20, 0x41, 0x70, 0x70,
+    0x20, 0x46, 0x6f, 0x6f, 0xa1, 0x0e, 0x01, 0x72,
+    0x53, 0x65, 0x63, 0x75, 0x72, 0x65, 0x20, 0x45,
+    0x6c, 0x65, 0x6d, 0x65, 0x6e, 0x74, 0x20, 0x45,
+    0x61, 0x74, 0x43, 0x42, 0x01, 0x23, 0x6d, 0x4c,
+    0x69, 0x6e, 0x75, 0x78, 0x20, 0x41, 0x6e, 0x64,
+    0x72, 0x6f, 0x69, 0x64, 0xa1, 0x0e, 0x01
+};
+
+static const uint8_t expected_nonce[] = {
+    0x94, 0x8F, 0x88, 0x60, 0xD1, 0x3A, 0x46, 0x3E, 0x8E
+};
+
+
+int32_t get_next_test()
+{
+    struct ctoken_decode_ctx  decode_context;
+    QCBORItem                 claim;
+    enum ctoken_err_t         result;
+    uint32_t                  num_sub_mods;
+    struct q_useful_buf_c     submod_name;
+
+
+    ctoken_decode_init(&decode_context,
+                       0,
+                       0,
+                       CTOKEN_PROTECTION_NONE);
+
+    result = ctoken_decode_validate_token(&decode_context,
+                                 Q_USEFUL_BUF_FROM_BYTE_ARRAY_LITERAL(submods_uccs));
+    if(result) {
+        return test_result_code(1, 0, result);;
+    }
+
+    result = ctoken_decode_next_claim(&decode_context, &claim);
+    if(result != CTOKEN_ERR_SUCCESS ||
+       claim.uLabelType != QCBOR_TYPE_INT64 ||
+       claim.label.int64 != 10 ||
+       claim.uDataType != QCBOR_TYPE_BYTE_STRING ||
+       q_useful_buf_compare(claim.val.string, Q_USEFUL_BUF_FROM_BYTE_ARRAY_LITERAL(expected_nonce))) {
+        return test_result_code(2, 0, result);
+    }
+
+    result = ctoken_decode_next_claim(&decode_context, &claim);
+    if(result != CTOKEN_ERR_SUCCESS ||
+       claim.uLabelType != QCBOR_TYPE_INT64 ||
+       claim.label.int64 != 11 ||
+       claim.uDataType != QCBOR_TYPE_BYTE_STRING) {
+        return test_result_code(3, 0, result);
+    }
+
+    result = ctoken_decode_next_claim(&decode_context, &claim);
+    if(result != CTOKEN_ERR_SUCCESS ||
+       claim.uLabelType != QCBOR_TYPE_INT64 ||
+       claim.label.int64 != 15 ||
+       claim.uDataType != QCBOR_TYPE_TRUE) {
+        return test_result_code(4, 0, result);
+    }
+
+    result = ctoken_decode_next_claim(&decode_context, &claim);
+    if(result != CTOKEN_ERR_SUCCESS ||
+       claim.uLabelType != QCBOR_TYPE_INT64 ||
+       claim.label.int64 != 16 ||
+       claim.uDataType != QCBOR_TYPE_INT64 ||
+       claim.val.int64 != 3) {
+        return test_result_code(5, 0, result);
+    }
+
+    result = ctoken_decode_next_claim(&decode_context, &claim);
+    if(result != CTOKEN_ERR_SUCCESS ||
+       claim.uLabelType != QCBOR_TYPE_INT64 ||
+       claim.label.int64 != 6 ||
+       claim.uDataType != QCBOR_TYPE_DATE_EPOCH||
+       claim.val.epochDate.nSeconds != 1526542894) {
+        return test_result_code(6, 0, result);
+    }
+
+    result = ctoken_decode_next_claim(&decode_context, &claim);
+    if(result != CTOKEN_ERR_SUCCESS ||
+       claim.uLabelType != QCBOR_TYPE_INT64 ||
+       claim.label.int64 != 14 ||
+       claim.uDataType != QCBOR_TYPE_INT64 ||
+       claim.val.int64 != 3) {
+        return test_result_code(7, 0, result);
+    }
+
+    result = ctoken_decode_next_claim(&decode_context, &claim);
+    if(result != CTOKEN_ERR_NO_MORE_CLAIMS) {
+        return test_result_code(8, 0, result);
+    }
+
+    result = ctoken_decode_get_num_submods(&decode_context, &num_sub_mods);
+    if(result != CTOKEN_ERR_SUCCESS ||
+       num_sub_mods != 3) {
+       return test_result_code(9, 0, result);
+    }
+
+    result = ctoken_decode_enter_nth_submod(&decode_context, 0, &submod_name);
+    if(result != CTOKEN_ERR_SUCCESS) {
+        return test_result_code(10, 0, result);
+    }
+
+    if(ub_compare_sz("Android App Foo", submod_name)) {
+        return test_result_code(110, 0, 0);
+    }
+
+    result = ctoken_decode_next_claim(&decode_context, &claim);
+    if(result != CTOKEN_ERR_SUCCESS ||
+       claim.uLabelType != QCBOR_TYPE_INT64 ||
+       claim.label.int64 != 14 ||
+       claim.uDataType != QCBOR_TYPE_INT64 ||
+       claim.val.int64 != 1) {
+        return test_result_code(11, 0, result);
+    }
+
+    result = ctoken_decode_next_claim(&decode_context, &claim);
+    if(result != CTOKEN_ERR_NO_MORE_CLAIMS) {
+        return test_result_code(12, 0, result);
+    }
+
+    result = ctoken_decode_exit_submod(&decode_context);
+    if(result != CTOKEN_ERR_SUCCESS) {
+         return test_result_code(14, 0, result);
+     }
+
+     result = ctoken_decode_enter_nth_submod(&decode_context, 1, &submod_name);
+     if(result != CTOKEN_ERR_CBOR_TYPE) {
+         return test_result_code(15, 0, result);
+     }
+
+    result = ctoken_decode_enter_nth_submod(&decode_context, 2, &submod_name);
+    if(result != CTOKEN_ERR_SUCCESS) {
+        return test_result_code(16, 0, result);
+    }
+
+    if(ub_compare_sz("Linux Android", submod_name)) {
+         return test_result_code(111, 0, 0);
+     }
+
+    result = ctoken_decode_next_claim(&decode_context, &claim);
+    if(result != CTOKEN_ERR_SUCCESS ||
+       claim.uLabelType != QCBOR_TYPE_INT64 ||
+       claim.label.int64 != 14 ||
+       claim.uDataType != QCBOR_TYPE_INT64 ||
+       claim.val.int64 != 1) {
+        return test_result_code(17, 0, result);
+    }
+
+    result = ctoken_decode_next_claim(&decode_context, &claim);
+    if(result != CTOKEN_ERR_NO_MORE_CLAIMS) {
+        return test_result_code(18, 0, result);
+    }
+
+    result = ctoken_decode_exit_submod(&decode_context);
+    if(result != CTOKEN_ERR_SUCCESS) {
+          return test_result_code(19, 0, result);
+    }
+
+    result = ctoken_decode_next_claim(&decode_context, &claim);
+    if(result != CTOKEN_ERR_NO_MORE_CLAIMS) {
+        return test_result_code(20, 0, result);
+    }
+
+    return 0;
+}
