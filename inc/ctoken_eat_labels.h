@@ -42,7 +42,7 @@ extern "C" {
 #define CTOKEN_EAT_LABEL_INTENDED_USE -76009
 
 
-#define CTOKEN_EAT_LABEL_SUBMODS 20 // Not really a claim, but most have a label
+#define CTOKEN_EAT_LABEL_SUBMODS -76000 // Not really a claim, but most have a label
 
 /**
  * File: ctoken_eat_labels.h

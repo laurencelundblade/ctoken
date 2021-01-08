@@ -589,26 +589,28 @@ QCBORItem_IsMapOrArray(const QCBORItem *pMe)
 
 
 static inline QCBORError
-consume_item(QCBORDecodeContext *decode_context,  const QCBORItem  *item)
+consume_item(QCBORDecodeContext *decode_context, const QCBORItem  *first_item)
 {
    QCBORError return_value;
    QCBORItem  Item;
 
    /* If it is a map or array, this will tell if it is empty. */
-   const bool is_empty = (item->uNextNestLevel <= item->uNestingLevel);
+   const bool is_empty = (first_item->uNextNestLevel <= first_item->uNestingLevel);
 
-   if(QCBORItem_IsMapOrArray(item) && !is_empty) {
+   if(QCBORItem_IsMapOrArray(first_item) && !is_empty) {
       /* There is only real work to do for non-empty maps and arrays */
 
       /* This works for definite and indefinite length
        * maps and arrays by using the nesting level
        */
       do {
-         return_value = QCBORDecode_GetNext(decode_context, &Item);
-         if(QCBORDecode_IsUnrecoverableError(return_value)) {
-            goto Done;
-         }
-      } while(Item.uNextNestLevel >= item->uNextNestLevel);
+          return_value = QCBORDecode_GetNext(decode_context, &Item);
+          if(QCBORDecode_IsUnrecoverableError(return_value) ||
+              return_value == QCBOR_ERR_NO_MORE_ITEMS) {
+              goto Done;
+          }
+
+      } while(Item.uNextNestLevel >= first_item->uNextNestLevel);
 
       return_value = QCBOR_SUCCESS;
 
@@ -647,6 +649,10 @@ ctoken_decode_next_claim(struct ctoken_decode_ctx   *me,
         }
 
         cbor_error = consume_item(&(me->qcbor_decode_context), claim);
+        if(cbor_error == QCBOR_ERR_NO_MORE_ITEMS) {
+             return_value = CTOKEN_ERR_NO_MORE_CLAIMS;
+             goto Done;
+         }
         if(cbor_error) {
             // TODO: refine this error.
             return_value = CTOKEN_ERR_CBOR_NOT_WELL_FORMED;
