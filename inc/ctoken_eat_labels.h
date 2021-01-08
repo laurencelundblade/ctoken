@@ -1,7 +1,7 @@
 /*
  * ctoken_eat_labels.h
  *
- * Copyright (c) 2020-2020 Laurence Lundblade.
+ * Copyright (c) 2020 Laurence Lundblade.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
