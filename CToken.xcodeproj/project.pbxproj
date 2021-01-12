@@ -32,6 +32,7 @@
 		0FBE2D9723FA147600A31C46 /* libt_cose.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0F3AF36B23EE522A00A60561 /* libt_cose.a */; };
 		0FBE2DA123FA14A000A31C46 /* eat_example_psa.c in Sources */ = {isa = PBXBuildFile; fileRef = 0FBE2D9F23FA149200A31C46 /* eat_example_psa.c */; };
 		0FBE2DA423FA17B200A31C46 /* libmbedcrypto.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0FBE2DA223FA17A700A31C46 /* libmbedcrypto.a */; };
+		E7FDBF3025AD5506007138A8 /* decode_token.c in Sources */ = {isa = PBXBuildFile; fileRef = E7FDBF2F25AD5506007138A8 /* decode_token.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -100,6 +101,8 @@
 		0FBE2D9F23FA149200A31C46 /* eat_example_psa.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = eat_example_psa.c; sourceTree = "<group>"; };
 		0FBE2DA223FA17A700A31C46 /* libmbedcrypto.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libmbedcrypto.a; path = "../../mbed-crypto/library/libmbedcrypto.a"; sourceTree = "<group>"; };
 		E7FDBF1725787DD1007138A8 /* t_cose */ = {isa = PBXFileReference; lastKnownFileType = folder; name = t_cose; path = ../../t_cose/master/inc/t_cose; sourceTree = "<group>"; };
+		E7FDBF2E25AD5506007138A8 /* decode_token.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = decode_token.h; sourceTree = "<group>"; };
+		E7FDBF2F25AD5506007138A8 /* decode_token.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = decode_token.c; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -136,6 +139,7 @@
 		0F3AF31023E4DB6100A60561 = {
 			isa = PBXGroup;
 			children = (
+				E7FDBF2D25AD54AF007138A8 /* command_line */,
 				0F3AF37423F1B9FF00A60561 /* examples */,
 				0F3AF37323F0567A00A60561 /* README.md */,
 				0F3AF33F23E5005900A60561 /* main.c */,
@@ -239,6 +243,15 @@
 			path = examples;
 			sourceTree = "<group>";
 		};
+		E7FDBF2D25AD54AF007138A8 /* command_line */ = {
+			isa = PBXGroup;
+			children = (
+				E7FDBF2E25AD5506007138A8 /* decode_token.h */,
+				E7FDBF2F25AD5506007138A8 /* decode_token.c */,
+			);
+			path = command_line;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -339,6 +352,7 @@
 				0F3AF34C23E53BCF00A60561 /* ctoken_psaia_decode.c in Sources */,
 				0FBE2D8823F5D9C800A31C46 /* eat_test.c in Sources */,
 				0FBE2D8523F1BC7B00A31C46 /* main.c in Sources */,
+				E7FDBF3025AD5506007138A8 /* decode_token.c in Sources */,
 				0F3AF33123E4FD6C00A60561 /* ctoken_encode.c in Sources */,
 				0F3AF33223E4FD6C00A60561 /* ctoken_decode.c in Sources */,
 			);
