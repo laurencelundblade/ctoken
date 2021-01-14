@@ -14,12 +14,14 @@
 
 
 /*
- -claim 44:xx
+ -claim ll:vv
 
- -in-form CBOR, JSON
- -out_form CBOR, JSON, text, CBOR diag
  -in <file>
  -out <file>
+
+ -in_form CBOR, JSON
+ -out_form CBOR, JSON, text, CBOR diag
+
  -in_prot none, sign, mac, sign_encrypt, mac_encrypt, auto
  -out_prot none, sign, mac, sign_encrypt, mac_encrypt
 
@@ -37,26 +39,13 @@
 
  -out_tag  none, full, cose
 
-
-
-
-
-
-
-
-
 There must be an input that is either a file or some claims.
  If there is a file, it will be verified and key material must be given to do so.
- To skip verification use the -noverify option
-
-
-
-
-
+ To skip verification use the -noverify option.
 
  */
 
-struct arguments {
+struct ctoken_arguments {
     const char *input_file;
     const char *output_file;
 
@@ -67,9 +56,6 @@ struct arguments {
     int output_protection;
 
     char **claims;
-
-
-
 
 };
 
