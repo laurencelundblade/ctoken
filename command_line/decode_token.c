@@ -33,7 +33,7 @@ static char *decoding_table = NULL;
 static int mod_table[] = {0, 2, 1};
 
 // https://stackoverflow.com/questions/342409/how-do-i-base64-encode-decode-in-c
-// See if this is really correct. 
+// See if this is really correct.
 char *base64_encode(const unsigned char *data,
                     size_t input_length,
                     size_t *output_length) {
@@ -184,8 +184,6 @@ static const struct label_map_t label_map[] = {
 
     {CTOKEN_EAT_LABEL_SUBMODS, "submods"},
     {20, "submods"},
-
-    {0, NULL}
 };
 
 
@@ -207,6 +205,18 @@ void output_int64(FILE *output_file, int indention_level, const char *claim_name
 {
     indent(output_file, indention_level);
     fprintf(output_file, "\"%s\": %lld\n", claim_name, claim_value);
+}
+
+void output_uint64(FILE *output_file, int indention_level, const char *claim_name, uint64_t claim_value)
+{
+    indent(output_file, indention_level);
+    fprintf(output_file, "\"%s\": %llu\n", claim_name, claim_value);
+}
+
+void output_double(FILE *output_file, int indention_level, const char *claim_name, double claim_value)
+{
+    indent(output_file, indention_level);
+    fprintf(output_file, "\"%s\": %f\n", claim_name, claim_value);
 }
 
 void output_text_string(FILE *output_file, int indention_level, const char *claim_name, struct q_useful_buf_c claim_value)
@@ -233,6 +243,24 @@ void output_byte_string(FILE *output_file,
     fprintf(output_file, "\"\n");
 
     free(b64);
+}
+
+
+void output_byte_simple(FILE *output_file,
+                        int indention_level,
+                        const char *claim_name,
+                        int simple)
+{
+    indent(output_file, indention_level);
+    fprintf(output_file, "\"%s\":\"", claim_name);
+
+    switch(simple) {
+        case QCBOR_TYPE_TRUE:  fprintf(output_file, "true"); break;
+        case QCBOR_TYPE_FALSE: fprintf(output_file, "false"); break;
+        case QCBOR_TYPE_NULL:  fprintf(output_file, "null"); break;
+    }
+
+    fprintf(output_file, "\"\n");
 }
 
 
@@ -286,6 +314,11 @@ int decode_cbor(FILE *output_file, struct q_useful_buf_c input_bytes, int output
 
         error = ctoken_decode_next_claim(&decode_context, &claim_item);
 
+        if(error != CTOKEN_ERR_SUCCESS) {
+            // TODO: handle errors better here
+            break;
+        }
+
         // TODO: make sure label is of the right type and/or handle alternate types
         const char *json_name = cbor_label_to_json_name(claim_item.label.int64);
 
@@ -298,6 +331,20 @@ int decode_cbor(FILE *output_file, struct q_useful_buf_c input_bytes, int output
                              indention_level,
                              json_name ? json_name : substitue_json_name,
                              claim_item.val.int64);
+                break;
+
+            case QCBOR_TYPE_UINT64:
+                output_uint64(output_file,
+                             indention_level,
+                             json_name ? json_name : substitue_json_name,
+                             claim_item.val.uint64);
+                break;
+
+            case QCBOR_TYPE_DOUBLE:
+                output_double(output_file,
+                              indention_level,
+                              json_name ? json_name : substitue_json_name,
+                              claim_item.val.dfnum);
                 break;
 
             case QCBOR_TYPE_TEXT_STRING:
@@ -314,28 +361,22 @@ int decode_cbor(FILE *output_file, struct q_useful_buf_c input_bytes, int output
                                    claim_item.val.string);
                 break;
 
+            case QCBOR_TYPE_TRUE:
+            case QCBOR_TYPE_FALSE:
+            case QCBOR_TYPE_NULL:
+                output_byte_simple(output_file,
+                                   indention_level,
+                                   json_name ? json_name : substitue_json_name,
+                                   claim_item.uDataType);
+                break;
+
             default:
                 output_other_claim(output_file,
                                    indention_level,
                                    &decode_context,
                                    claim_item.label.int64);
         }
-
-
-
-        /*
-
-         Claim might be string or int in which case it has been obtained.
-         Claim label might be known or not known
-            If known, map to JSON claim key string
-
-         If value is not string or int and known call the outputter for it.
-
-         If value is not string or int and not known do what can be done.
-         */
-
     }
-
 
     return 0;
 }
@@ -387,6 +428,11 @@ struct q_useful_buf_c read_file(int file_descriptor)
 }
 
 
+int encode_claims(FILE *output, const char **claims)
+{
+    return 0;
+}
+
 
 
 
@@ -395,7 +441,22 @@ int ctoken(const struct ctoken_arguments *arguments)
     struct q_useful_buf_c input_bytes = NULL_Q_USEFUL_BUF_C;
     FILE *output;
 
+    if(arguments->output_file) {
+        output = fopen(arguments->output_file, "r");
+        if(output == NULL) {
+            fprintf(stderr, "error opening output file \"%s\"\n", arguments->output_file);
+            return -4;
+        }
+    } else {
+        output = stdout;
+    }
+
     if(arguments->input_file) {
+        if(arguments->claims) {
+            fprintf(stderr, "Can't give -in option and -claim option at the same time (yet)\n");
+            return -9;
+        }
+
         int file_descriptor;
         if(!strcmp(arguments->input_file, "-")) {
             file_descriptor = 0;
@@ -411,20 +472,20 @@ int ctoken(const struct ctoken_arguments *arguments)
             fprintf(stderr, "error reading input file \"%s\"\n", arguments->input_file);
             return -2;
         }
-    }
 
-    if(arguments->output_file) {
-        output = fopen(arguments->output_file, "r");
-        if(output == NULL) {
-            fprintf(stderr, "error opening output file \"%s\"\n", arguments->output_file);
-            return -4;
-        }
+        // TODO: need to handle JSON too.
+        decode_cbor(output, input_bytes, arguments->output_format);
+
+        return 0;
     } else {
-        output = stdout;
+        if(arguments->claims) {
+            encode_claims(output, arguments->claims);
+
+        } else {
+            fprintf(stderr, "No input given (neither -in or -claim given)\n");
+            return -88;
+        }
     }
-
-
-    decode_cbor(output, input_bytes, arguments->output_format);
 
 
     return 0;
