@@ -26,19 +26,22 @@ static void fputs_wrapper(const char *szString, void *pOutCtx, int bNewLine)
     }
 }
 
+void ct_main();
 
 int main(int argc, const char * argv[])
 {
-    int return_value;
+    int return_value = 0;
 
     (void)argc; // Avoid unused parameter error
 
+    ct_main();
+
     // This call prints out sizes of data structures to remind us
     // to keep them small.
-    PrintSizesCToken(&fputs_wrapper, stdout);
+    //PrintSizesCToken(&fputs_wrapper, stdout);
 
     // This runs all the tests
-    return_value = RunTestsCToken(argv+1, &fputs_wrapper, stdout, NULL);
+    //return_value = RunTestsCToken(argv+1, &fputs_wrapper, stdout, NULL);
 
 
     return return_value;
