@@ -17,6 +17,102 @@
 #include <sys/errno.h>
 
 
+#include <stdint.h>
+#include <stdlib.h>
+
+
+static char encoding_table[] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
+    'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
+    'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',
+    'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f',
+    'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n',
+    'o', 'p', 'q', 'r', 's', 't', 'u', 'v',
+    'w', 'x', 'y', 'z', '0', '1', '2', '3',
+    '4', '5', '6', '7', '8', '9', '+', '/'};
+static char *decoding_table = NULL;
+static int mod_table[] = {0, 2, 1};
+
+// https://stackoverflow.com/questions/342409/how-do-i-base64-encode-decode-in-c
+// See if this is really correct. 
+char *base64_encode(const unsigned char *data,
+                    size_t input_length,
+                    size_t *output_length) {
+
+    *output_length = 4 * ((input_length + 2) / 3);
+
+    char *encoded_data = malloc(*output_length);
+    if (encoded_data == NULL) return NULL;
+
+    for (int i = 0, j = 0; i < input_length;) {
+
+        uint32_t octet_a = i < input_length ? (unsigned char)data[i++] : 0;
+        uint32_t octet_b = i < input_length ? (unsigned char)data[i++] : 0;
+        uint32_t octet_c = i < input_length ? (unsigned char)data[i++] : 0;
+
+        uint32_t triple = (octet_a << 0x10) + (octet_b << 0x08) + octet_c;
+
+        encoded_data[j++] = encoding_table[(triple >> 3 * 6) & 0x3F];
+        encoded_data[j++] = encoding_table[(triple >> 2 * 6) & 0x3F];
+        encoded_data[j++] = encoding_table[(triple >> 1 * 6) & 0x3F];
+        encoded_data[j++] = encoding_table[(triple >> 0 * 6) & 0x3F];
+    }
+
+    for (int i = 0; i < mod_table[input_length % 3]; i++)
+        encoded_data[*output_length - 1 - i] = '=';
+
+    return encoded_data;
+}
+
+void build_decoding_table() {
+
+    decoding_table = malloc(256);
+
+    for (int i = 0; i < 64; i++)
+        decoding_table[(unsigned char) encoding_table[i]] = i;
+}
+
+
+unsigned char *base64_decode(const char *data,
+                             size_t input_length,
+                             size_t *output_length) {
+
+    if (decoding_table == NULL) build_decoding_table();
+
+    if (input_length % 4 != 0) return NULL;
+
+    *output_length = input_length / 4 * 3;
+    if (data[input_length - 1] == '=') (*output_length)--;
+    if (data[input_length - 2] == '=') (*output_length)--;
+
+    unsigned char *decoded_data = malloc(*output_length);
+    if (decoded_data == NULL) return NULL;
+
+    for (int i = 0, j = 0; i < input_length;) {
+
+        uint32_t sextet_a = data[i] == '=' ? 0 & i++ : decoding_table[data[i++]];
+        uint32_t sextet_b = data[i] == '=' ? 0 & i++ : decoding_table[data[i++]];
+        uint32_t sextet_c = data[i] == '=' ? 0 & i++ : decoding_table[data[i++]];
+        uint32_t sextet_d = data[i] == '=' ? 0 & i++ : decoding_table[data[i++]];
+
+        uint32_t triple = (sextet_a << 3 * 6)
+        + (sextet_b << 2 * 6)
+        + (sextet_c << 1 * 6)
+        + (sextet_d << 0 * 6);
+
+        if (j < *output_length) decoded_data[j++] = (triple >> 2 * 8) & 0xFF;
+        if (j < *output_length) decoded_data[j++] = (triple >> 1 * 8) & 0xFF;
+        if (j < *output_length) decoded_data[j++] = (triple >> 0 * 8) & 0xFF;
+    }
+
+    return decoded_data;
+}
+
+
+void base64_cleanup() {
+    free(decoding_table);
+}
+
+
 #define INDENTION_INCREMENT 2
 
 void indent(FILE *output_file, int indention_level)
@@ -58,8 +154,37 @@ struct label_map_t {
 static const struct label_map_t label_map[] = {
     {CTOKEN_CWT_LABEL_ISSUER, "iss"},
     {CTOKEN_CWT_LABEL_SUBJECT, "sub"},
+    {CTOKEN_CWT_LABEL_AUDIENCE, "aud"},
+    {CTOKEN_CWT_LABEL_EXPIRATION, "exp"},
+    {CTOKEN_CWT_LABEL_NOT_BEFORE, "nbf"},
+    {CTOKEN_CWT_LABEL_IAT, "iat"},
+    {CTOKEN_CWT_LABEL_CTI, "cti"},
+
+    // TODO: sort out the official definition vs the temporary
+    {CTOKEN_EAT_LABEL_NONCE, "nonce"},
+    {10, "nonce"},
+
+    {CTOKEN_EAT_LABEL_UEID, "ueid"},
+    {11, "ueid"},
+
+    {CTOKEN_EAT_LABEL_OEMID, "oemid"},
+    {13, "oemid"},
+
+    {CTOKEN_EAT_LABEL_SECURITY_LEVEL, "seclevel"},
     {14, "seclevel"},
+
+    {CTOKEN_EAT_LABEL_SECURE_BOOT, "secboot"},
+    {15, "seclevel"},
+
+    {CTOKEN_EAT_LABEL_DEBUG_STATE, "dbgstat"},
     {16, "dbgstat"},
+
+    {CTOKEN_EAT_LABEL_LOCATION, "location"},
+    {17, "location"},
+
+    {CTOKEN_EAT_LABEL_SUBMODS, "submods"},
+    {20, "submods"},
+
     {0, NULL}
 };
 
@@ -76,63 +201,7 @@ static const char *cbor_label_to_json_name(int64_t cbor_label)
     return NULL;
 }
 
-/*
-    switch(cbor_label) {
 
-        case CTOKEN_CWT_LABEL_ISSUER: // 1
-            return("iss");
-
-        case CTOKEN_CWT_LABEL_SUBJECT: //     2
-            return("sub");
-
-        case CTOKEN_CWT_LABEL_AUDIENCE : //   3
-            return("aud");
-
-        case CTOKEN_CWT_LABEL_EXPIRATION:  // 4
-            return("exp");
-
-        case CTOKEN_CWT_LABEL_NOT_BEFORE: //  5
-            return("nbf");
-
-        case CTOKEN_CWT_LABEL_IAT: // 6
-            return("iat");
-
-        case CTOKEN_CWT_LABEL_CTI :      //  7
-            return("cti");
-
-
-        case CTOKEN_EAT_LABEL_UEID:
-        case 10:
-            return("ueid");
-
-        case CTOKEN_EAT_LABEL_NONCE:
-        case 11:
-            return("nonce");
-
-        case CTOKEN_EAT_LABEL_OEMID:
-        case 12:
-            return("oemid");
-
-        case CTOKEN_EAT_LABEL_SECURITY_LEVEL:
-        case 13:
-            return("seclevel");
-
-        case CTOKEN_EAT_LABEL_BOOT_STATE:
-        case 14:
-            return("bootstate");
-
-            case CTOKEN_EAT_LABEL_SECURE_BOOT -76007
-            case CTOKEN_EAT_LABEL_DEBUG_STATE -76008
-            case CTOKEN_EAT_LABEL_LOCATION -76004
-            case CTOKEN_EAT_LABEL_UPTIME -76006
-            case CTOKEN_EAT_LABEL_INTENDED_USE -76009
-
-            // TODO: fill in lots of labels
-        default:
-            return NULL;
-    }
-}
-*/
 
 void output_int64(FILE *output_file, int indention_level, const char *claim_name, int64_t claim_value)
 {
@@ -147,6 +216,26 @@ void output_text_string(FILE *output_file, int indention_level, const char *clai
     fwrite(claim_value.ptr, 1, claim_value.len, output_file);
     fprintf(output_file, "\"\n");
 }
+
+
+void output_byte_string(FILE *output_file,
+                        int indention_level,
+                        const char *claim_name,
+                        struct q_useful_buf_c claim_value)
+{
+    indent(output_file, indention_level);
+    fprintf(output_file, "\"%s\":\"", claim_name);
+
+    size_t output_size;
+    char *b64 = base64_encode(claim_value.ptr, claim_value.len, &output_size);
+
+    fwrite(b64, 1, output_size, output_file);
+    fprintf(output_file, "\"\n");
+
+    free(b64);
+}
+
+
 
 
 void output_other_claim(FILE *output_file,
@@ -213,6 +302,13 @@ int decode_cbor(FILE *output_file, struct q_useful_buf_c input_bytes, int output
 
             case QCBOR_TYPE_TEXT_STRING:
                 output_text_string(output_file,
+                                   indention_level,
+                                   json_name ? json_name : substitue_json_name,
+                                   claim_item.val.string);
+                break;
+
+            case QCBOR_TYPE_BYTE_STRING:
+                output_byte_string(output_file,
                                    indention_level,
                                    json_name ? json_name : substitue_json_name,
                                    claim_item.val.string);
