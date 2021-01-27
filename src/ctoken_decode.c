@@ -899,7 +899,7 @@ Done:
 static enum ctoken_err_t
 ctoken_decode_submod_token(struct ctoken_decode_ctx  *me,
                            const QCBORItem           *item,
-                           enum ctoken_type          *type,
+                           enum ctoken_type_t          *type,
                            struct q_useful_buf_c     *token)
 {
     enum ctoken_err_t return_value;
@@ -937,7 +937,7 @@ Done:
 enum ctoken_err_t
 ctoken_decode_get_nested_token_sz(struct ctoken_decode_ctx *me,
                             const char              *name,
-                            enum ctoken_type        *type,
+                            enum ctoken_type_t        *type,
                             struct q_useful_buf_c   *token)
 {
     QCBORItem         item;
@@ -971,7 +971,7 @@ Done:
 enum ctoken_err_t
 ctoken_decode_get_nth_nested_token(struct ctoken_decode_ctx *me,
                              uint32_t                  submod_index,
-                             enum ctoken_type         *type,
+                             enum ctoken_type_t         *type,
                              struct q_useful_buf_c    *token)
 {
     QCBORItem         item;

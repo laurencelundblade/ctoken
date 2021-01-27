@@ -68,14 +68,14 @@
  out call submod_state_all_finished().
  */
 static inline void
-submodstate_init(struct ctoken_submod_state *me)
+submodstate_init(struct ctoken_submod_state_t *me)
 {
     me->current_level    = &me->level_state[0];
     *(me->current_level) = SUBMODS_NONE;
 }
 
 static inline enum ctoken_err_t
-submod_state_start_section(struct ctoken_submod_state *me)
+submod_state_start_section(struct ctoken_submod_state_t *me)
 {
     if(*(me->current_level) != SUBMODS_NONE) {
         return CTOKEN_CANT_START_SUBMOD_SECTION;
@@ -85,7 +85,7 @@ submod_state_start_section(struct ctoken_submod_state *me)
 }
 
 static inline enum ctoken_err_t
-submod_state_end_section(struct ctoken_submod_state *me)
+submod_state_end_section(struct ctoken_submod_state_t *me)
 {
     if(*(me->current_level) != SUBMODS_IN_SECTION) {
         return CTOKEN_ERR_NO_SUBMOD_SECTION_STARTED;
@@ -95,7 +95,7 @@ submod_state_end_section(struct ctoken_submod_state *me)
 }
 
 static inline enum ctoken_err_t
-submod_state_open_submod(struct ctoken_submod_state *me)
+submod_state_open_submod(struct ctoken_submod_state_t *me)
 {
     if(*(me->current_level) != SUBMODS_IN_SECTION) {
         return CTOKEN_ERR_NO_SUBMOD_SECTION_STARTED;
@@ -114,7 +114,7 @@ submod_state_open_submod(struct ctoken_submod_state *me)
 }
 
 static inline enum ctoken_err_t
-submod_state_close_submod(struct ctoken_submod_state *me)
+submod_state_close_submod(struct ctoken_submod_state_t *me)
 {
     if(*(me->current_level) != SUBMODS_NONE &&
        *(me->current_level) != SUBMODS_SECTION_DONE) {
@@ -135,7 +135,7 @@ submod_state_close_submod(struct ctoken_submod_state *me)
 }
 
 static inline enum ctoken_err_t
-submod_state_ok_for_token(struct ctoken_submod_state *me)
+submod_state_ok_for_token(struct ctoken_submod_state_t *me)
 {
     if(*(me->current_level) != SUBMODS_IN_SECTION) {
         return CTOKEN_ERR_CANT_MAKE_SUBMOD_IN_SUBMOD;
@@ -145,7 +145,7 @@ submod_state_ok_for_token(struct ctoken_submod_state *me)
 }
 
 static inline enum ctoken_err_t
-submod_state_all_finished(struct ctoken_submod_state *me)
+submod_state_all_finished(struct ctoken_submod_state_t *me)
 {
     if(me->current_level != &me->level_state[0]) {
         return CTOKEN_ERR_SUBMODS_NOT_CLOSED;
@@ -466,7 +466,7 @@ void ctoken_encode_close_submod(struct ctoken_encode_ctx *me)
  * Public function. See ctoken_encode.h
  */
 void ctoken_encode_nested_token(struct ctoken_encode_ctx *me,
-                             enum ctoken_type          type,
+                             enum ctoken_type_t          type,
                              const  char              *submod_name,
                              struct q_useful_buf_c     token)
 {

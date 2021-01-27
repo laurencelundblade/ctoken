@@ -67,12 +67,13 @@ static const struct option longopts[] = {
 int parse_arguments(int argc, char **argv, struct ctoken_arguments *arguments)
 {
     int return_value;
+    int selected_opt;
 
     memset(arguments, 0, sizeof(*arguments));
 
-    while(1) {
-        int selected_opt;
-        selected_opt = getopt_long_only(argc, argv, "", longopts, NULL);
+    return_value = 0;
+
+    while((selected_opt = getopt_long_only(argc, argv, "", longopts, NULL)) != EOF) {
 
         switch(selected_opt) {
             case INPUT_FILE:
@@ -177,10 +178,9 @@ int parse_arguments(int argc, char **argv, struct ctoken_arguments *arguments)
                 arguments->no_verify = true;
                 break;
 
-            case EOF:
-                // Successful exit from the loop
-                return_value = 0;
-                goto Done;
+            default:
+                fprintf(stderr, "Oops. Input parameter parsing went wrong\n");
+                return_value = 1;
         }
     }
 

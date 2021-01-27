@@ -59,6 +59,7 @@ extern "C" {
  * This gives a rough notion of the security level of the attester.
  */
 enum ctoken_security_level_t {
+    EAT_SL_INVALID           = 0,
     /** Signing key is protected by a general purpose OS running on generic
       * hardware
       */
@@ -81,6 +82,8 @@ enum ctoken_security_level_t {
  * attestor.
  */
 enum ctoken_debug_level_t {
+    CTOKEN_DEBUG_INVALID = -1,
+
     /** The debug system is enabled */
     CTOKEN_DEBUG_ENABLED = 0,
     /** The debug system is disabled, but might have been enabled recently,
