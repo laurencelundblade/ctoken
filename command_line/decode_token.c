@@ -15,6 +15,7 @@
 #include <fcntl.h>
 #include "ctoken_decode.h"
 #include <sys/errno.h>
+#include "ctoken_encode.h"
 
 
 #include <stdint.h>
@@ -111,6 +112,13 @@ unsigned char *base64_decode(const char *data,
 void base64_cleanup() {
     free(decoding_table);
 }
+
+
+/*
+
+
+ */
+
 
 
 #define INDENTION_INCREMENT 2
@@ -295,7 +303,8 @@ void output_other_claim(FILE *output_file,
 int decode_cbor(FILE *output_file, struct q_useful_buf_c input_bytes, int output_format)
 {
     struct ctoken_decode_ctx decode_context;
-    enum ctoken_err_t error;
+    enum ctoken_err_t        error;
+    QCBORItem                claim_item;
 
     int indention_level = 0;
 
@@ -310,8 +319,6 @@ int decode_cbor(FILE *output_file, struct q_useful_buf_c input_bytes, int output
     }
 
     while(1) {
-        QCBORItem claim_item;
-
         error = ctoken_decode_next_claim(&decode_context, &claim_item);
 
         if(error != CTOKEN_ERR_SUCCESS) {
@@ -428,8 +435,65 @@ struct q_useful_buf_c read_file(int file_descriptor)
 }
 
 
+int encode_claims2(struct ctoken_encode_ctx *encode_ctx, const char **claims)
+{
+    // try to map claim to a known integer label and call the right output
+    // function for the claim
+
+    // if claim is a string, error out
+
+    // if claim is a number, proceeding is OK
+    // try decoding value as an integer
+    // next, try decoding value has a double
+    // 
+
+
+
+
+
+    return 0;
+}
+
+
+int write_bytes(FILE *out_file, struct q_useful_buf_c token)
+{
+    size_t x = fwrite(token.ptr, 1, token.len, out_file);
+
+    return x == token.len ? 1 : 0;
+}
+
+
 int encode_claims(FILE *output, const char **claims)
 {
+    struct ctoken_encode_ctx encode_ctx;
+
+    ctoken_encode_init(&encode_ctx, 0, 0, CTOKEN_PROTECTION_NONE, 0);
+
+    struct q_useful_buf out_buf = (struct q_useful_buf){NULL, SIZE_MAX};
+    struct q_useful_buf_c completed_token;
+
+
+    // Loop only executes twice, once to compute size then to actually created token
+    while(1) {
+        ctoken_encode_start(&encode_ctx, out_buf);
+
+        encode_claims2(&encode_ctx, claims);
+
+        ctoken_encode_finish(&encode_ctx, &completed_token);
+
+        if(out_buf.ptr != NULL) {
+            // Normal exit from loop
+            break;
+        }
+
+        out_buf.ptr = malloc(completed_token.len);
+        out_buf.len = completed_token.len;
+    }
+
+    write_bytes(output, completed_token);
+
+    free(out_buf.ptr);
+
     return 0;
 }
 
