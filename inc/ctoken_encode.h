@@ -223,6 +223,11 @@ static void ctoken_encode_add_tstr(struct ctoken_encode_ctx *context,
                                    struct q_useful_buf_c     value);
 
 
+static inline void
+ctoken_encode_add_tstr_z(struct ctoken_encode_ctx *me,
+                         int32_t label,
+                         const char *tstr);
+
 /**
  * \brief Add some already-encoded CBOR to payload
  *
@@ -856,6 +861,15 @@ ctoken_encode_add_tstr(struct ctoken_encode_ctx *me,
                        struct q_useful_buf_c tstr)
 {
     QCBOREncode_AddTextToMapN(&(me->cbor_encode_context), label, tstr);
+}
+
+
+static inline void
+ctoken_encode_add_tstr_z(struct ctoken_encode_ctx *me,
+                         int32_t label,
+                         const char *tstr)
+{
+    QCBOREncode_AddSZStringToMapN(&(me->cbor_encode_context), label, tstr);
 }
 
 

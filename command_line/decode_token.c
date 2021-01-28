@@ -549,12 +549,74 @@ enum ctoken_debug_level_t parse_dbg_x(const char *d1)
 }
 
 
-struct q_useful_buf_c convert_to_binary(const char *z)
+struct q_useful_buf useful_malloc(size_t size)
 {
-    // TODO: fill this in
-    return NULL_Q_USEFUL_BUF_C;
+    struct q_useful_buf b;
+
+    b.ptr = malloc(size);
+    if(b.ptr == NULL) {
+        return NULL_Q_USEFUL_BUF;
+    }
+    b.len = size;
+    return b;
 }
 
+
+void useful_free(struct q_useful_buf_c b)
+{
+    if(b.ptr) {
+        /* cast is to remove the constness */
+        free((void *)b.ptr);
+    }
+}
+
+
+/* returns 4 binary bits corresponding to hex character or
+ 0xffff if character is not a hex character. */
+uint16_t hex_char(char c)
+{
+    if(c > '0' && c < '9') {
+        return c - '0';
+    } else if(c > 'a' && c < 'f') {
+        return c - 'a' + 10;
+    } else if(c > 'A' && c < 'F') {
+        return c - 'A' + 10;
+    } else {
+        return 0xffff;
+    }
+}
+
+/* input is hex digits, e.g. 34a8b20f
+   output is a malloced buffer with corresponding binary bytes. */
+struct q_useful_buf_c convert_to_binary(const char *z)
+{
+    struct q_useful_buf b = useful_malloc(strlen(z)/2);
+
+    UsefulOutBuf OB;
+
+    UsefulOutBuf_Init(&OB, b);
+
+    while(*z) {
+        uint32_t v = (hex_char(*z) << 4) + hex_char(*(z+1));
+        if(v > 0xff) {
+            free(b.ptr);
+            return NULL_Q_USEFUL_BUF_C;
+        }
+
+        UsefulOutBuf_AppendByte(&OB, (uint8_t)v);
+        z += 2;
+    }
+
+    return UsefulOutBuf_OutUBuf(&OB);;
+}
+
+
+int convert_to_int64(const char *s, int64_t *v)
+{
+    char *end;
+    *v = strtoll(s, &end, 10);
+    return *end == '\0' ? 0 : 1;
+}
 
 /* Decodes submod:label:value or label:value
    All returned strings are malloced
@@ -607,6 +669,18 @@ static int parse_claim_argument(const char *claim_arg,
     return 0;
 }
 
+
+void add_generic(struct ctoken_encode_ctx *encode_ctx,
+                 int64_t                   claim_number,
+                 const char               *claim_value)
+{
+    // TODO: fix type of label.
+    // TODO: detect different type of claim_values
+    ctoken_encode_add_tstr_z(encode_ctx, claim_number, claim_value);
+}
+
+
+
 /* Free a pointer if not NULL even if it is const */
 #define FREEIF(x) if(x != NULL){free((void *)x);}
 
@@ -635,8 +709,55 @@ int encode_claim(struct ctoken_encode_ctx *encode_ctx, const char *claim)
     enum ctoken_security_level_t sec_level;
     enum ctoken_debug_level_t    debug_level;
     struct q_useful_buf_c        binary_value;
+    int64_t                      int64_value;
 
     switch(claim_number) {
+        case CTOKEN_CWT_LABEL_ISSUER:
+            ctoken_encode_issuer(encode_ctx, q_useful_buf_from_sz(claim_value));
+            break;
+
+        case CTOKEN_CWT_LABEL_SUBJECT:
+            ctoken_encode_subject(encode_ctx, q_useful_buf_from_sz(claim_value));
+            break;
+
+        case CTOKEN_CWT_LABEL_AUDIENCE:
+            ctoken_encode_audience(encode_ctx, q_useful_buf_from_sz(claim_value));
+            break;
+
+        case CTOKEN_CWT_LABEL_EXPIRATION:
+            if(convert_to_int64(claim_value, &int64_value)) {
+                fprintf(stderr, "Error in expiration format \"%s\"\n", claim_value);
+                return 1;
+            }
+            ctoken_encode_expiration(encode_ctx, int64_value);
+            break;
+
+        case CTOKEN_CWT_LABEL_NOT_BEFORE:
+            if(convert_to_int64(claim_value, &int64_value)) {
+                fprintf(stderr, "Error in not-before format \"%s\"\n", claim_value);
+                return 1;
+            }
+            ctoken_encode_not_before(encode_ctx, int64_value);
+            break;
+
+        case CTOKEN_CWT_LABEL_IAT:
+             if(convert_to_int64(claim_value, &int64_value)) {
+                 fprintf(stderr, "Error in issued-at format \"%s\"\n", claim_value);
+                 return 1;
+             }
+             ctoken_encode_iat(encode_ctx, int64_value);
+             break;
+
+        case CTOKEN_CWT_LABEL_CTI:
+             binary_value = convert_to_binary(claim_value);
+             if(q_useful_buf_c_is_null(binary_value)) {
+                 fprintf(stderr, "bad cti value \"%s\"\n", claim_value);
+                 return 1;
+             }
+             ctoken_encode_cti(encode_ctx, binary_value);
+             useful_free(binary_value);
+             break;
+
         case CTOKEN_EAT_LABEL_UEID:
             binary_value = convert_to_binary(claim_value);
             if(q_useful_buf_c_is_null(binary_value)) {
@@ -644,6 +765,7 @@ int encode_claim(struct ctoken_encode_ctx *encode_ctx, const char *claim)
                 return 1;
             }
             ctoken_encode_ueid(encode_ctx, binary_value);
+            useful_free(binary_value);
             break;
 
         case CTOKEN_EAT_LABEL_NONCE:
@@ -653,8 +775,8 @@ int encode_claim(struct ctoken_encode_ctx *encode_ctx, const char *claim)
                 return 1;
             }
             ctoken_encode_nonce(encode_ctx, binary_value);
+            useful_free(binary_value);
             break;
-
 
         case CTOKEN_EAT_LABEL_SECURITY_LEVEL:
             sec_level = parse_sec_level_value(claim_value);
@@ -674,6 +796,10 @@ int encode_claim(struct ctoken_encode_ctx *encode_ctx, const char *claim)
             ctoken_encode_debug_state(encode_ctx, debug_level);
             break;
 
+        default:
+            add_generic(encode_ctx, claim_number, claim_value);
+            break;
+
         case 0:
             // claim label is a string
             break;
@@ -689,19 +815,15 @@ int encode_claim(struct ctoken_encode_ctx *encode_ctx, const char *claim)
 
 int encode_claims2(struct ctoken_encode_ctx *encode_ctx, const char **claims)
 {
-    // try to map claim to a known integer label and call the right output
-    // function for the claim
+    int r;
 
-    // if claim is a string, error out
-
-    // if claim is a number, proceeding is OK
-    // try decoding value as an integer
-    // next, try decoding value has a double
-    // 
-
-
-
-
+    while(*claims) {
+        r = encode_claim(encode_ctx, *claims);
+        if(r) {
+            return r;
+        }
+        claims++;
+    }
 
     return 0;
 }
