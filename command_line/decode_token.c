@@ -504,7 +504,7 @@ struct q_useful_buf_c read_file(int file_descriptor)
 
 
 
-const char *copy_up_to_colon(const char *input, size_t *copied)
+static const char *copy_up_to_colon(const char *input, size_t *copied)
 {
     const char *c = strchr(input, ':');
 
@@ -549,19 +549,112 @@ enum ctoken_debug_level_t parse_dbg_x(const char *d1)
 }
 
 
+struct q_useful_buf_c convert_to_binary(const char *z)
+{
+    // TODO: fill this in
+    return NULL_Q_USEFUL_BUF_C;
+}
+
+
+/* Decodes submod:label:value or label:value
+   All returned strings are malloced
+   return 0 on success, 1 on failure
+   claim_number is 0 if claim label is a string, and non-zero if it is a number */
+static int parse_claim_argument(const char *claim_arg,
+                                const char **submod_name,
+                                const char **claim_label,
+                                const char **claim_value,
+                                int64_t    *claim_number)
+{
+    char       *end;
+    size_t      first_part_length;
+    const char *remains;
+    const char *second_part;
+
+    *submod_name = NULL;
+    *claim_label = NULL;
+    *claim_value = NULL;
+
+    /* decode into submod, label and value */
+    const char *first_part = copy_up_to_colon(claim_arg, &first_part_length);
+    if(first_part == NULL) {
+        /* Something wrong with the claim */
+        return 1;
+    }
+
+    remains = claim_arg + first_part_length + 1;
+
+    second_part = copy_up_to_colon(remains, &first_part_length);
+
+    if(second_part == NULL) {
+        /* Format is label:value */
+        *claim_label = first_part;
+        *claim_value = strdup(remains);
+    } else {
+        /* format is submod:label:value */
+        *submod_name = first_part;
+        *claim_label = second_part;
+        *claim_value = strdup(second_part + first_part_length + 1);
+    }
+
+    /* Is label a string or a number? */
+    *claim_number = strtoll(*claim_label, &end, 10);
+    if(*end != '\0') {
+        /* label is a string */
+        *claim_number = 0;
+    }
+
+    return 0;
+}
+
+/* Free a pointer if not NULL even if it is const */
+#define FREEIF(x) if(x != NULL){free((void *)x);}
+
 
 int encode_claim(struct ctoken_encode_ctx *encode_ctx, const char *claim)
 {
-    int64_t claim_number;
     const char *claim_label;
     const char *submod_name;
     const char *claim_value;
+    int64_t     claim_number;
+    int         error;
+
+    error = parse_claim_argument(claim,
+                                 &submod_name,
+                                 &claim_label,
+                                 &claim_value,
+                                 &claim_number);
+
+    if(error) {
+        return error;
+    }
+
+    // TODO: handle submods (a lot of work!)
+
 
     enum ctoken_security_level_t sec_level;
+    enum ctoken_debug_level_t    debug_level;
+    struct q_useful_buf_c        binary_value;
 
     switch(claim_number) {
         case CTOKEN_EAT_LABEL_UEID:
+            binary_value = convert_to_binary(claim_value);
+            if(q_useful_buf_c_is_null(binary_value)) {
+                fprintf(stderr, "bad ueid value \"%s\"\n", claim_value);
+                return 1;
+            }
+            ctoken_encode_ueid(encode_ctx, binary_value);
             break;
+
+        case CTOKEN_EAT_LABEL_NONCE:
+            binary_value = convert_to_binary(claim_value);
+            if(q_useful_buf_c_is_null(binary_value)) {
+                fprintf(stderr, "bad nonce value \"%s\"\n", claim_value);
+                return 1;
+            }
+            ctoken_encode_nonce(encode_ctx, binary_value);
+            break;
+
 
         case CTOKEN_EAT_LABEL_SECURITY_LEVEL:
             sec_level = parse_sec_level_value(claim_value);
@@ -573,8 +666,22 @@ int encode_claim(struct ctoken_encode_ctx *encode_ctx, const char *claim)
             break;
 
         case CTOKEN_EAT_LABEL_DEBUG_STATE:
+            debug_level = parse_dbg_x(claim_value);
+            if(debug_level == CTOKEN_DEBUG_INVALID) {
+                fprintf(stderr, "bad debug level \"%s\"\n", claim_value);
+                return 1;
+            }
+            ctoken_encode_debug_state(encode_ctx, debug_level);
+            break;
+
+        case 0:
+            // claim label is a string
             break;
     }
+
+    FREEIF(submod_name);
+    FREEIF(claim_label);
+    FREEIF(claim_value);
 
     return 0;
 }

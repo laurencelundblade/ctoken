@@ -86,7 +86,7 @@ int parse_arguments(int argc, char **argv, struct ctoken_arguments *arguments)
 
             case CLAIM:
                 if(arguments->claims) {
-                    char **i;
+                    const char **i;
                     for(i = arguments->claims; *i; i++);
                     size_t count = i - arguments->claims;
 
