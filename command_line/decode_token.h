@@ -55,7 +55,7 @@ struct ctoken_arguments {
     int input_protection;
     int output_protection;
 
-    char **claims;
+    const char **claims;
 
 };
 

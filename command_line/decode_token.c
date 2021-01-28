@@ -15,6 +15,7 @@
 #include <fcntl.h>
 #include "ctoken_decode.h"
 #include <sys/errno.h>
+#include "ctoken_encode.h"
 
 
 #include <stdint.h>
@@ -198,6 +199,21 @@ static const char *cbor_label_to_json_name(int64_t cbor_label)
     }
     return NULL;
 }
+
+struct jwt_encode_ctx {
+    FILE *out_file;
+    int   indent_level;
+};
+
+
+struct output_context {
+    int output_type;
+    union {
+        struct ctoken_encode_ctx ctoken;
+        struct jwt_encode_ctx    jwt;
+    } u;
+};
+
 
 
 
@@ -428,8 +444,78 @@ struct q_useful_buf_c read_file(int file_descriptor)
 }
 
 
+const char *copy_up_to_colon(const char *input, size_t *copied)
+{
+    const char *c = strchr(input, ':');
+
+    if(c == NULL) {
+        return NULL;
+    }
+
+    *copied = c - input;
+
+    return strndup(input, c - input);
+}
+
+
 int encode_claims(FILE *output, const char **claims)
 {
+    while(*claims != NULL) {
+        const char *label;
+        const char *value;
+        const char *submod;
+
+
+        // decode into submod, label and value
+        // todo: strdup the value so all are malloced.
+        size_t l;
+        const char *x1 = copy_up_to_colon(*claims, &l);
+        if(x1) {
+            // Something wrong with the claim
+            return -900;
+        }
+
+        const char *remains = *claims + l + 1;
+
+        const char *x2 = copy_up_to_colon(remains, &l);
+
+        if(x2 == NULL) {
+            // Format is label:value
+            label = x1;
+            value = remains;
+        } else {
+            // format is submod:label:value
+            submod = x1;
+            label = x2;
+            value = x2 + l + 1;
+        }
+
+        // Is label a string or a number?
+        int64_t int_label;
+        char *end;
+
+        int_label = strtoll(label, &end, 10);
+        if(*end != '\0') {
+            // label is a string
+        }
+
+        
+
+
+
+        // Is label something we understand?
+        // If yes, then call the right encoder for it
+        // If no, then generically encode it the best we can
+
+        // Is
+
+
+
+
+
+        claims++;
+    }
+
     return 0;
 }
 
