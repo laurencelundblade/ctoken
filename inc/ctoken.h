@@ -380,7 +380,7 @@ static inline void ctoken_location_mark_item_present(struct ctoken_location_t *l
 
 
 /** The type of a submodule that is a token. */
-enum ctoken_type {
+enum ctoken_type_t {
     /** The submodule token is a CWT as defined by RFC 8392. It may be
      * a CWT tag or CWT protocol message. It may be signed and/or encrypted.
      * It may not be a UCCS per the EAT draft.

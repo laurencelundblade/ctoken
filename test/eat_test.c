@@ -362,7 +362,7 @@ int32_t submods_test(void)
         return 599;
     }
 
-    enum ctoken_type type;
+    enum ctoken_type_t type;
     struct q_useful_buf_c token;
 
     ctoken_decode_get_nested_token_sz(&decode_context, "json", &type, &token);
@@ -715,7 +715,7 @@ int32_t submod_decode_errors_test()
 {
     struct ctoken_decode_ctx  decode_context;
     enum ctoken_err_t         ctoken_result;
-    enum ctoken_type          type;
+    enum ctoken_type_t          type;
     struct q_useful_buf_c     token;
     UsefulBuf_MAKE_STACK_UB(  out, 400);
     uint32_t uNum;

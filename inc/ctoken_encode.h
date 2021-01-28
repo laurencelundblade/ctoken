@@ -57,7 +57,7 @@ enum ctoken_encode_nest_state {
      SUBMODS_SECTION_DONE
 };
 
-struct ctoken_submod_state {
+struct ctoken_submod_state_t {
     /* Private data structure */
     enum ctoken_encode_nest_state   level_state[CTOKEN_MAX_SUBMOD_NESTING];
     /* NULL means at the top level. */
@@ -82,7 +82,7 @@ struct ctoken_encode_ctx {
     uint32_t                      t_cose_opt_flags;
     enum ctoken_err_t             error;
     enum ctoken_protection_t      cose_protection_type;
-    struct ctoken_submod_state    submod_state;
+    struct ctoken_submod_state_t    submod_state;
     QCBOREncodeContext            cbor_encode_context;
     struct t_cose_sign1_sign_ctx  signer_ctx;
 };
@@ -737,7 +737,7 @@ void ctoken_encode_close_submod(struct ctoken_encode_ctx *context);
  * is called.
  */
 void ctoken_encode_nested_token(struct ctoken_encode_ctx *context,
-                                enum ctoken_type          type,
+                                enum ctoken_type_t          type,
                                 const char               *submod_name,
                                 struct q_useful_buf_c     token);
 

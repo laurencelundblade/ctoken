@@ -114,6 +114,13 @@ void base64_cleanup() {
 }
 
 
+/*
+
+
+ */
+
+
+
 #define INDENTION_INCREMENT 2
 
 void indent(FILE *output_file, int indention_level)
@@ -146,13 +153,13 @@ int output_location_claim(FILE *output_file, int indention_level, const struct c
 }
 
 
-struct label_map_t {
+struct integer_string_map_t {
     int64_t     cbor_label;
     const char *json_name;
 };
 
 
-static const struct label_map_t label_map[] = {
+static const struct integer_string_map_t label_map[] = {
     {CTOKEN_CWT_LABEL_ISSUER, "iss"},
     {CTOKEN_CWT_LABEL_SUBJECT, "sub"},
     {CTOKEN_CWT_LABEL_AUDIENCE, "aud"},
@@ -185,20 +192,42 @@ static const struct label_map_t label_map[] = {
 
     {CTOKEN_EAT_LABEL_SUBMODS, "submods"},
     {20, "submods"},
+
+    {0, NULL}
+};
+
+static const struct integer_string_map_t sec_levels[] = {
+    {EAT_SL_UNRESTRICTED, "unrestricted"},
+    {EAT_SL_RESTRICTED, "restricted"},
+    {EAT_SL_SECURE_RESTRICTED, "secure_restricted"},
+    {EAT_SL_HARDWARE, "hardware"},
+    {EAT_SL_INVALID, NULL}
 };
 
 
-static const char *cbor_label_to_json_name(int64_t cbor_label)
+static const struct integer_string_map_t dbg_states[] = {
+    {CTOKEN_DEBUG_ENABLED, "enabled"},
+    {CTOKEN_DEBUG_DISABLED, "disabled"},
+    {CTOKEN_DEBUG_DISABLED_SINCE_BOOT, "disabled_since_boot"},
+    {CTOKEN_DEBUG_DISABLED_PERMANENT, "disabled_permanent"},
+    {CTOKEN_DEBUG_DISABLED_FULL_PERMANENT, "disabled_full_permanent"},
+    {CTOKEN_DEBUG_INVALID, NULL}
+};
+
+
+static const char *int_to_string(const struct integer_string_map_t *map, int64_t cbor_label)
 {
     size_t i;
 
-    for(i = 0; i < C_ARRAY_COUNT(label_map, struct label_map_t); i++) {
+    for(i = 0; map[i].json_name != NULL; i++) {
         if(label_map[i].cbor_label == cbor_label) {
-            return(label_map[i].json_name);
+            return label_map[i].json_name;
         }
     }
+
     return NULL;
 }
+
 
 struct jwt_encode_ctx {
     FILE *out_file;
@@ -213,6 +242,37 @@ struct output_context {
         struct jwt_encode_ctx    jwt;
     } u;
 };
+
+int64_t string_to_int(const struct integer_string_map_t *map, const char *string)
+{
+    size_t i;
+
+    for(i = 0; map[i].json_name != NULL; i++) {
+        if(strcmp(string, map[i].json_name)) {
+            return label_map[i].cbor_label;
+        }
+    }
+
+    return 0;
+}
+
+
+static inline const char *cbor_label_to_json_name(int64_t cbor_label)
+{
+    return int_to_string(label_map, cbor_label);
+}
+
+
+static inline const char *sec_level_2(enum ctoken_security_level_t i)
+{
+    return int_to_string(sec_levels, i);
+}
+
+
+static inline enum ctoken_security_level_t sec_level_x(const char *s)
+{
+    return (enum ctoken_security_level_t)string_to_int(sec_levels, s);
+}
 
 
 
@@ -311,7 +371,8 @@ void output_other_claim(FILE *output_file,
 int decode_cbor(FILE *output_file, struct q_useful_buf_c input_bytes, int output_format)
 {
     struct ctoken_decode_ctx decode_context;
-    enum ctoken_err_t error;
+    enum ctoken_err_t        error;
+    QCBORItem                claim_item;
 
     int indention_level = 0;
 
@@ -326,8 +387,6 @@ int decode_cbor(FILE *output_file, struct q_useful_buf_c input_bytes, int output
     }
 
     while(1) {
-        QCBORItem claim_item;
-
         error = ctoken_decode_next_claim(&decode_context, &claim_item);
 
         if(error != CTOKEN_ERR_SUCCESS) {
@@ -444,6 +503,7 @@ struct q_useful_buf_c read_file(int file_descriptor)
 }
 
 
+
 const char *copy_up_to_colon(const char *input, size_t *copied)
 {
     const char *c = strchr(input, ':');
@@ -458,8 +518,99 @@ const char *copy_up_to_colon(const char *input, size_t *copied)
 }
 
 
+enum ctoken_security_level_t parse_sec_level_value(const  char *sl)
+{
+    long n;
+    char *e;
+
+    /* Try to convert to a number first */
+    n = strtol(sl, &e, 10);
+
+    if(*e == '\0') {
+        /* Successfull converted. See if it is in range */
+        if(n > EAT_SL_HARDWARE ||
+           n < EAT_SL_UNRESTRICTED) {
+            return EAT_SL_INVALID;
+        } else {
+            /* Successful integer security level */
+            return (enum ctoken_security_level_t)n;
+        }
+    }
+
+    /* Now try it as a string */
+    return sec_level_x(sl);
+}
+
+
+enum ctoken_debug_level_t parse_dbg_x(const char *d1)
+{
+    return 0;
+
+}
+
+
+
+int encode_claim(struct ctoken_encode_ctx *encode_ctx, const char *claim)
+{
+    int64_t claim_number;
+    const char *claim_label;
+    const char *submod_name;
+    const char *claim_value;
+
+    enum ctoken_security_level_t sec_level;
+
+    switch(claim_number) {
+        case CTOKEN_EAT_LABEL_UEID:
+            break;
+
+        case CTOKEN_EAT_LABEL_SECURITY_LEVEL:
+            sec_level = parse_sec_level_value(claim_value);
+            if(sec_level == EAT_SL_INVALID) {
+                fprintf(stderr, "bad security level \"%s\"\n", claim_value);
+                return 1;
+            }
+            ctoken_encode_security_level(encode_ctx, sec_level);
+            break;
+
+        case CTOKEN_EAT_LABEL_DEBUG_STATE:
+            break;
+    }
+
+    return 0;
+}
+
+
+int encode_claims2(struct ctoken_encode_ctx *encode_ctx, const char **claims)
+{
+    // try to map claim to a known integer label and call the right output
+    // function for the claim
+
+    // if claim is a string, error out
+
+    // if claim is a number, proceeding is OK
+    // try decoding value as an integer
+    // next, try decoding value has a double
+    // 
+
+
+
+
+
+    return 0;
+}
+
+
+int write_bytes(FILE *out_file, struct q_useful_buf_c token)
+{
+    size_t x = fwrite(token.ptr, 1, token.len, out_file);
+
+    return x == token.len ? 1 : 0;
+}
+
+
 int encode_claims(FILE *output, const char **claims)
 {
+
     while(*claims != NULL) {
         const char *label;
         const char *value;
@@ -515,6 +666,36 @@ int encode_claims(FILE *output, const char **claims)
 
         claims++;
     }
+
+    struct ctoken_encode_ctx encode_ctx;
+
+    ctoken_encode_init(&encode_ctx, 0, 0, CTOKEN_PROTECTION_NONE, 0);
+
+    struct q_useful_buf out_buf = (struct q_useful_buf){NULL, SIZE_MAX};
+    struct q_useful_buf_c completed_token;
+
+
+    // Loop only executes twice, once to compute size then to actually created token
+    while(1) {
+        ctoken_encode_start(&encode_ctx, out_buf);
+
+        encode_claims2(&encode_ctx, claims);
+
+        ctoken_encode_finish(&encode_ctx, &completed_token);
+
+        if(out_buf.ptr != NULL) {
+            // Normal exit from loop
+            break;
+        }
+
+        out_buf.ptr = malloc(completed_token.len);
+        out_buf.len = completed_token.len;
+    }
+
+    write_bytes(output, completed_token);
+
+    free(out_buf.ptr);
+
 
     return 0;
 }
