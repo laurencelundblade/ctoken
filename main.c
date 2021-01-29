@@ -188,7 +188,7 @@ int parse_arguments(int argc, char **argv, struct ctoken_arguments *arguments)
     return return_value;
 }
 
-
+int ctoken(const struct ctoken_arguments *arguments);
 
 
 int main(int argc, char * argv[])
@@ -202,8 +202,9 @@ int main(int argc, char * argv[])
         return return_value;
     }
 
+    return_value = ctoken(&arguments);
 
-    ct_main();
+    // ct_main();
 
     // This call prints out sizes of data structures to remind us
     // to keep them small.

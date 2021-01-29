@@ -243,12 +243,14 @@ struct output_context {
     } u;
 };
 
+
+/* Returns 0 if string was not found in map */
 int64_t string_to_int(const struct integer_string_map_t *map, const char *string)
 {
     size_t i;
 
     for(i = 0; map[i].json_name != NULL; i++) {
-        if(strcmp(string, map[i].json_name)) {
+        if(!strcmp(string, map[i].json_name)) {
             return label_map[i].cbor_label;
         }
     }
@@ -262,6 +264,11 @@ static inline const char *cbor_label_to_json_name(int64_t cbor_label)
     return int_to_string(label_map, cbor_label);
 }
 
+/* Returns 0 if there is no cbor label for the json name. */
+static inline int64_t json_name_to_cbor_label(const char *json_name)
+{
+    return string_to_int(label_map, json_name);
+}
 
 static inline const char *sec_level_2(enum ctoken_security_level_t i)
 {
@@ -575,11 +582,11 @@ void useful_free(struct q_useful_buf_c b)
  0xffff if character is not a hex character. */
 uint16_t hex_char(char c)
 {
-    if(c > '0' && c < '9') {
+    if(c >= '0' && c <= '9') {
         return c - '0';
-    } else if(c > 'a' && c < 'f') {
+    } else if(c >= 'a' && c <= 'f') {
         return c - 'a' + 10;
-    } else if(c > 'A' && c < 'F') {
+    } else if(c >= 'A' && c <= 'F') {
         return c - 'A' + 10;
     } else {
         return 0xffff;
@@ -662,8 +669,8 @@ static int parse_claim_argument(const char *claim_arg,
     /* Is label a string or a number? */
     *claim_number = strtoll(*claim_label, &end, 10);
     if(*end != '\0') {
-        /* label is a string */
-        *claim_number = 0;
+        /* label is a string. Try to look it up. */
+        *claim_number = json_name_to_cbor_label(*claim_label);
     }
 
     return 0;
@@ -829,6 +836,7 @@ int encode_claims2(struct ctoken_encode_ctx *encode_ctx, const char **claims)
 }
 
 
+/* returns 0 if write was successful, 1 if not */
 int write_bytes(FILE *out_file, struct q_useful_buf_c token)
 {
     size_t x = fwrite(token.ptr, 1, token.len, out_file);
@@ -839,70 +847,12 @@ int write_bytes(FILE *out_file, struct q_useful_buf_c token)
 
 int encode_claims(FILE *output, const char **claims)
 {
-
-    while(*claims != NULL) {
-        const char *label;
-        const char *value;
-        const char *submod;
-
-
-        // decode into submod, label and value
-        // todo: strdup the value so all are malloced.
-        size_t l;
-        const char *x1 = copy_up_to_colon(*claims, &l);
-        if(x1) {
-            // Something wrong with the claim
-            return -900;
-        }
-
-        const char *remains = *claims + l + 1;
-
-        const char *x2 = copy_up_to_colon(remains, &l);
-
-        if(x2 == NULL) {
-            // Format is label:value
-            label = x1;
-            value = remains;
-        } else {
-            // format is submod:label:value
-            submod = x1;
-            label = x2;
-            value = x2 + l + 1;
-        }
-
-        // Is label a string or a number?
-        int64_t int_label;
-        char *end;
-
-        int_label = strtoll(label, &end, 10);
-        if(*end != '\0') {
-            // label is a string
-        }
-
-        
-
-
-
-        // Is label something we understand?
-        // If yes, then call the right encoder for it
-        // If no, then generically encode it the best we can
-
-        // Is
-
-
-
-
-
-        claims++;
-    }
-
     struct ctoken_encode_ctx encode_ctx;
 
     ctoken_encode_init(&encode_ctx, 0, 0, CTOKEN_PROTECTION_NONE, 0);
 
     struct q_useful_buf out_buf = (struct q_useful_buf){NULL, SIZE_MAX};
     struct q_useful_buf_c completed_token;
-
 
     // Loop only executes twice, once to compute size then to actually created token
     while(1) {
@@ -925,7 +875,6 @@ int encode_claims(FILE *output, const char **claims)
 
     free(out_buf.ptr);
 
-
     return 0;
 }
 
@@ -937,8 +886,9 @@ int ctoken(const struct ctoken_arguments *arguments)
     struct q_useful_buf_c input_bytes = NULL_Q_USEFUL_BUF_C;
     FILE *output;
 
+    /* Set up output file to which whatever is done will be written. */
     if(arguments->output_file) {
-        output = fopen(arguments->output_file, "r");
+        output = fopen(arguments->output_file, "w");
         if(output == NULL) {
             fprintf(stderr, "error opening output file \"%s\"\n", arguments->output_file);
             return -4;
@@ -947,7 +897,10 @@ int ctoken(const struct ctoken_arguments *arguments)
         output = stdout;
     }
 
+    /* Figure out the input, either a file or some claim arguments (or both?)*/
     if(arguments->input_file) {
+
+        /* Input is a file, not claim arguments */
         if(arguments->claims) {
             fprintf(stderr, "Can't give -in option and -claim option at the same time (yet)\n");
             return -9;
@@ -975,6 +928,7 @@ int ctoken(const struct ctoken_arguments *arguments)
         return 0;
     } else {
         if(arguments->claims) {
+            /* input is some claim arguments. */
             encode_claims(output, arguments->claims);
 
         } else {
@@ -983,6 +937,7 @@ int ctoken(const struct ctoken_arguments *arguments)
         }
     }
 
+    fclose(output);
 
     return 0;
 }
