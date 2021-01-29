@@ -33,6 +33,8 @@
 		0FBE2DA123FA14A000A31C46 /* eat_example_psa.c in Sources */ = {isa = PBXBuildFile; fileRef = 0FBE2D9F23FA149200A31C46 /* eat_example_psa.c */; };
 		0FBE2DA423FA17B200A31C46 /* libmbedcrypto.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0FBE2DA223FA17A700A31C46 /* libmbedcrypto.a */; };
 		E7FDBF3025AD5506007138A8 /* decode_token.c in Sources */ = {isa = PBXBuildFile; fileRef = E7FDBF2F25AD5506007138A8 /* decode_token.c */; };
+		E7FDBF3B25C4CEF4007138A8 /* arg_parse.c in Sources */ = {isa = PBXBuildFile; fileRef = E7FDBF3A25C4CEF4007138A8 /* arg_parse.c */; };
+		E7FDBF3E25C4D15E007138A8 /* useful_buf_malloc.c in Sources */ = {isa = PBXBuildFile; fileRef = E7FDBF3D25C4D15E007138A8 /* useful_buf_malloc.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -110,6 +112,10 @@
 		E7FDBF3625C2BB55007138A8 /* qcbor_common.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = qcbor_common.h; path = ../../QCBOR/master/inc/qcbor/qcbor_common.h; sourceTree = "<group>"; };
 		E7FDBF3725C2BB55007138A8 /* qcbor_spiffy_decode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = qcbor_spiffy_decode.h; path = ../../QCBOR/master/inc/qcbor/qcbor_spiffy_decode.h; sourceTree = "<group>"; };
 		E7FDBF3825C2BB56007138A8 /* qcbor_private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = qcbor_private.h; path = ../../QCBOR/master/inc/qcbor/qcbor_private.h; sourceTree = "<group>"; };
+		E7FDBF3925C4CEF4007138A8 /* arg_parse.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = arg_parse.h; sourceTree = "<group>"; };
+		E7FDBF3A25C4CEF4007138A8 /* arg_parse.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = arg_parse.c; sourceTree = "<group>"; };
+		E7FDBF3C25C4D15E007138A8 /* useful_buf_malloc.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = useful_buf_malloc.h; sourceTree = "<group>"; };
+		E7FDBF3D25C4D15E007138A8 /* useful_buf_malloc.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = useful_buf_malloc.c; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -256,6 +262,10 @@
 			children = (
 				E7FDBF2E25AD5506007138A8 /* decode_token.h */,
 				E7FDBF2F25AD5506007138A8 /* decode_token.c */,
+				E7FDBF3925C4CEF4007138A8 /* arg_parse.h */,
+				E7FDBF3A25C4CEF4007138A8 /* arg_parse.c */,
+				E7FDBF3C25C4D15E007138A8 /* useful_buf_malloc.h */,
+				E7FDBF3D25C4D15E007138A8 /* useful_buf_malloc.c */,
 			);
 			path = command_line;
 			sourceTree = "<group>";
@@ -376,7 +386,9 @@
 				0FBE2D8523F1BC7B00A31C46 /* main.c in Sources */,
 				E7FDBF3025AD5506007138A8 /* decode_token.c in Sources */,
 				0F3AF33123E4FD6C00A60561 /* ctoken_encode.c in Sources */,
+				E7FDBF3B25C4CEF4007138A8 /* arg_parse.c in Sources */,
 				0F3AF33223E4FD6C00A60561 /* ctoken_decode.c in Sources */,
+				E7FDBF3E25C4D15E007138A8 /* useful_buf_malloc.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -16,6 +16,9 @@
 #include "ctoken_decode.h"
 #include <sys/errno.h>
 #include "ctoken_encode.h"
+#include "useful_buf_malloc.h"
+
+#include "arg_parse.h"
 
 
 #include <stdint.h>
@@ -153,82 +156,6 @@ int output_location_claim(FILE *output_file, int indention_level, const struct c
 }
 
 
-struct integer_string_map_t {
-    int64_t     cbor_label;
-    const char *json_name;
-};
-
-
-static const struct integer_string_map_t label_map[] = {
-    {CTOKEN_CWT_LABEL_ISSUER, "iss"},
-    {CTOKEN_CWT_LABEL_SUBJECT, "sub"},
-    {CTOKEN_CWT_LABEL_AUDIENCE, "aud"},
-    {CTOKEN_CWT_LABEL_EXPIRATION, "exp"},
-    {CTOKEN_CWT_LABEL_NOT_BEFORE, "nbf"},
-    {CTOKEN_CWT_LABEL_IAT, "iat"},
-    {CTOKEN_CWT_LABEL_CTI, "cti"},
-
-    // TODO: sort out the official definition vs the temporary
-    {CTOKEN_EAT_LABEL_NONCE, "nonce"},
-    {10, "nonce"},
-
-    {CTOKEN_EAT_LABEL_UEID, "ueid"},
-    {11, "ueid"},
-
-    {CTOKEN_EAT_LABEL_OEMID, "oemid"},
-    {13, "oemid"},
-
-    {CTOKEN_EAT_LABEL_SECURITY_LEVEL, "seclevel"},
-    {14, "seclevel"},
-
-    {CTOKEN_EAT_LABEL_SECURE_BOOT, "secboot"},
-    {15, "seclevel"},
-
-    {CTOKEN_EAT_LABEL_DEBUG_STATE, "dbgstat"},
-    {16, "dbgstat"},
-
-    {CTOKEN_EAT_LABEL_LOCATION, "location"},
-    {17, "location"},
-
-    {CTOKEN_EAT_LABEL_SUBMODS, "submods"},
-    {20, "submods"},
-
-    {0, NULL}
-};
-
-static const struct integer_string_map_t sec_levels[] = {
-    {EAT_SL_UNRESTRICTED, "unrestricted"},
-    {EAT_SL_RESTRICTED, "restricted"},
-    {EAT_SL_SECURE_RESTRICTED, "secure_restricted"},
-    {EAT_SL_HARDWARE, "hardware"},
-    {EAT_SL_INVALID, NULL}
-};
-
-
-static const struct integer_string_map_t dbg_states[] = {
-    {CTOKEN_DEBUG_ENABLED, "enabled"},
-    {CTOKEN_DEBUG_DISABLED, "disabled"},
-    {CTOKEN_DEBUG_DISABLED_SINCE_BOOT, "disabled_since_boot"},
-    {CTOKEN_DEBUG_DISABLED_PERMANENT, "disabled_permanent"},
-    {CTOKEN_DEBUG_DISABLED_FULL_PERMANENT, "disabled_full_permanent"},
-    {CTOKEN_DEBUG_INVALID, NULL}
-};
-
-
-static const char *int_to_string(const struct integer_string_map_t *map, int64_t cbor_label)
-{
-    size_t i;
-
-    for(i = 0; map[i].json_name != NULL; i++) {
-        if(label_map[i].cbor_label == cbor_label) {
-            return label_map[i].json_name;
-        }
-    }
-
-    return NULL;
-}
-
-
 struct jwt_encode_ctx {
     FILE *out_file;
     int   indent_level;
@@ -243,43 +170,6 @@ struct output_context {
     } u;
 };
 
-
-/* Returns 0 if string was not found in map */
-int64_t string_to_int(const struct integer_string_map_t *map, const char *string)
-{
-    size_t i;
-
-    for(i = 0; map[i].json_name != NULL; i++) {
-        if(!strcmp(string, map[i].json_name)) {
-            return label_map[i].cbor_label;
-        }
-    }
-
-    return 0;
-}
-
-
-static inline const char *cbor_label_to_json_name(int64_t cbor_label)
-{
-    return int_to_string(label_map, cbor_label);
-}
-
-/* Returns 0 if there is no cbor label for the json name. */
-static inline int64_t json_name_to_cbor_label(const char *json_name)
-{
-    return string_to_int(label_map, json_name);
-}
-
-static inline const char *sec_level_2(enum ctoken_security_level_t i)
-{
-    return int_to_string(sec_levels, i);
-}
-
-
-static inline enum ctoken_security_level_t sec_level_x(const char *s)
-{
-    return (enum ctoken_security_level_t)string_to_int(sec_levels, s);
-}
 
 
 
@@ -511,119 +401,7 @@ struct q_useful_buf_c read_file(int file_descriptor)
 
 
 
-static const char *copy_up_to_colon(const char *input, size_t *copied)
-{
-    const char *c = strchr(input, ':');
 
-    if(c == NULL) {
-        return NULL;
-    }
-
-    *copied = c - input;
-
-    return strndup(input, c - input);
-}
-
-
-enum ctoken_security_level_t parse_sec_level_value(const  char *sl)
-{
-    long n;
-    char *e;
-
-    /* Try to convert to a number first */
-    n = strtol(sl, &e, 10);
-
-    if(*e == '\0') {
-        /* Successfull converted. See if it is in range */
-        if(n > EAT_SL_HARDWARE ||
-           n < EAT_SL_UNRESTRICTED) {
-            return EAT_SL_INVALID;
-        } else {
-            /* Successful integer security level */
-            return (enum ctoken_security_level_t)n;
-        }
-    }
-
-    /* Now try it as a string */
-    return sec_level_x(sl);
-}
-
-
-enum ctoken_debug_level_t parse_dbg_x(const char *d1)
-{
-    return 0;
-
-}
-
-
-struct q_useful_buf useful_malloc(size_t size)
-{
-    struct q_useful_buf b;
-
-    b.ptr = malloc(size);
-    if(b.ptr == NULL) {
-        return NULL_Q_USEFUL_BUF;
-    }
-    b.len = size;
-    return b;
-}
-
-
-void useful_free(struct q_useful_buf_c b)
-{
-    if(b.ptr) {
-        /* cast is to remove the constness */
-        free((void *)b.ptr);
-    }
-}
-
-
-/* returns 4 binary bits corresponding to hex character or
- 0xffff if character is not a hex character. */
-uint16_t hex_char(char c)
-{
-    if(c >= '0' && c <= '9') {
-        return c - '0';
-    } else if(c >= 'a' && c <= 'f') {
-        return c - 'a' + 10;
-    } else if(c >= 'A' && c <= 'F') {
-        return c - 'A' + 10;
-    } else {
-        return 0xffff;
-    }
-}
-
-/* input is hex digits, e.g. 34a8b20f
-   output is a malloced buffer with corresponding binary bytes. */
-struct q_useful_buf_c convert_to_binary(const char *z)
-{
-    struct q_useful_buf b = useful_malloc(strlen(z)/2);
-
-    UsefulOutBuf OB;
-
-    UsefulOutBuf_Init(&OB, b);
-
-    while(*z) {
-        uint32_t v = (hex_char(*z) << 4) + hex_char(*(z+1));
-        if(v > 0xff) {
-            free(b.ptr);
-            return NULL_Q_USEFUL_BUF_C;
-        }
-
-        UsefulOutBuf_AppendByte(&OB, (uint8_t)v);
-        z += 2;
-    }
-
-    return UsefulOutBuf_OutUBuf(&OB);;
-}
-
-
-int convert_to_int64(const char *s, int64_t *v)
-{
-    char *end;
-    *v = strtoll(s, &end, 10);
-    return *end == '\0' ? 0 : 1;
-}
 
 /* Decodes submod:label:value or label:value
    All returned strings are malloced
@@ -762,7 +540,7 @@ int encode_claim(struct ctoken_encode_ctx *encode_ctx, const char *claim)
                  return 1;
              }
              ctoken_encode_cti(encode_ctx, binary_value);
-             useful_free(binary_value);
+             useful_buf_free(binary_value);
              break;
 
         case CTOKEN_EAT_LABEL_UEID:
@@ -772,7 +550,7 @@ int encode_claim(struct ctoken_encode_ctx *encode_ctx, const char *claim)
                 return 1;
             }
             ctoken_encode_ueid(encode_ctx, binary_value);
-            useful_free(binary_value);
+            useful_buf_free(binary_value);
             break;
 
         case CTOKEN_EAT_LABEL_NONCE:
@@ -782,7 +560,7 @@ int encode_claim(struct ctoken_encode_ctx *encode_ctx, const char *claim)
                 return 1;
             }
             ctoken_encode_nonce(encode_ctx, binary_value);
-            useful_free(binary_value);
+            useful_buf_free(binary_value);
             break;
 
         case CTOKEN_EAT_LABEL_SECURITY_LEVEL:
