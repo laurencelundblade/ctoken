@@ -231,13 +231,23 @@ static const struct integer_string_map_t sec_levels[] = {
 };
 
 
-static const struct integer_string_map_t dbg_states[] = {
+static const struct integer_string_map_t debug_states[] = {
     {CTOKEN_DEBUG_ENABLED, "enabled"},
     {CTOKEN_DEBUG_DISABLED, "disabled"},
     {CTOKEN_DEBUG_DISABLED_SINCE_BOOT, "disabled_since_boot"},
     {CTOKEN_DEBUG_DISABLED_PERMANENT, "disabled_permanent"},
     {CTOKEN_DEBUG_DISABLED_FULL_PERMANENT, "disabled_full_permanent"},
     {CTOKEN_DEBUG_INVALID, NULL}
+};
+
+
+static const struct integer_string_map_t intended_uses[] = {
+    {CTOKEN_USE_GENERAL, "general"},
+    {CTOKEN_USE_REGISTRATION, "registration"},
+    {CTOKEN_USE_PROVISIONING, "provisioning"},
+    {CTOKEN_USE_CERTIFICATE_ISSUANCE, "certificate_issuance"},
+    {CTOKEN_USE_PROOF_OF_POSSSION, "proof_of_possesion"},
+    {CTOKEN_USE_INVALID, NULL}
 };
 
 
@@ -266,7 +276,7 @@ int64_t string_to_int(const struct integer_string_map_t *map, const char *string
         }
     }
 
-    return 0;
+    return label_map[i].cbor_label;
 }
 
 
@@ -292,6 +302,15 @@ enum ctoken_security_level_t sec_level_x(const char *s)
     return (enum ctoken_security_level_t)string_to_int(sec_levels, s);
 }
 
+static inline enum ctoken_debug_level_t debug_state_from_string(const char *s)
+{
+    return (enum ctoken_debug_level_t)string_to_int(debug_states, s);
+}
+
+static inline enum ctoken_intended_use_t intended_use_from_string(const char *s)
+{
+    return (enum ctoken_intended_use_t)string_to_int(intended_uses, s);
+}
 
 
 
@@ -334,12 +353,46 @@ enum ctoken_security_level_t parse_sec_level_value(const  char *sl)
 }
 
 
-enum ctoken_debug_level_t parse_dbg_x(const char *d1)
+enum ctoken_debug_level_t parse_debug_state(const char *d1)
 {
-    return 0;
+    long n;
+    char *number_end;
 
+    /* Try to convert to a number first */
+    n = strtol(d1, &number_end, 10);
+
+    if(*number_end == '\0') {
+        if(n > CTOKEN_DEBUG_DISABLED_FULL_PERMANENT ||
+           n < CTOKEN_DEBUG_ENABLED) {
+            return CTOKEN_DEBUG_INVALID;
+        } else {
+            return (enum ctoken_debug_level_t)n;
+        }
+    } else {
+        return debug_state_from_string(d1);
+    }
 }
 
+
+enum ctoken_intended_use_t parse_intended_use(const char *use)
+{
+    long n;
+    char *number_end;
+
+    /* Try to convert to a number first */
+    n = strtol(use, &number_end, 10);
+
+    if(*number_end == '\0') {
+        if(n > CTOKEN_USE_PROOF_OF_POSSSION ||
+           n < CTOKEN_USE_GENERAL) {
+            return CTOKEN_USE_INVALID;
+        } else {
+            return (enum ctoken_intended_use_t)n;
+        }
+    } else {
+        return intended_use_from_string(use);
+    }
+}
 
 
 /* returns 4 binary bits corresponding to hex character or

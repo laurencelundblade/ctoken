@@ -39,7 +39,9 @@ int64_t json_name_to_cbor_label(const char *json_name);
 
 enum ctoken_security_level_t parse_sec_level_value(const  char *sl);
 
-enum ctoken_debug_level_t parse_dbg_x(const char *d1);
+enum ctoken_debug_level_t parse_debug_state(const char *d1);
+
+enum ctoken_intended_use_t parse_intended_use(const char *use);
 
 
 #endif /* arg_parse_h */

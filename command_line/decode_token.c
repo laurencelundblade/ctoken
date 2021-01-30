@@ -495,6 +495,7 @@ int encode_claim(struct ctoken_encode_ctx *encode_ctx, const char *claim)
     enum ctoken_debug_level_t    debug_level;
     struct q_useful_buf_c        binary_value;
     int64_t                      int64_value;
+    enum ctoken_intended_use_t   intended_use;
 
     switch(claim_number) {
         case CTOKEN_CWT_LABEL_ISSUER:
@@ -573,12 +574,21 @@ int encode_claim(struct ctoken_encode_ctx *encode_ctx, const char *claim)
             break;
 
         case CTOKEN_EAT_LABEL_DEBUG_STATE:
-            debug_level = parse_dbg_x(claim_value);
+            debug_level = parse_debug_state(claim_value);
             if(debug_level == CTOKEN_DEBUG_INVALID) {
-                fprintf(stderr, "bad debug level \"%s\"\n", claim_value);
+                fprintf(stderr, "bad debug state \"%s\"\n", claim_value);
                 return 1;
             }
             ctoken_encode_debug_state(encode_ctx, debug_level);
+            break;
+
+        case CTOKEN_EAT_LABEL_INTENDED_USE:
+            intended_use = parse_intended_use(claim_value);
+            if(intended_use == CTOKEN_USE_INVALID) {
+                fprintf(stderr, "bad intended use \"%s\"\n", claim_value);
+                return 1;
+            }
+            ctoken_encode_intended_use(encode_ctx, intended_use);
             break;
 
         default:
