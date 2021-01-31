@@ -1,10 +1,14 @@
-//
-//  useful_buf_malloc.c
-//  CToken
-//
-//  Created by Laurence Lundblade on 1/29/21.
-//  Copyright © 2021 Laurence Lundblade. All rights reserved.
-//
+/*
+ * useful_buf_malloc.c
+ *
+ * Copyright (c) 2021, Laurence Lundblade.
+ *
+ * Created by Laurence Lundblade on 1/29/21.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ *
+ * See BSD-3-Clause license in README.md
+ */
 
 #include "useful_buf_malloc.h"
 #include <stdlib.h>
@@ -19,13 +23,4 @@ struct q_useful_buf useful_malloc(size_t size)
     }
     b.len = size;
     return b;
-}
-
-
-void useful_buf_free(struct q_useful_buf_c b)
-{
-    if(b.ptr) {
-        /* cast is to remove the constness */
-        free((void *)b.ptr);
-    }
 }

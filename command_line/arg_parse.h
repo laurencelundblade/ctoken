@@ -1,33 +1,54 @@
-//
-//  arg_parse.h
-//  CToken
-//
-//  Created by Laurence Lundblade on 1/29/21.
-//  Copyright © 2021 Laurence Lundblade. All rights reserved.
-//
+/*
+ * arg_parse.h
+ *
+ * Copyright (c) 2021, Laurence Lundblade.
+ *
+ * Created by Laurence Lundblade on 1/29/21.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ *
+ * See BSD-3-Clause license in README.md
+ */
 
 #ifndef arg_parse_h
 #define arg_parse_h
 
 #include "decode_token.h"
 #include "ctoken_eat_labels.h"
+#include "ctoken.h" // TODO: dependency issue
 
 
-
-int parse_arguments(int argc,
-                    char **argv,
+/**
+ * @brief Main / initial parse of argv and put results into arguments stucture.
+ *
+ * @return 0 on success; 1 on failure
+ *
+ * free_arguments() must be called to deallocate memory that was allocated by this.
+ */
+int parse_arguments(int                      argc,
+                    char                   **argv,
                     struct ctoken_arguments *arguments);
 
-/* pointer in q_useful_buf is malloced and must be freed */
+
+void free_arguments(struct ctoken_arguments *arguments);
+
+
+/* Decodes submod:label:value or label:value, the value of the -claim option
+   All returned strings are malloced
+   return 0 on success, 1 on failure
+   claim_number is 0 if claim label is a string, and non-zero if it is a number */
+int parse_claim_argument(const char *claim_arg,
+                         const char **submod_name,
+                         const char **claim_label,
+                         const char **claim_value,
+                         int64_t    *claim_number);
+
+
+/* pointer in q_useful_buf returned is malloced and must be freed */
 struct q_useful_buf_c convert_to_binary(const char *string);
 
 
 int convert_to_int64(const char *string, int64_t *value);
-
-
-/* Returns a malloced string */
-const char *copy_up_to_colon(const char *input, size_t *amount_copied);
-
 
 
 
@@ -42,6 +63,8 @@ enum ctoken_security_level_t parse_sec_level_value(const  char *sl);
 enum ctoken_debug_level_t parse_debug_state(const char *d1);
 
 enum ctoken_intended_use_t parse_intended_use(const char *use);
+
+int parse_location_arg(const char *s, struct ctoken_location_t *location);
 
 
 #endif /* arg_parse_h */
