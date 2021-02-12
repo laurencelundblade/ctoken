@@ -8,9 +8,6 @@
 
 #include "decode_token.h"
 #include "t_cose/q_useful_buf.h"
-#include <sys/types.h>
-#include <sys/uio.h>
-#include <unistd.h>
 #include <stdlib.h>
 #include <fcntl.h>
 #include "ctoken_decode.h"
@@ -26,156 +23,129 @@
 
 #include "base64.h"
 
+#include "file_io.h"
 
+#include "jtoken_encode.h"
 
-#define INDENTION_INCREMENT 2
-
-void indent(FILE *output_file, int indention_level)
-{
-    indention_level *= INDENTION_INCREMENT;
-
-    while(indention_level > 0) {
-        fputc(' ', output_file);
-        indention_level--;
-    }
-}
-
-
-// outputs location claim in json format
-int output_location_claim(FILE *output_file, int indention_level, const struct ctoken_location_t *location)
-{
-    indent(output_file, indention_level);
-    fprintf(output_file, "\"location\" : {\n");
-    // TODO: spelling of lattitude in ctoken lib
-    indent(output_file, indention_level);
-    fprintf(output_file, "   \"lattitude\": %f,\n", location->eat_loc_latitude);
-    indent(output_file, indention_level);
-    fprintf(output_file, "   \"longitude\": %f\n", location->eat_loc_longitude);
-    indent(output_file, indention_level);
-    fprintf(output_file, "}\n");
-
-// TODO: the rest of parts
-
-    return 0;
-}
-
-
-struct jwt_encode_ctx {
-    FILE *out_file;
-    int   indent_level;
-};
 
 
 struct output_context {
-    int output_type;
+    enum {OUT_JSON, OUT_CBOR} output_type;
     union {
         struct ctoken_encode_ctx ctoken;
-        struct jwt_encode_ctx    jwt;
+        struct jtoken_encode_ctx jwt;
     } u;
+
+    FILE *output_file;
 };
 
 
 
 
-
-void output_int64(FILE *output_file, int indention_level, const char *claim_name, int64_t claim_value)
+int reencode_cbor_generic(struct output_context *me, QCBORItem claim_item)
 {
-    indent(output_file, indention_level);
-    fprintf(output_file, "\"%s\": %lld\n", claim_name, claim_value);
-}
+    char substitue_json_name[20];
+    const char *json_name;
+    bool bool_value;
 
-void output_uint64(FILE *output_file, int indention_level, const char *claim_name, uint64_t claim_value)
-{
-    indent(output_file, indention_level);
-    fprintf(output_file, "\"%s\": %llu\n", claim_name, claim_value);
-}
-
-void output_double(FILE *output_file, int indention_level, const char *claim_name, double claim_value)
-{
-    indent(output_file, indention_level);
-    fprintf(output_file, "\"%s\": %f\n", claim_name, claim_value);
-}
-
-void output_text_string(FILE *output_file, int indention_level, const char *claim_name, struct q_useful_buf_c claim_value)
-{
-    indent(output_file, indention_level);
-    fprintf(output_file, "\"%s\":\"", claim_name);
-    fwrite(claim_value.ptr, 1, claim_value.len, output_file);
-    fprintf(output_file, "\"\n");
-}
-
-
-void output_byte_string(FILE *output_file,
-                        int indention_level,
-                        const char *claim_name,
-                        struct q_useful_buf_c claim_value)
-{
-    indent(output_file, indention_level);
-    fprintf(output_file, "\"%s\":\"", claim_name);
-
-    size_t output_size;
-    char *b64 = base64_encode(claim_value.ptr, claim_value.len, &output_size);
-
-    fwrite(b64, 1, output_size, output_file);
-    fprintf(output_file, "\"\n");
-
-    free(b64);
-}
-
-
-void output_byte_simple(FILE *output_file,
-                        int indention_level,
-                        const char *claim_name,
-                        int simple)
-{
-    indent(output_file, indention_level);
-    fprintf(output_file, "\"%s\":\"", claim_name);
-
-    switch(simple) {
-        case QCBOR_TYPE_TRUE:  fprintf(output_file, "true"); break;
-        case QCBOR_TYPE_FALSE: fprintf(output_file, "false"); break;
-        case QCBOR_TYPE_NULL:  fprintf(output_file, "null"); break;
+    if(me->output_type == OUT_JSON) {
+        json_name = cbor_label_to_json_name(claim_item.label.int64);
+        if(json_name == NULL) {
+            snprintf(substitue_json_name, sizeof(substitue_json_name), "%lld", claim_item.label.int64);
+            json_name = substitue_json_name;
+        }
     }
 
-    fprintf(output_file, "\"\n");
-}
-
-
-
-
-void output_other_claim(FILE *output_file,
-                        int indention_level,
-                        struct ctoken_decode_ctx *decode_context,
-                        int64_t cbor_label)
-{
-    struct ctoken_location_t loc;
-
-
-    switch(cbor_label) {
-
-        case CTOKEN_EAT_LABEL_LOCATION:
-            ctoken_decode_location(decode_context, &loc);
-            // TODO: error check
-            output_location_claim(output_file, indention_level, &loc);
+    switch(claim_item.uDataType) {
+        case QCBOR_TYPE_INT64:
+            if(me->output_type == OUT_JSON) {
+                jtoken_encode_int64(&(me->u.jwt), json_name, claim_item.val.int64);
+            } else {
+                ctoken_encode_add_integer(&(me->u.ctoken),
+                                          claim_item.label.int64,
+                                          claim_item.val.int64);
+            }
             break;
+/*
+        case QCBOR_TYPE_UINT64:
+            output_uint64(output_file,
+                         indention_level,
+                         json_name ? json_name : substitue_json_name,
+                         claim_item.val.uint64);
+            break;
+*/
+        case QCBOR_TYPE_DOUBLE:
+             if(me->output_type == OUT_JSON) {
+                jtoken_encode_double(&(me->u.jwt), json_name, claim_item.val.dfnum);
+            } else {
+                ctoken_encode_add_double(&(me->u.ctoken),
+                                       claim_item.label.int64,
+                                          claim_item.val.dfnum);
+            }
+            break;
+
+        case QCBOR_TYPE_TEXT_STRING:
+            if(me->output_type == OUT_JSON) {
+                jtoken_encode_text_string(&(me->u.jwt), json_name, claim_item.val.string);
+            } else {
+                ctoken_encode_add_tstr(&(me->u.ctoken),
+                                          claim_item.label.int64,
+                                          claim_item.val.string);
+            }
+            break;
+
+        case QCBOR_TYPE_BYTE_STRING:
+             if(me->output_type == OUT_JSON) {
+                jtoken_encode_byte_string(&(me->u.jwt), json_name, claim_item.val.string);
+            } else {
+                ctoken_encode_add_bstr(&(me->u.ctoken),
+                                       claim_item.label.int64,
+                                          claim_item.val.string);
+            }
+            break;
+
+        case QCBOR_TYPE_TRUE:
+        case QCBOR_TYPE_FALSE:
+             bool_value = claim_item.uDataType == QCBOR_TYPE_TRUE;
+             if(me->output_type == OUT_JSON) {
+                jtoken_encode_byte_string(&(me->u.jwt), json_name, claim_item.val.string);
+            } else {
+                ctoken_encode_add_bool(&(me->u.ctoken),
+                                         claim_item.label.int64,
+                                         bool_value);
+            }
+            break;
+
+        case QCBOR_TYPE_NULL:
+             if(me->output_type == OUT_JSON) {
+                jtoken_encode_null(&(me->u.jwt), json_name);
+            } else {
+                ctoken_encode_add_null(&(me->u.ctoken),
+                                         claim_item.label.int64);
+            }
+            break;
+
 
         default:
-            // Claim is aggregate that is not known. Must walk
-            // the CBOR and convert to JSON.
+            // TODO: some type that is not understood. Fix error code
+            return 1;
             break;
-
     }
+
+
+    return 0; // TODO: error handling
+
 }
 
 
 
-int decode_cbor(FILE *output_file, struct q_useful_buf_c input_bytes, int output_format)
+
+/* Decode CBOR-format input and re-encode it is JSON or CBOR. */
+int reencode_cbor(struct output_context *me, struct q_useful_buf_c input_bytes)
 {
     struct ctoken_decode_ctx decode_context;
     enum ctoken_err_t        error;
     QCBORItem                claim_item;
-
-    int indention_level = 0;
 
     ctoken_decode_init(&decode_context,
                        0,
@@ -195,123 +165,130 @@ int decode_cbor(FILE *output_file, struct q_useful_buf_c input_bytes, int output
             break;
         }
 
-        // TODO: make sure label is of the right type and/or handle alternate types
-        const char *json_name = cbor_label_to_json_name(claim_item.label.int64);
+        // TODO: are type checks needed for these?
+        switch(claim_item.label.int64) {
 
-        char substitue_json_name[20];
-        snprintf(substitue_json_name, sizeof(substitue_json_name), "%lld", claim_item.label.int64);
-
-        switch(claim_item.uDataType) {
-            case QCBOR_TYPE_INT64:
-                output_int64(output_file,
-                             indention_level,
-                             json_name ? json_name : substitue_json_name,
-                             claim_item.val.int64);
+            case CTOKEN_CWT_LABEL_ISSUER:
+                if(me->output_type == OUT_JSON) {
+                    jtoken_encode_issuer(&(me->u.jwt), claim_item.val.string);
+                } else {
+                    ctoken_encode_issuer(&(me->u.ctoken), claim_item.val.string);
+                }
                 break;
 
-            case QCBOR_TYPE_UINT64:
-                output_uint64(output_file,
-                             indention_level,
-                             json_name ? json_name : substitue_json_name,
-                             claim_item.val.uint64);
+            case CTOKEN_CWT_LABEL_SUBJECT:
+                if(me->output_type == OUT_JSON) {
+                    jtoken_encode_subject(&(me->u.jwt), claim_item.val.string);
+                } else {
+                    ctoken_encode_subject(&(me->u.ctoken), claim_item.val.string);
+                }
                 break;
 
-            case QCBOR_TYPE_DOUBLE:
-                output_double(output_file,
-                              indention_level,
-                              json_name ? json_name : substitue_json_name,
-                              claim_item.val.dfnum);
+            case CTOKEN_CWT_LABEL_AUDIENCE:
+                if(me->output_type == OUT_JSON) {
+                    jtoken_encode_audience(&(me->u.jwt), claim_item.val.string);
+                } else {
+                    ctoken_encode_audience(&(me->u.ctoken), claim_item.val.string);
+                }
                 break;
 
-            case QCBOR_TYPE_TEXT_STRING:
-                output_text_string(output_file,
-                                   indention_level,
-                                   json_name ? json_name : substitue_json_name,
-                                   claim_item.val.string);
+            case CTOKEN_CWT_LABEL_EXPIRATION:
+                if(me->output_type == OUT_JSON) {
+                    jtoken_encode_expiration(&(me->u.jwt), claim_item.val.int64);
+                } else {
+                    ctoken_encode_expiration(&(me->u.ctoken), claim_item.val.int64);
+                }
                 break;
 
-            case QCBOR_TYPE_BYTE_STRING:
-                output_byte_string(output_file,
-                                   indention_level,
-                                   json_name ? json_name : substitue_json_name,
-                                   claim_item.val.string);
+            case CTOKEN_CWT_LABEL_NOT_BEFORE:
+                 if(me->output_type == OUT_JSON) {
+                     jtoken_encode_not_before(&(me->u.jwt), claim_item.val.int64);
+                 } else {
+                     ctoken_encode_not_before(&(me->u.ctoken), claim_item.val.int64);
+                 }
+                 break;
+
+            case CTOKEN_CWT_LABEL_IAT:
+                 if(me->output_type == OUT_JSON) {
+                     jtoken_encode_iat(&(me->u.jwt), claim_item.val.int64);
+                 } else {
+                     ctoken_encode_iat(&(me->u.ctoken), claim_item.val.int64);
+                 }
+                 break;
+
+            case CTOKEN_CWT_LABEL_CTI:
+                if(me->output_type == OUT_JSON) {
+                    jtoken_encode_jti(&(me->u.jwt), claim_item.val.string);
+                } else {
+                    ctoken_encode_cti(&(me->u.ctoken), claim_item.val.string);
+                }
                 break;
 
-            case QCBOR_TYPE_TRUE:
-            case QCBOR_TYPE_FALSE:
-            case QCBOR_TYPE_NULL:
-                output_byte_simple(output_file,
-                                   indention_level,
-                                   json_name ? json_name : substitue_json_name,
-                                   claim_item.uDataType);
+            case CTOKEN_EAT_LABEL_UEID:
+                if(me->output_type == OUT_JSON) {
+                    jtoken_encode_ueid(&(me->u.jwt), claim_item.val.string);
+                } else {
+                    ctoken_encode_ueid(&(me->u.ctoken), claim_item.val.string);
+                }
+                break;
+
+            case CTOKEN_EAT_LABEL_NONCE:
+                if(me->output_type == OUT_JSON) {
+                    jtoken_encode_nonce(&(me->u.jwt), claim_item.val.string);
+                } else {
+                    ctoken_encode_nonce(&(me->u.ctoken), claim_item.val.string);
+                }
+                break;
+
+            case CTOKEN_EAT_LABEL_SECURITY_LEVEL:
+                if(out_ctx->output_type == 1) { // TODO: value
+                     ctoken_encode_security_level(&(me->u.ctoken), sec_level);
+                 } else {
+                     // TODO: build check that ctoken and jtoken values are the same
+                     jtoken_encode_security_level(&(me->u.jwt),
+                                                  (enum jtoken_security_level_t)sec_level);
+                 }
                 break;
 
             default:
-                output_other_claim(output_file,
-                                   indention_level,
-                                   &decode_context,
-                                   claim_item.label.int64);
+                reencode_cbor_generic(me, claim_item);
+                break;
+                
         }
     }
-
     return 0;
 }
 
 
 
 
-/* Read the contents of a file into malloced buffer
- *
- *
- */
-struct q_useful_buf_c read_file(int file_descriptor)
-{
-    char    input_buf[2048];
-    char   *file_content;
-    size_t  file_size;
-    ssize_t amount_read;
 
-
-    file_content = NULL;
-    file_size    = 0;
-    while(1) {
-        amount_read = read(file_descriptor, input_buf, sizeof(input_buf));
-
-        if(amount_read == 0) {
-            /* normal exit */
-            break;
-        }
-
-        if(amount_read < 0) {
-            /* read error exit */
-            return NULL_Q_USEFUL_BUF_C;
-        }
-
-        if(file_content == NULL) {
-            file_content = malloc(amount_read);
-            if(file_content == NULL) {
-                return NULL_Q_USEFUL_BUF_C;
-            }
-        } else {
-            file_content = realloc(file_content, amount_read + file_size);
-        }
-
-        memcpy(file_content + file_size, input_buf, amount_read);
-        file_size += amount_read;
-    }
-
-    return (struct q_useful_buf_c){file_content, file_size};
-}
-
-
-
-void add_generic(struct ctoken_encode_ctx *encode_ctx,
+static inline void
+encode_generic_claim_argument(struct output_context    *out_ctx,
                  int64_t                   claim_number,
+                 const char               *claim_label,
                  const char               *claim_value)
 {
-    // TODO: fix type of label.
-    // TODO: detect different type of claim_values
-    ctoken_encode_add_tstr_z(encode_ctx, claim_number, claim_value);
+    if(out_ctx->output_type == OUT_JSON) {
+        jtoken_encode_text_string_z(&(out_ctx->u.jwt), claim_label, claim_value);
+
+    } else {// TODO: value
+        // TODO: detect different type of claim_values
+        /* Claim types....
+         if it converts to an integer output as an integer
+         if it converts to a double, output as double
+         if it is true or false output as simple
+         if it matches diagnostic binary notation output as bstr
+         finally output as a text string
+
+         or could just decode the whole diagnostic notation
+         which is kind of what the above is.
+
+
+         */
+        // TODO: fix type of label.
+        ctoken_encode_add_tstr_z(&(out_ctx->u.ctoken), claim_number, claim_value);
+    }
 }
 
 
@@ -319,14 +296,20 @@ void add_generic(struct ctoken_encode_ctx *encode_ctx,
 /* Free a pointer if not NULL even if it is const */
 #define FREEIF(x) if(x != NULL){free((void *)x);}
 
-
-int encode_claim(struct ctoken_encode_ctx *encode_ctx, const char *claim)
+/* Encode a claim given as a command line argument */
+int encode_claim_argument(struct output_context *out_ctx, const char *claim)
 {
     const char *claim_label;
     const char *submod_name;
     const char *claim_value;
     int64_t     claim_number;
     int         error;
+
+    QCBORItem                claim_item;
+
+
+    // TODO: make this work for jwt
+    struct ctoken_encode_ctx *encode_ctx = &(out_ctx->u.ctoken);
 
     error = parse_claim_argument(claim,
                                  &submod_name,
@@ -350,15 +333,33 @@ int encode_claim(struct ctoken_encode_ctx *encode_ctx, const char *claim)
 
     switch(claim_number) {
         case CTOKEN_CWT_LABEL_ISSUER:
-            ctoken_encode_issuer(encode_ctx, q_useful_buf_from_sz(claim_value));
+            claim_item.label.int64 = CTOKEN_CWT_LABEL_ISSUER;
+            claim_item.uDataType = QCBOR_TYPE_TEXT_STRING;
+            claim_item.val.string = q_useful_buf_from_sz(claim_value);
+
+
+
+            if(out_ctx->output_type == 1) { // TODO: value
+                ctoken_encode_issuer(&(out_ctx->u.ctoken), q_useful_buf_from_sz(claim_value));
+            } else {
+                jtoken_encode_issuer(&(out_ctx->u.jwt), q_useful_buf_from_sz(claim_value));
+            }
             break;
 
         case CTOKEN_CWT_LABEL_SUBJECT:
-            ctoken_encode_subject(encode_ctx, q_useful_buf_from_sz(claim_value));
+            if(out_ctx->output_type == 1) { // TODO: value
+                ctoken_encode_subject(&(out_ctx->u.ctoken), q_useful_buf_from_sz(claim_value));
+            } else {
+                jtoken_encode_subject(&(out_ctx->u.jwt), q_useful_buf_from_sz(claim_value));
+            }
             break;
 
         case CTOKEN_CWT_LABEL_AUDIENCE:
-            ctoken_encode_audience(encode_ctx, q_useful_buf_from_sz(claim_value));
+            if(out_ctx->output_type == 1) { // TODO: value
+                ctoken_encode_audience(&(out_ctx->u.ctoken), q_useful_buf_from_sz(claim_value));
+            } else {
+                jtoken_encode_audience(&(out_ctx->u.jwt), q_useful_buf_from_sz(claim_value));
+            }
             break;
 
         case CTOKEN_CWT_LABEL_EXPIRATION:
@@ -366,7 +367,11 @@ int encode_claim(struct ctoken_encode_ctx *encode_ctx, const char *claim)
                 fprintf(stderr, "Error in expiration format \"%s\"\n", claim_value);
                 return 1;
             }
-            ctoken_encode_expiration(encode_ctx, int64_value);
+            if(out_ctx->output_type == 1) { // TODO: value
+                ctoken_encode_expiration(&(out_ctx->u.ctoken), int64_value);
+            } else {
+                jtoken_encode_expiration(&(out_ctx->u.jwt), int64_value);
+            }
             break;
 
         case CTOKEN_CWT_LABEL_NOT_BEFORE:
@@ -374,7 +379,11 @@ int encode_claim(struct ctoken_encode_ctx *encode_ctx, const char *claim)
                 fprintf(stderr, "Error in not-before format \"%s\"\n", claim_value);
                 return 1;
             }
-            ctoken_encode_not_before(encode_ctx, int64_value);
+            if(out_ctx->output_type == 1) { // TODO: value
+                ctoken_encode_not_before(&(out_ctx->u.ctoken), int64_value);
+            } else {
+                jtoken_encode_not_before(&(out_ctx->u.jwt), int64_value);
+            }
             break;
 
         case CTOKEN_CWT_LABEL_IAT:
@@ -382,8 +391,12 @@ int encode_claim(struct ctoken_encode_ctx *encode_ctx, const char *claim)
                  fprintf(stderr, "Error in issued-at format \"%s\"\n", claim_value);
                  return 1;
              }
-             ctoken_encode_iat(encode_ctx, int64_value);
-             break;
+            if(out_ctx->output_type == 1) { // TODO: value
+                ctoken_encode_iat(&(out_ctx->u.ctoken), int64_value);
+            } else {
+                jtoken_encode_iat(&(out_ctx->u.jwt), int64_value);
+            }
+            break;
 
         case CTOKEN_CWT_LABEL_CTI:
              binary_value = convert_to_binary(claim_value);
@@ -391,7 +404,12 @@ int encode_claim(struct ctoken_encode_ctx *encode_ctx, const char *claim)
                  fprintf(stderr, "bad cti value \"%s\"\n", claim_value);
                  return 1;
              }
-             ctoken_encode_cti(encode_ctx, binary_value);
+             if(out_ctx->output_type == 1) { // TODO: value
+                 ctoken_encode_cti(&(out_ctx->u.ctoken), binary_value);
+             } else {
+                 // TODO: text vs binary here
+                 jtoken_encode_jti(&(out_ctx->u.jwt), q_useful_buf_from_sz(claim_value));
+             }
              useful_buf_c_free(binary_value);
              break;
 
@@ -401,7 +419,11 @@ int encode_claim(struct ctoken_encode_ctx *encode_ctx, const char *claim)
                 fprintf(stderr, "bad ueid value \"%s\"\n", claim_value);
                 return 1;
             }
-            ctoken_encode_ueid(encode_ctx, binary_value);
+            if(out_ctx->output_type == 1) { // TODO: value
+                ctoken_encode_ueid(&(out_ctx->u.ctoken), binary_value);
+            } else {
+                jtoken_encode_ueid(&(out_ctx->u.jwt), binary_value);
+            }
             useful_buf_c_free(binary_value);
             break;
 
@@ -411,7 +433,11 @@ int encode_claim(struct ctoken_encode_ctx *encode_ctx, const char *claim)
                 fprintf(stderr, "bad nonce value \"%s\"\n", claim_value);
                 return 1;
             }
-            ctoken_encode_nonce(encode_ctx, binary_value);
+            if(out_ctx->output_type == 1) { // TODO: value
+                ctoken_encode_nonce(&(out_ctx->u.ctoken), binary_value);
+            } else {
+                jtoken_encode_nonce(&(out_ctx->u.jwt), binary_value);
+            }
             useful_buf_c_free(binary_value);
             break;
 
@@ -421,7 +447,13 @@ int encode_claim(struct ctoken_encode_ctx *encode_ctx, const char *claim)
                 fprintf(stderr, "bad security level \"%s\"\n", claim_value);
                 return 1;
             }
-            ctoken_encode_security_level(encode_ctx, sec_level);
+            if(out_ctx->output_type == 1) { // TODO: value
+                ctoken_encode_security_level(&(out_ctx->u.ctoken), sec_level);
+            } else {
+                // TODO: build check that ctoken and jtoken values are the same
+                jtoken_encode_security_level(&(out_ctx->u.jwt),
+                                             (enum jtoken_security_level_t)sec_level);
+            }
             break;
 
         case CTOKEN_EAT_LABEL_DEBUG_STATE:
@@ -430,7 +462,12 @@ int encode_claim(struct ctoken_encode_ctx *encode_ctx, const char *claim)
                 fprintf(stderr, "bad debug state \"%s\"\n", claim_value);
                 return 1;
             }
-            ctoken_encode_debug_state(encode_ctx, debug_level);
+            if(out_ctx->output_type == 1) { // TODO: value
+               ctoken_encode_debug_state(&(out_ctx->u.ctoken), debug_level);
+            } else {
+               jtoken_encode_debug_state(&(out_ctx->u.jwt),
+                                         (enum jtoken_debug_level_t) debug_level);
+            }
             break;
 
         case CTOKEN_EAT_LABEL_INTENDED_USE:
@@ -439,7 +476,7 @@ int encode_claim(struct ctoken_encode_ctx *encode_ctx, const char *claim)
                 fprintf(stderr, "bad intended use \"%s\"\n", claim_value);
                 return 1;
             }
-            ctoken_encode_intended_use(encode_ctx, intended_use);
+            ctoken_encode_intended_use(&(out_ctx->u.ctoken), intended_use);
             break;
 
         case CTOKEN_EAT_LABEL_LOCATION:
@@ -451,7 +488,7 @@ int encode_claim(struct ctoken_encode_ctx *encode_ctx, const char *claim)
             ctoken_encode_location(encode_ctx, &location);
 
         default:
-            add_generic(encode_ctx, claim_number, claim_value);
+            encode_generic_claim_argument(out_ctx, claim_number, claim_label, claim_value);
             break;
 
         case 0:
@@ -467,12 +504,12 @@ int encode_claim(struct ctoken_encode_ctx *encode_ctx, const char *claim)
 }
 
 
-int encode_claims2(struct ctoken_encode_ctx *encode_ctx, const char **claims)
+int encode_claims2(struct output_context *out_ctx, const char **claims)
 {
     int r;
 
     while(*claims) {
-        r = encode_claim(encode_ctx, *claims);
+        r = encode_claim_argument(out_ctx, *claims);
         if(r) {
             return r;
         }
@@ -483,16 +520,8 @@ int encode_claims2(struct ctoken_encode_ctx *encode_ctx, const char **claims)
 }
 
 
-/* returns 0 if write was successful, 1 if not */
-int write_bytes(FILE *out_file, struct q_useful_buf_c token)
-{
-    size_t x = fwrite(token.ptr, 1, token.len, out_file);
 
-    return x == token.len ? 1 : 0;
-}
-
-
-int encode_claims(FILE *output, const char **claims)
+int encode_claims_arguments(FILE *output, const char **claims)
 {
     struct ctoken_encode_ctx encode_ctx;
 
@@ -526,23 +555,82 @@ int encode_claims(FILE *output, const char **claims)
 }
 
 
+int
+reencode_cbor_to_file(FILE *output_file, int format , struct q_useful_buf_c input_bytes)
+{
+    struct output_context output;
+
+    if(format == OUT_FORMAT_CBOR) {
+        output.output_type = OUT_CBOR;
+        ctoken_encode_init(&output.u.ctoken, 0, 0, CTOKEN_PROTECTION_NONE, 0);
+
+        struct q_useful_buf out_buf = (struct q_useful_buf){NULL, SIZE_MAX};
+        struct q_useful_buf_c completed_token;
+
+        // Loop only executes twice, once to compute size then to actually created token
+        while(1) {
+            ctoken_encode_start(&output.u.ctoken, out_buf);
+
+            reencode_cbor(&output, input_bytes);
+
+            ctoken_encode_finish(&output.u.ctoken, &completed_token);
+
+            if(out_buf.ptr != NULL) {
+                // Normal exit from loop
+                break;
+            }
+
+            out_buf.ptr = malloc(completed_token.len);
+            out_buf.len = completed_token.len;
+        }
+
+        write_bytes(output_file, completed_token);
+
+        free(out_buf.ptr);
+        
+    } else {
+        output.output_type = OUT_JSON;
+        jwt_encode_init(&output.u.jwt, output_file);
+
+        reencode_cbor(&output, input_bytes);
+    }
+
+    return 0;
+}
+
+
 
 
 int ctoken(const struct ctoken_arguments *arguments)
 {
     struct q_useful_buf_c input_bytes = NULL_Q_USEFUL_BUF_C;
-    FILE *output;
+    FILE *output_file;
+    struct output_context output;
+
 
     /* Set up output file to which whatever is done will be written. */
     if(arguments->output_file) {
-        output = fopen(arguments->output_file, "w");
-        if(output == NULL) {
+        output_file = fopen(arguments->output_file, "w");
+        if(output_file == NULL) {
             fprintf(stderr, "error opening output file \"%s\"\n", arguments->output_file);
             return -4;
         }
     } else {
-        output = stdout;
+        output_file = stdout;
     }
+
+    output.output_file = output_file;
+
+    if(arguments->output_format == OUT_FORMAT_CBOR) {
+
+    } else {
+
+        
+    }
+
+
+
+
 
     /* Figure out the input, either a file or some claim arguments (or both?)*/
     if(arguments->input_file) {
@@ -569,14 +657,16 @@ int ctoken(const struct ctoken_arguments *arguments)
             return -2;
         }
 
-        // TODO: need to handle JSON too.
-        decode_cbor(output, input_bytes, arguments->output_format);
+        // TODO: need to handle JSON too. This assumes file is CBOR
+        // TODO: key material and options for decoding CBOR
+        // TODO: actually set up output file for CBOR outputting
+        reencode_cbor_to_file(output_file, arguments->output_format , input_bytes);
 
         return 0;
     } else {
         if(arguments->claims) {
             /* input is some claim arguments. */
-            encode_claims(output, arguments->claims);
+            encode_claims_arguments(output_file, arguments->claims);
 
         } else {
             fprintf(stderr, "No input given (neither -in or -claim given)\n");
@@ -584,7 +674,7 @@ int ctoken(const struct ctoken_arguments *arguments)
         }
     }
 
-    fclose(output);
+    fclose(output_file);
 
     return 0;
 }
@@ -600,5 +690,26 @@ void ct_main()
     arguments.input_file = "token.cbor";
 
     ctoken(&arguments);
-
 }
+
+
+/*
+
+
+open output file descriptor
+
+encode into memory
+
+ write to file descriptor
+
+
+ does JSON encoder write to memory?
+
+
+
+
+
+
+
+
+ */

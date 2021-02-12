@@ -223,10 +223,48 @@ static void ctoken_encode_add_tstr(struct ctoken_encode_ctx *context,
                                    struct q_useful_buf_c     value);
 
 
+
+
+
 static inline void
 ctoken_encode_add_tstr_z(struct ctoken_encode_ctx *me,
                          int32_t label,
                          const char *tstr);
+
+
+/**
+ * \brief Add a text string claim TODO: document correctly
+ *
+ * \param[in] context     Token creation context.
+ * \param[in] label  Integer label for claim.
+ * \param[in] value  The text claim data.
+ */
+static void ctoken_encode_add_bool(struct ctoken_encode_ctx *context,
+                                   int32_t                   label,
+                                   bool value);
+
+
+/**
+* \brief Add a text string claim TODO: document correctly
+*
+* \param[in] context     Token creation context.
+* \param[in] label  Integer label for claim.
+* \param[in] value  The text claim data.
+*/
+static void ctoken_encode_add_null(struct ctoken_encode_ctx *context,
+                                   int32_t                   label);
+
+
+/**
+ * \brief Add a 64-bit signed integer claim  TODO: document correctly
+ *
+ * \param[in] context     Token creation context.
+ * \param[in] label  Integer label for claim.
+ * \param[in] value  The signed integer claim data.
+ */
+static void ctoken_encode_add_double(struct ctoken_encode_ctx *context,
+                                      int32_t                  label,
+                                      double                   value);
 
 /**
  * \brief Add some already-encoded CBOR to payload
@@ -870,6 +908,33 @@ ctoken_encode_add_tstr_z(struct ctoken_encode_ctx *me,
                          const char *tstr)
 {
     QCBOREncode_AddSZStringToMapN(&(me->cbor_encode_context), label, tstr);
+}
+
+
+static inline void
+ctoken_encode_add_bool(struct ctoken_encode_ctx *me,
+                       int32_t                   label,
+                       bool                      value)
+{
+    QCBOREncode_AddBoolToMapN(&(me->cbor_encode_context), label, value);
+}
+
+
+static inline void
+ctoken_encode_add_null(struct ctoken_encode_ctx *me,
+                       int32_t                   label)
+{
+    QCBOREncode_AddNULLToMapN(&(me->cbor_encode_context), label);
+}
+
+
+
+static inline void
+ctoken_encode_add_double(struct ctoken_encode_ctx *me,
+                         int32_t                   label,
+                         double                    value)
+{
+    QCBOREncode_AddDoubleToMapN(&(me->cbor_encode_context), label, value);
 }
 
 
