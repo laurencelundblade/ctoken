@@ -26,7 +26,7 @@ int xclaim_encode_generic(struct ctoken_encode_ctx *ectx, const QCBORItem *claim
 
 
         case QCBOR_TYPE_DOUBLE:
-            token_encode_add_double(ectx, claim_item->label.int64, claim_item->val.dfnum);
+            ctoken_encode_add_double(ectx, claim_item->label.int64, claim_item->val.dfnum);
             break;
 
         case QCBOR_TYPE_TEXT_STRING:
@@ -40,11 +40,11 @@ int xclaim_encode_generic(struct ctoken_encode_ctx *ectx, const QCBORItem *claim
         case QCBOR_TYPE_TRUE:
         case QCBOR_TYPE_FALSE:
             bool_value = claim_item->uDataType == QCBOR_TYPE_TRUE;
-            token_encode_add_bool(ectx, claim_item->label.int64, bool_value);
+            ctoken_encode_add_bool(ectx, claim_item->label.int64, bool_value);
             break;
 
         case QCBOR_TYPE_NULL:
-            token_encode_add_null(ectx, claim_item->label.int64);
+            ctoken_encode_add_null(ectx, claim_item->label.int64);
             break;
 
         default:

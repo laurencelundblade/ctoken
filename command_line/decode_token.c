@@ -188,7 +188,10 @@ int ctoken(const struct ctoken_arguments *arguments)
 
     xclaim_decoder decoder;
 
-    /* Figure out the input, either a file or some claim arguments (or both?)*/
+    /* Set up the xlaim_decoder object first. The type of this object
+       depends on the input type (e.g. CBOR or command line arguments
+       (eventually JWT too)). The decoder object will be called by
+     the outputter to iterate over all the claims. */
     if(arguments->input_file) {
 
         /* Input is a file, not claim arguments */
@@ -216,13 +219,16 @@ int ctoken(const struct ctoken_arguments *arguments)
         // TODO: need to handle JSON too. This assumes file is CBOR
         // TODO: key material and options for decoding CBOR
         // TODO: actually set up output file for CBOR outputting
-        init_ctoken_iclaims(&decoder, &cctx, input_bytes);
+        if(init_ctoken_iclaims(&decoder, &cctx, input_bytes)) {
+            return 1;
+        }
 
-        return 0;
     } else {
         if(arguments->claims) {
             /* input is some claim arguments. */
-            setup1_parg_decode(&decoder, &parg, arguments->claims);
+            if(setup1_parg_decode(&decoder, &parg, arguments->claims)) {
+                return 1;
+            }
 
         } else {
             fprintf(stderr, "No input given (neither -in or -claim given)\n");
@@ -242,7 +248,8 @@ int ctoken(const struct ctoken_arguments *arguments)
         output_file = stdout;
     }
 
-    /* Call the outputter to do the real work */
+
+    /* Call the outputter to do the actual work */
     if(arguments->output_format == OUT_FORMAT_CBOR) {
         encode_as_cbor(&decoder, output_file);
 

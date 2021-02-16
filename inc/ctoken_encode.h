@@ -249,7 +249,6 @@ static void ctoken_encode_add_bool(struct ctoken_encode_ctx *context,
 *
 * \param[in] context     Token creation context.
 * \param[in] label  Integer label for claim.
-* \param[in] value  The text claim data.
 */
 static void ctoken_encode_add_null(struct ctoken_encode_ctx *context,
                                    int32_t                   label);

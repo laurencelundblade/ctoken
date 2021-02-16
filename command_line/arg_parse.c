@@ -28,6 +28,44 @@
 
 
 
+
+
+
+/* Decodes submod:label:value or label:value, the value of the -claim option
+   All returned strings are malloced
+   return 0 on success, 1 on failure
+   claim_number is 0 if claim label is a string, and non-zero if it is a number */
+int parse_claim_argument(const char *claim_arg,
+                         const char **submod_name,
+                         const char **claim_label,
+                         const char **claim_value,
+                         int64_t    *claim_number);
+
+
+/* pointer in q_useful_buf returned is malloced and must be freed */
+struct q_useful_buf_c convert_to_binary(const char *string);
+
+
+int convert_to_int64(const char *string, int64_t *value);
+
+
+
+const char *cbor_label_to_json_name(int64_t cbor_label);
+
+/* Returns 0 if there is no cbor label for the json name. */
+int64_t json_name_to_cbor_label(const char *json_name);
+
+
+enum ctoken_security_level_t parse_sec_level_value(const  char *sl);
+
+enum ctoken_debug_level_t parse_debug_state(const char *d1);
+
+enum ctoken_intended_use_t parse_intended_use(const char *use);
+
+int parse_location_arg(const char *s, struct ctoken_location_t *location);
+
+
+
 /* Command line option indexes used with getopt(). */
 enum arg_id_t {
     INPUT_FILE,
@@ -56,6 +94,18 @@ static const struct option longopts[] = {
     { NULL,         0,                  NULL,  0 }
 };
 
+
+
+/*
+ * Public function. See arg_parse.h
+ */
+void free_arguments(struct ctoken_arguments *arguments)
+{
+    if(arguments->claims) {
+        free(arguments->claims);
+        arguments->claims = NULL;
+    }
+}
 
 /*
  * Public function. See arg_parse.h
@@ -190,16 +240,6 @@ int parse_arguments(int argc, char **argv, struct ctoken_arguments *arguments)
 }
 
 
-/*
- * Public function. See arg_parse.h
- */
-void free_arguments(struct ctoken_arguments *arguments)
-{
-    if(arguments->claims) {
-        free(arguments->claims);
-        arguments->claims = NULL;
-    }
-}
 
 
 
@@ -578,262 +618,48 @@ int convert_to_int64(const char *s, int64_t *v)
 
 
 
-static inline void
-encode_generic_claim_argument(struct output_context    *out_ctx,
-                 int64_t                   claim_number,
-                 const char               *claim_label,
-                 const char               *claim_value)
-{
-    if(out_ctx->output_type == OUT_JSON) {
-        jtoken_encode_text_string_z(&(out_ctx->u.jwt), claim_label, claim_value);
-
-    } else {// TODO: value
-        // TODO: detect different type of claim_values
-        /* Claim types....
-         if it converts to an integer output as an integer
-         if it converts to a double, output as double
-         if it is true or false output as simple
-         if it matches diagnostic binary notation output as bstr
-         finally output as a text string
-
-         or could just decode the whole diagnostic notation
-         which is kind of what the above is.
-
-
-         */
-        // TODO: fix type of label.
-        ctoken_encode_add_tstr_z(&(out_ctx->u.ctoken), claim_number, claim_value);
-    }
-}
-
-
-
 /* Free a pointer if not NULL even if it is const */
 #define FREEIF(x) if(x != NULL){free((void *)x);}
 
-/* Encode a claim given as a command line argument */
-int encode_claim_argument(struct output_context *out_ctx, const char *claim)
+
+
+static int generic_claim(const char *claim_value, QCBORItem *qcbor_item)
 {
-    const char *claim_label;
-    const char *submod_name;
-    const char *claim_value;
-    int64_t     claim_number;
-    int         error;
-
-    QCBORItem                claim_item;
-
-
-    // TODO: make this work for jwt
-    struct ctoken_encode_ctx *encode_ctx = &(out_ctx->u.ctoken);
-
-    error = parse_claim_argument(claim,
-                                 &submod_name,
-                                 &claim_label,
-                                 &claim_value,
-                                 &claim_number);
-
-    if(error) {
-        return error;
-    }
-
-    // TODO: handle submods (a lot of work!)
-
-
-    enum ctoken_security_level_t sec_level;
-    enum ctoken_debug_level_t    debug_level;
-    struct q_useful_buf_c        binary_value;
-    int64_t                      int64_value;
-    enum ctoken_intended_use_t   intended_use;
-    struct ctoken_location_t     location;
-
-
-    claim_item.label.int64 = claim_number;
-    claim_item.uLabelType  = QCBOR_TYPE_INT64;
-
-    switch(claim_number) {
-        case CTOKEN_CWT_LABEL_ISSUER:
-        case CTOKEN_CWT_LABEL_SUBJECT:
-
-            claim_item.uDataType = QCBOR_TYPE_TEXT_STRING;
-            claim_item.val.string = q_useful_buf_from_sz(claim_value);
-            break;
-
-
-        case CTOKEN_CWT_LABEL_AUDIENCE:
-            if(out_ctx->output_type == 1) { // TODO: value
-                ctoken_encode_audience(&(out_ctx->u.ctoken), q_useful_buf_from_sz(claim_value));
-            } else {
-                jtoken_encode_audience(&(out_ctx->u.jwt), q_useful_buf_from_sz(claim_value));
-            }
-            break;
-
-        case CTOKEN_CWT_LABEL_EXPIRATION:
-            if(convert_to_int64(claim_value, &int64_value)) {
-                fprintf(stderr, "Error in expiration format \"%s\"\n", claim_value);
-                return 1;
-            }
-            if(out_ctx->output_type == 1) { // TODO: value
-                ctoken_encode_expiration(&(out_ctx->u.ctoken), int64_value);
-            } else {
-                jtoken_encode_expiration(&(out_ctx->u.jwt), int64_value);
-            }
-            break;
-
-        case CTOKEN_CWT_LABEL_NOT_BEFORE:
-            if(convert_to_int64(claim_value, &int64_value)) {
-                fprintf(stderr, "Error in not-before format \"%s\"\n", claim_value);
-                return 1;
-            }
-            if(out_ctx->output_type == 1) { // TODO: value
-                ctoken_encode_not_before(&(out_ctx->u.ctoken), int64_value);
-            } else {
-                jtoken_encode_not_before(&(out_ctx->u.jwt), int64_value);
-            }
-            break;
-
-        case CTOKEN_CWT_LABEL_IAT:
-             if(convert_to_int64(claim_value, &int64_value)) {
-                 fprintf(stderr, "Error in issued-at format \"%s\"\n", claim_value);
-                 return 1;
-             }
-            if(out_ctx->output_type == 1) { // TODO: value
-                ctoken_encode_iat(&(out_ctx->u.ctoken), int64_value);
-            } else {
-                jtoken_encode_iat(&(out_ctx->u.jwt), int64_value);
-            }
-            break;
-
-        case CTOKEN_CWT_LABEL_CTI:
-             binary_value = convert_to_binary(claim_value);
-             if(q_useful_buf_c_is_null(binary_value)) {
-                 fprintf(stderr, "bad cti value \"%s\"\n", claim_value);
-                 return 1;
-             }
-             if(out_ctx->output_type == 1) { // TODO: value
-                 ctoken_encode_cti(&(out_ctx->u.ctoken), binary_value);
-             } else {
-                 // TODO: text vs binary here
-                 jtoken_encode_jti(&(out_ctx->u.jwt), q_useful_buf_from_sz(claim_value));
-             }
-             useful_buf_c_free(binary_value);
-             break;
-
-        case CTOKEN_EAT_LABEL_UEID:
-            binary_value = convert_to_binary(claim_value);
-            if(q_useful_buf_c_is_null(binary_value)) {
-                fprintf(stderr, "bad ueid value \"%s\"\n", claim_value);
-                return 1;
-            }
-            if(out_ctx->output_type == 1) { // TODO: value
-                ctoken_encode_ueid(&(out_ctx->u.ctoken), binary_value);
-            } else {
-                jtoken_encode_ueid(&(out_ctx->u.jwt), binary_value);
-            }
-            useful_buf_c_free(binary_value);
-            break;
-
-        case CTOKEN_EAT_LABEL_NONCE:
-            binary_value = convert_to_binary(claim_value);
-            if(q_useful_buf_c_is_null(binary_value)) {
-                fprintf(stderr, "bad nonce value \"%s\"\n", claim_value);
-                return 1;
-            }
-            if(out_ctx->output_type == 1) { // TODO: value
-                ctoken_encode_nonce(&(out_ctx->u.ctoken), binary_value);
-            } else {
-                jtoken_encode_nonce(&(out_ctx->u.jwt), binary_value);
-            }
-            useful_buf_c_free(binary_value);
-            break;
-
-        case CTOKEN_EAT_LABEL_SECURITY_LEVEL:
-            sec_level = parse_sec_level_value(claim_value);
-            if(sec_level == EAT_SL_INVALID) {
-                fprintf(stderr, "bad security level \"%s\"\n", claim_value);
-                return 1;
-            }
-            if(out_ctx->output_type == 1) { // TODO: value
-                ctoken_encode_security_level(&(out_ctx->u.ctoken), sec_level);
-            } else {
-                // TODO: build check that ctoken and jtoken values are the same
-                jtoken_encode_security_level(&(out_ctx->u.jwt),
-                                             (enum jtoken_security_level_t)sec_level);
-            }
-            break;
-
-        case CTOKEN_EAT_LABEL_DEBUG_STATE:
-            debug_level = parse_debug_state(claim_value);
-            if(debug_level == CTOKEN_DEBUG_INVALID) {
-                fprintf(stderr, "bad debug state \"%s\"\n", claim_value);
-                return 1;
-            }
-            if(out_ctx->output_type == 1) { // TODO: value
-               ctoken_encode_debug_state(&(out_ctx->u.ctoken), debug_level);
-            } else {
-               jtoken_encode_debug_state(&(out_ctx->u.jwt),
-                                         (enum jtoken_debug_level_t) debug_level);
-            }
-            break;
-
-        case CTOKEN_EAT_LABEL_INTENDED_USE:
-            intended_use = parse_intended_use(claim_value);
-            if(intended_use == CTOKEN_USE_INVALID) {
-                fprintf(stderr, "bad intended use \"%s\"\n", claim_value);
-                return 1;
-            }
-            ctoken_encode_intended_use(&(out_ctx->u.ctoken), intended_use);
-            break;
-
-        case CTOKEN_EAT_LABEL_LOCATION:
-            error = parse_location_arg(claim_value, &location);
-            if(error) {
-                fprintf(stderr, "bad location \"%s\"\n", claim_value);
-                return 1;
-            }
-            ctoken_encode_location(encode_ctx, &location);
-
-        default:
-            encode_generic_claim_argument(out_ctx, claim_number, claim_label, claim_value);
-            break;
-
-        case 0:
-            // claim label is a string
-            break;
-    }
-
-    reencode_claim(&claim_item, out_ctx);
-
-
-    FREEIF(submod_name);
-    FREEIF(claim_label);
-    FREEIF(claim_value);
-
+    // For now, all unidentified claims are strings
+    qcbor_item->uDataType = QCBOR_TYPE_TEXT_STRING;
+    qcbor_item->val.string = q_useful_buf_from_sz(claim_value);
     return 0;
 }
 
 
 
-
-
-
-
-int parg_get_next(void *vv, struct xclaim *claim)
+static int parg_get_next(void *vv, struct xclaim *claim)
 {
     const char *submod;
     const char *label;
     const char *value;
     int64_t claim_number;
+    int64_t int64_value;
+    enum ctoken_intended_use_t   intended_use;
+    struct q_useful_buf_c        binary_value;
+    enum ctoken_security_level_t sec_level;
+    enum ctoken_debug_level_t    debug_level;
+
+    int error;
+
 
 
     struct parg *me = (struct parg *)vv;
 
-    parse_claim_argument(*me->x, &submod, &label, &value, &claim_number);
+    if(me->claim_args) {
+        return 88; // end of the list TODO: right error code
+    }
+
+    parse_claim_argument(*me->claim_args, &submod, &label, &value, &claim_number);
 
     // TODO: implement submods (lots of work)
 
-    if(me->x) {
-        return 88; // end of the list TODO: right error code
-    }
+
 
     claim->qcbor_item.label.int64 = claim_number;
     claim->qcbor_item.uLabelType  = QCBOR_TYPE_INT64;
@@ -841,50 +667,102 @@ int parg_get_next(void *vv, struct xclaim *claim)
     switch(claim_number) {
         case CTOKEN_CWT_LABEL_ISSUER:
         case CTOKEN_CWT_LABEL_SUBJECT:
+        case CTOKEN_CWT_LABEL_AUDIENCE:
             claim->qcbor_item.uDataType = QCBOR_TYPE_TEXT_STRING;
-            claim->qcbor_item.val.string = q_useful_buf_from_sz(claim_value);
+            claim->qcbor_item.val.string = q_useful_buf_from_sz(value);
             break;
 
-        case CTOKEN_EAT_LABEL_INTENDED_USE:
-            intended_use = parse_intended_use(claim_value);
-            if(intended_use == CTOKEN_USE_INVALID) {
-                fprintf(stderr, "bad intended use \"%s\"\n", claim_value);
+        case CTOKEN_CWT_LABEL_EXPIRATION:
+        case CTOKEN_CWT_LABEL_NOT_BEFORE:
+        case CTOKEN_CWT_LABEL_IAT:
+
+            if(convert_to_int64(value, &int64_value)) {
+                fprintf(stderr, "Error in integer format \"%s\"\n", value);
                 return 1;
             }
             claim->qcbor_item.uDataType = QCBOR_TYPE_INT64;
-            claim->qcbor_item.val.int64;
+            claim->qcbor_item.val.int64 = int64_value;
+            break;
+
+        case CTOKEN_CWT_LABEL_CTI:
+        case CTOKEN_EAT_LABEL_UEID:
+        case CTOKEN_EAT_LABEL_NONCE:
+             binary_value = convert_to_binary(value);
+             if(q_useful_buf_c_is_null(binary_value)) {
+                 fprintf(stderr, "bad byte string value \"%s\"\n", value);
+                 return 1;
+             }
+            claim->qcbor_item.uDataType = QCBOR_TYPE_BYTE_STRING;
+            claim->qcbor_item.val.string = binary_value;
+            break;
+
+
+        case CTOKEN_EAT_LABEL_SECURITY_LEVEL:
+            sec_level = parse_sec_level_value(value);
+            if(sec_level == EAT_SL_INVALID) {
+                fprintf(stderr, "bad security level \"%s\"\n", value);
+                return 1;
+            }
+            claim->qcbor_item.uDataType = QCBOR_TYPE_INT64;
+            claim->qcbor_item.val.int64 = sec_level;
+            break;
+
+        case CTOKEN_EAT_LABEL_DEBUG_STATE:
+             debug_level = parse_debug_state(value);
+             if(debug_level == CTOKEN_DEBUG_INVALID) {
+                 fprintf(stderr, "bad debug state \"%s\"\n", value);
+                 return 1;
+             }
+             claim->qcbor_item.uDataType = QCBOR_TYPE_INT64;
+             claim->qcbor_item.val.int64 = debug_level;
+             break;
+
+        case CTOKEN_EAT_LABEL_INTENDED_USE:
+            intended_use = parse_intended_use(value);
+            if(intended_use == CTOKEN_USE_INVALID) {
+                fprintf(stderr, "bad intended use \"%s\"\n", value);
+                return 1;
+            }
+            claim->qcbor_item.uDataType = QCBOR_TYPE_INT64;
+            claim->qcbor_item.val.int64 = intended_use;
             break;
 
         case CTOKEN_EAT_LABEL_LOCATION:
-            error = parse_location_arg(claim_value, &(claim->u.location_claim));
+            error = parse_location_arg(value, &(claim->u.location_claim));
             if(error) {
-                fprintf(stderr, "bad location \"%s\"\n", claim_value);
+                fprintf(stderr, "bad location \"%s\"\n", value);
                 return 1;
             }
             break;
 
         default:
-            encode_generic_claim_argument(out_ctx, claim_number, claim_label, claim_value);
+            generic_claim(value, &(claim->qcbor_item));
             break;
     }
 
-    me->x++;
+    // TODO: what about freeing the memory?
+
+    me->claim_args++;
 
     return 0;
-
-
 }
 
 
 
 
-int setup1_parg_decode(xclaim_decoder *ic, void *ctx)
+int setup1_parg_decode(xclaim_decoder *ic, struct parg *ctx, const char **claims)
 {
+    ctx->claim_args = claims;
+
     ic->ctx = ctx;
+
+    /*
     ic->enter_submod = (int (*)(void *, uint32_t, struct q_useful_buf_c *))ctoken_decode_enter_nth_submod;
     ic->exit_submod = (int (*)(void *))ctoken_decode_exit_submod;
     ic->get_nested = (int (*)(void *, uint32_t, enum ctoken_type_t *, struct q_useful_buf_c *))ctoken_decode_get_nth_nested_token;
-    ic->next_claim = next_claim;
+*/
+
+    ic->next_claim = parg_get_next;
 
     return 0;// TODO:
 }
