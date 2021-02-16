@@ -16,6 +16,15 @@
 #include "decode_token.h"
 #include "ctoken_eat_labels.h"
 #include "ctoken.h" // TODO: dependency issue
+#include "xclaim.h"
+
+
+
+struct parg {
+
+    char **x;
+};
+
 
 
 /**
@@ -65,6 +74,10 @@ enum ctoken_debug_level_t parse_debug_state(const char *d1);
 enum ctoken_intended_use_t parse_intended_use(const char *use);
 
 int parse_location_arg(const char *s, struct ctoken_location_t *location);
+
+
+int setup1_parg_decode(xclaim_decoder *ic, struct parg *ctx, const char **claims_args);
+
 
 
 #endif /* arg_parse_h */

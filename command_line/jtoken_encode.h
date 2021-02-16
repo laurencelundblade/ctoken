@@ -1,5 +1,5 @@
 //
-//  jtoken_encode.h
+//  jtoken_encode.h -- the beginning of a JWT encoder
 //  CToken
 //
 //  Created by Laurence Lundblade on 2/2/21.
@@ -312,8 +312,22 @@ jtoken_encode_security_level(struct jtoken_encode_ctx        *context,
  * is called.
  */
 static void
-ctoken_encode_debug_state(struct ctoken_encode_ctx  *context,
+jtoken_encode_debug_state(struct jtoken_encode_ctx  *context,
                           enum ctoken_debug_level_t  debug_state);
+
+
+
+
+
+void jtoken_encode_start_submod_section(struct jtoken_encode_ctx  *context);
+
+void jtoken_encode_end_submod_section(struct jtoken_encode_ctx  *context);
+
+void jtoken_encode_open_submod(struct jtoken_encode_ctx *context,
+                               const char               *submod_name);
+
+void jtoken_encode_close_submod_section(struct jtoken_encode_ctx  *context);
+
 
 
 
@@ -406,7 +420,7 @@ jtoken_encode_security_level(struct jtoken_encode_ctx    *me,
 
 static inline void
 jtoken_encode_debug_state(struct jtoken_encode_ctx  *me,
-                          enum jtoken_debug_level_t  debug_state)
+                          enum ctoken_debug_level_t  debug_state)
 {
     // TODO: check for invalid
     jtoken_encode_int64(me, "dbgstate", debug_state);

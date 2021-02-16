@@ -634,7 +634,7 @@ ctoken_decode_next_claim(struct ctoken_decode_ctx   *me,
     enum ctoken_err_t return_value;
 
     /* Loop is only to skip the submods section and executes only
-     * once in most cases. It executes twice is there is  submods section.
+     * once in most cases. It executes twice if there is  submods section.
      */
     do {
         cbor_error = QCBORDecode_GetNext(&(me->qcbor_decode_context), claim);

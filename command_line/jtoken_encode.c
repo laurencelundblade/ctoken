@@ -27,11 +27,13 @@ static void indent(struct jtoken_encode_ctx *me)
 
 
 
+
 void jtoken_encode_int64(struct jtoken_encode_ctx *me, const char *claim_name, int64_t claim_value)
 {
     indent(me);
     fprintf(me->out_file, "\"%s\": %lld\n", claim_name, claim_value);
 }
+
 
 void jtoken_encode_uint64(struct jtoken_encode_ctx *me, const char *claim_name, uint64_t claim_value)
 {
@@ -39,11 +41,13 @@ void jtoken_encode_uint64(struct jtoken_encode_ctx *me, const char *claim_name, 
     fprintf(me->out_file, "\"%s\": %llu\n", claim_name, claim_value);
 }
 
+
 void jtoken_encode_double(struct jtoken_encode_ctx *me, const char *claim_name, double claim_value)
 {
     indent(me);
     fprintf(me->out_file, "\"%s\": %f\n", claim_name, claim_value);
 }
+
 
 void jtoken_encode_text_string(struct jtoken_encode_ctx *me,
                                const char               *claim_name,
@@ -54,7 +58,6 @@ void jtoken_encode_text_string(struct jtoken_encode_ctx *me,
     fwrite(claim_value.ptr, 1, claim_value.len, me->out_file);
     fprintf(me->out_file, "\"\n");
 }
-
 
 
 void jtoken_encode_byte_string(struct jtoken_encode_ctx *me,
@@ -131,3 +134,31 @@ int jtoken_encode_location(struct jtoken_encode_ctx *me, const struct ctoken_loc
     return 0;
 }
 
+
+void jtoken_encode_start_submod_section(struct jtoken_encode_ctx *me)
+{
+    indent(me);
+    fprintf(me->out_file, "\"submods\" : {\n");
+}
+
+
+void jtoken_encode_end_submod_section(struct jtoken_encode_ctx *me)
+{
+    indent(me);
+    fprintf(me->out_file, "}\n");
+}
+
+
+void jtoken_encode_open_submod(struct jtoken_encode_ctx *me,
+                               const char               *submod_name)
+{
+    indent(me);
+    fprintf(me->out_file, "\"%s\" : {\n", submod_name);
+}
+
+
+void jtoken_encode_close_submod_section(struct jtoken_encode_ctx *me)
+{
+    indent(me);
+    fprintf(me->out_file, "}\n");
+}
