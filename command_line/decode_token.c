@@ -144,7 +144,11 @@ int encode_as_json(xclaim_decoder *in, FILE *output_file)
 
     xclaim_jtoken_encode_init(&output, &jo);
 
+    jtoken_encode_start(&jo);
+
     xclaim_processor(in, &output);
+
+    jtoken_encode_finish(&jo);
 
     // TODO: error handling
 

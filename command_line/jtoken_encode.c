@@ -25,7 +25,16 @@ static void indent(struct jtoken_encode_ctx *me)
     }
 }
 
+void jtoken_encode_start(struct jtoken_encode_ctx *me)
+{
+    fprintf(me->out_file, "{\n");
+    me->indent_level = 1;
+}
 
+void jtoken_encode_finish(struct jtoken_encode_ctx *me)
+{
+    fprintf(me->out_file, "}\n");
+}
 
 
 void jtoken_encode_int64(struct jtoken_encode_ctx *me, const char *claim_name, int64_t claim_value)

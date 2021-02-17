@@ -67,6 +67,11 @@ struct jtoken_encode_ctx {
 
 int jwt_encode_init(struct jtoken_encode_ctx *me, FILE *out_file);
 
+void jtoken_encode_start(struct jtoken_encode_ctx *me);
+
+
+void jtoken_encode_finish(struct jtoken_encode_ctx *me);
+
 
 int jtoken_encode_location(struct jtoken_encode_ctx *me, const struct ctoken_location_t *location);
 
