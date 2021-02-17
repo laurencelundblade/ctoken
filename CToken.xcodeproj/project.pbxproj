@@ -36,7 +36,7 @@
 		E7FDBF3B25C4CEF4007138A8 /* arg_parse.c in Sources */ = {isa = PBXBuildFile; fileRef = E7FDBF3A25C4CEF4007138A8 /* arg_parse.c */; };
 		E7FDBF3E25C4D15E007138A8 /* useful_buf_malloc.c in Sources */ = {isa = PBXBuildFile; fileRef = E7FDBF3D25C4D15E007138A8 /* useful_buf_malloc.c */; };
 		E7FDBF4125C5BE47007138A8 /* base64.c in Sources */ = {isa = PBXBuildFile; fileRef = E7FDBF4025C5BE47007138A8 /* base64.c */; };
-		E7FDBF4425C90F52007138A8 /* file_io.c in Sources */ = {isa = PBXBuildFile; fileRef = E7FDBF4325C90F52007138A8 /* file_io.c */; };
+		E7FDBF4425C90F52007138A8 /* useful_file_io.c in Sources */ = {isa = PBXBuildFile; fileRef = E7FDBF4325C90F52007138A8 /* useful_file_io.c */; };
 		E7FDBF4725C9E73C007138A8 /* jtoken_encode.c in Sources */ = {isa = PBXBuildFile; fileRef = E7FDBF4625C9E73C007138A8 /* jtoken_encode.c */; };
 		E7FDBF4B25DA41F8007138A8 /* ctoken_adapt.c in Sources */ = {isa = PBXBuildFile; fileRef = E7FDBF4A25DA41F8007138A8 /* ctoken_adapt.c */; };
 		E7FDBF4E25DB5219007138A8 /* jtoken_adapt.c in Sources */ = {isa = PBXBuildFile; fileRef = E7FDBF4D25DB5219007138A8 /* jtoken_adapt.c */; };
@@ -123,8 +123,8 @@
 		E7FDBF3D25C4D15E007138A8 /* useful_buf_malloc.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = useful_buf_malloc.c; sourceTree = "<group>"; };
 		E7FDBF3F25C5BE47007138A8 /* base64.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = base64.h; sourceTree = "<group>"; };
 		E7FDBF4025C5BE47007138A8 /* base64.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = base64.c; sourceTree = "<group>"; };
-		E7FDBF4225C90F52007138A8 /* file_io.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = file_io.h; sourceTree = "<group>"; };
-		E7FDBF4325C90F52007138A8 /* file_io.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = file_io.c; sourceTree = "<group>"; };
+		E7FDBF4225C90F52007138A8 /* useful_file_io.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = useful_file_io.h; sourceTree = "<group>"; };
+		E7FDBF4325C90F52007138A8 /* useful_file_io.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = useful_file_io.c; sourceTree = "<group>"; };
 		E7FDBF4525C9E73C007138A8 /* jtoken_encode.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = jtoken_encode.h; sourceTree = "<group>"; };
 		E7FDBF4625C9E73C007138A8 /* jtoken_encode.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = jtoken_encode.c; sourceTree = "<group>"; };
 		E7FDBF4825DA409C007138A8 /* xclaim.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = xclaim.h; sourceTree = "<group>"; };
@@ -291,8 +291,8 @@
 				E7FDBF4025C5BE47007138A8 /* base64.c */,
 				E7FDBF3C25C4D15E007138A8 /* useful_buf_malloc.h */,
 				E7FDBF3D25C4D15E007138A8 /* useful_buf_malloc.c */,
-				E7FDBF4225C90F52007138A8 /* file_io.h */,
-				E7FDBF4325C90F52007138A8 /* file_io.c */,
+				E7FDBF4225C90F52007138A8 /* useful_file_io.h */,
+				E7FDBF4325C90F52007138A8 /* useful_file_io.c */,
 			);
 			path = command_line;
 			sourceTree = "<group>";
@@ -408,7 +408,7 @@
 				0F3AF37123EF5C4700A60561 /* cwt_test.c in Sources */,
 				0F3AF35223E5463300A60561 /* ctoken_psaia_encode.c in Sources */,
 				0F3AF34823E5008200A60561 /* run_tests.c in Sources */,
-				E7FDBF4425C90F52007138A8 /* file_io.c in Sources */,
+				E7FDBF4425C90F52007138A8 /* useful_file_io.c in Sources */,
 				E7FDBF4725C9E73C007138A8 /* jtoken_encode.c in Sources */,
 				0FBE2D8923F976BF00A31C46 /* psaia_test.c in Sources */,
 				0F3AF34C23E53BCF00A60561 /* ctoken_psaia_decode.c in Sources */,

@@ -27,7 +27,7 @@ parser for the ctoken command line.
 struct xclaim {
     QCBORItem  qcbor_item;
     union {
-        struct ctoken_location_t  location_claim;
+        struct ctoken_location_t location_claim;
     } u;
 };
 
@@ -36,6 +36,7 @@ typedef struct iclaims xclaim_decoder;
 
 struct iclaims {
     /* A vtable */
+    void (*rewind)(void *ctx);
     int (*next_claim)(void *ctx, struct xclaim *claim);
     int (*enter_submod)(void *ctx,uint32_t index, struct q_useful_buf_c *name);
     int (*exit_submod)(void *ctx);

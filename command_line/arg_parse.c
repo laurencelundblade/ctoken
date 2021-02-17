@@ -651,11 +651,11 @@ static int parg_get_next(void *vv, struct xclaim *claim)
 
     struct parg *me = (struct parg *)vv;
 
-    if(me->claim_args) {
-        return 88; // end of the list TODO: right error code
+    if(*me->iterator == NULL) {
+        return CTOKEN_ERR_NO_MORE_CLAIMS; // end of the list TODO: right error code
     }
 
-    parse_claim_argument(*me->claim_args, &submod, &label, &value, &claim_number);
+    parse_claim_argument(*me->iterator, &submod, &label, &value, &claim_number);
 
     // TODO: implement submods (lots of work)
 
@@ -742,17 +742,23 @@ static int parg_get_next(void *vv, struct xclaim *claim)
 
     // TODO: what about freeing the memory?
 
-    me->claim_args++;
+    me->iterator++;
 
     return 0;
 }
 
+static void rewind_d(void *ccc)
+{
+    struct parg *ctx = (struct parg *)ccc;
 
+    ctx->iterator = ctx->claim_args;
+}
 
 
 int setup1_parg_decode(xclaim_decoder *ic, struct parg *ctx, const char **claims)
 {
     ctx->claim_args = claims;
+    ctx->iterator   = claims;
 
     ic->ctx = ctx;
 
@@ -762,6 +768,7 @@ int setup1_parg_decode(xclaim_decoder *ic, struct parg *ctx, const char **claims
     ic->get_nested = (int (*)(void *, uint32_t, enum ctoken_type_t *, struct q_useful_buf_c *))ctoken_decode_get_nth_nested_token;
 */
 
+    ic->rewind     = rewind_d;
     ic->next_claim = parg_get_next;
 
     return 0;// TODO:

@@ -20,13 +20,6 @@
 
 
 
-struct parg {
-
-    char **x;
-};
-
-
-
 /**
  * @brief Main / initial parse of argv and put results into arguments stucture.
  *
@@ -42,38 +35,13 @@ int parse_arguments(int                      argc,
 void free_arguments(struct ctoken_arguments *arguments);
 
 
-/* Decodes submod:label:value or label:value, the value of the -claim option
-   All returned strings are malloced
-   return 0 on success, 1 on failure
-   claim_number is 0 if claim label is a string, and non-zero if it is a number */
-int parse_claim_argument(const char *claim_arg,
-                         const char **submod_name,
-                         const char **claim_label,
-                         const char **claim_value,
-                         int64_t    *claim_number);
+struct parg {
 
+    const char **claim_args;
 
-/* pointer in q_useful_buf returned is malloced and must be freed */
-struct q_useful_buf_c convert_to_binary(const char *string);
+    const char **iterator;
+};
 
-
-int convert_to_int64(const char *string, int64_t *value);
-
-
-
-const char *cbor_label_to_json_name(int64_t cbor_label);
-
-/* Returns 0 if there is no cbor label for the json name. */
-int64_t json_name_to_cbor_label(const char *json_name);
-
-
-enum ctoken_security_level_t parse_sec_level_value(const  char *sl);
-
-enum ctoken_debug_level_t parse_debug_state(const char *d1);
-
-enum ctoken_intended_use_t parse_intended_use(const char *use);
-
-int parse_location_arg(const char *s, struct ctoken_location_t *location);
 
 
 int setup1_parg_decode(xclaim_decoder *ic, struct parg *ctx, const char **claims_args);
