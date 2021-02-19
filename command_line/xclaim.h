@@ -1,10 +1,14 @@
-//
-//  xclaim.h
-//  CToken
-//
-//  Created by Laurence Lundblade on 2/14/21.
-//  Copyright © 2021 Laurence Lundblade. All rights reserved.
-//
+/*
+* xclaim.h
+*
+* Copyright (c) 2021, Laurence Lundblade.
+*
+* Created by Laurence Lundblade on 2/17/21.
+*
+* SPDX-License-Identifier: BSD-3-Clause
+*
+* See BSD-3-Clause license in README.md
+*/
 
 #ifndef xclaim_h
 #define xclaim_h
@@ -31,11 +35,11 @@ struct xclaim {
     } u;
 };
 
-typedef struct iclaims xclaim_decoder;
 
 
-struct iclaims {
-    /* A vtable */
+
+typedef struct {
+    /* vtable */
     void (*rewind)(void *ctx);
     int (*next_claim)(void *ctx, struct xclaim *claim);
     int (*enter_submod)(void *ctx,uint32_t index, struct q_useful_buf_c *name);
@@ -43,14 +47,13 @@ struct iclaims {
     int (*get_nested)(void *ctx, uint32_t index, enum ctoken_type_t *type, struct q_useful_buf_c *token);
 
     void *ctx;
-};
+} xclaim_decoder;
 
 
 
-typedef struct oclaims xclaim_encode;
 
-struct oclaims {
-    /* A vtable */
+typedef struct  {
+    /* vtable */
     int (*output_claim)(void *ctx, const struct xclaim *claim);
     int (*start_submods_section)(void *ctx);
     int (*end_submods_section)(void *ctx);
@@ -59,7 +62,10 @@ struct oclaims {
     int (*output_nested)(void *ctx, struct q_useful_buf_c token);
 
     void *ctx;
-};
+} xclaim_encoder;
+
+
+int xclaim_processor(xclaim_decoder *decoder, xclaim_encoder *encoder);
 
 
 #endif /* xclaim_h */

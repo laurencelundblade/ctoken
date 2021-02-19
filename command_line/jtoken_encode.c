@@ -1,10 +1,14 @@
-//
-//  jtoken_encode.c
-//  CToken
-//
-//  Created by Laurence Lundblade on 2/2/21.
-//  Copyright © 2021 Laurence Lundblade. All rights reserved.
-//
+/*
+ * jtoken_encode.c
+ *
+ * Copyright (c) 2021, Laurence Lundblade.
+ *
+ * Created by Laurence Lundblade on 2/2/21.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ *
+ * See BSD-3-Clause license in README.md
+ */
 
 #include "jtoken_encode.h"
 #include "base64.h"
@@ -148,6 +152,7 @@ void jtoken_encode_start_submod_section(struct jtoken_encode_ctx *me)
 {
     indent(me);
     fprintf(me->out_file, "\"submods\" : {\n");
+    me->indent_level++;
 }
 
 
@@ -155,6 +160,7 @@ void jtoken_encode_end_submod_section(struct jtoken_encode_ctx *me)
 {
     indent(me);
     fprintf(me->out_file, "}\n");
+    me->indent_level--;
 }
 
 
@@ -163,6 +169,7 @@ void jtoken_encode_open_submod(struct jtoken_encode_ctx *me,
 {
     indent(me);
     fprintf(me->out_file, "\"%s\" : {\n", submod_name);
+    me->indent_level++;
 }
 
 
@@ -170,4 +177,5 @@ void jtoken_encode_close_submod_section(struct jtoken_encode_ctx *me)
 {
     indent(me);
     fprintf(me->out_file, "}\n");
+    me->indent_level--;
 }

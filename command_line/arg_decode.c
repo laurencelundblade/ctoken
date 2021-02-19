@@ -1,5 +1,5 @@
 /*
- * arg_parse.c
+ * arg_decode.c
  *
  * Copyright (c) 2021, Laurence Lundblade.
  *
@@ -11,11 +11,12 @@
  */
 
 
-#include "arg_parse.h"
+#include "arg_decode.h"
 
 #include <getopt.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 #include "decode_token.h"
 #include "t_cose/q_useful_buf.h"
@@ -649,7 +650,7 @@ static int parg_get_next(void *vv, struct xclaim *claim)
 
 
 
-    struct parg *me = (struct parg *)vv;
+    struct claim_argument_decoder *me = (struct claim_argument_decoder *)vv;
 
     if(*me->iterator == NULL) {
         return CTOKEN_ERR_NO_MORE_CLAIMS; // end of the list TODO: right error code
@@ -749,13 +750,13 @@ static int parg_get_next(void *vv, struct xclaim *claim)
 
 static void rewind_d(void *ccc)
 {
-    struct parg *ctx = (struct parg *)ccc;
+    struct claim_argument_decoder *ctx = (struct claim_argument_decoder *)ccc;
 
     ctx->iterator = ctx->claim_args;
 }
 
 
-int setup1_parg_decode(xclaim_decoder *ic, struct parg *ctx, const char **claims)
+void xclaim_argument_decode_init(xclaim_decoder *ic, struct claim_argument_decoder *ctx, const char **claims)
 {
     ctx->claim_args = claims;
     ctx->iterator   = claims;
@@ -770,8 +771,6 @@ int setup1_parg_decode(xclaim_decoder *ic, struct parg *ctx, const char **claims
 
     ic->rewind     = rewind_d;
     ic->next_claim = parg_get_next;
-
-    return 0;// TODO:
 }
 
 

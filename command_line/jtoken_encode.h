@@ -1,10 +1,14 @@
-//
-//  jtoken_encode.h -- the beginning of a JWT encoder
-//  CToken
-//
-//  Created by Laurence Lundblade on 2/2/21.
-//  Copyright © 2021 Laurence Lundblade. All rights reserved.
-//
+/*
+ * jtoken_encode.h
+ *
+ * Copyright (c) 2021, Laurence Lundblade.
+ *
+ * Created by Laurence Lundblade on 2/2/21.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ *
+ * See BSD-3-Clause license in README.md
+ */
 
 #ifndef jtoken_encode_h
 #define jtoken_encode_h
@@ -13,6 +17,15 @@
 #include "t_cose/q_useful_buf.h"
 #include "ctoken.h"
 
+
+/*  This is a primitive encoder for
+ an un-encrypted and un-signed JWT.
+ Tecnically not compliant with any
+ standard as such is supposed to
+ use JOSE NULL cipher. However
+ this is probably very useful for
+ server back-ends to have access to tokens
+ in JSON format. */
 
 enum jtoken_simple_t {JSON_TRUE, JSON_FALSE, JSON_NULL};
 

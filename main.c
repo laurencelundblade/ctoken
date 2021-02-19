@@ -15,7 +15,6 @@
 #include "decode_token.h"
 #include <string.h>
 #include <stdlib.h>
-#include "arg_parse.h"
 
 
 /*
@@ -30,26 +29,13 @@ static void fputs_wrapper(const char *szString, void *pOutCtx, int bNewLine)
     }
 }
 
-void ct_main(void);
-
-
-int ctoken(const struct ctoken_arguments *arguments);
 
 
 int main(int argc, char * argv[])
 {
-    int return_value = 0;
+    int return_value;
 
-    struct ctoken_arguments arguments;
-
-    return_value = parse_arguments(argc, argv, &arguments);
-    if(return_value != 0) {
-        return return_value;
-    }
-
-    return_value = ctoken(&arguments);
-
-    // ct_main();
+    return_value = xclaim_main(argc, argv);
 
     // This call prints out sizes of data structures to remind us
     // to keep them small.

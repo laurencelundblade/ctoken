@@ -14,7 +14,7 @@
 #include <sys/errno.h>
 #include "ctoken_encode.h"
 
-#include "arg_parse.h"
+#include "arg_decode.h"
 
 #include "jtoken_adapt.h"
 #include "ctoken_adapt.h"
@@ -28,70 +28,10 @@
 
 
 
-int xclaim_processor(xclaim_decoder *decoder, xclaim_encode *encoder)
-{
-    struct q_useful_buf_c submod_name;
-    struct q_useful_buf_c token;
-    enum ctoken_type_t    type;
-    int                   e;
-    struct                xclaim claim;
-    uint32_t              index;
-
-
-    /* First output the regular claims */
-    (decoder->rewind)(decoder->ctx);
-
-    while(1) {
-        e = (decoder->next_claim)(decoder->ctx, &claim);
-        if(e != 0) {
-            break;
-        }
-        (encoder->output_claim)(encoder->ctx, &claim);
-    }
-    if(e != CTOKEN_ERR_NO_MORE_CLAIMS) {
-        // Error out
-        return e;
-    }
-    
-#if 0
-    (encoder->start_submods_section)(encoder->ctx);
-    /* Now the submodules */
-    index = 0;
-    while(1) {
-        e = (decoder->enter_submod(decoder->ctx, index, &submod_name));
-        if(e == 0) {
-            /* is a regular submodule, so recurse */
-            //(o->open_submod)(o->ctx, submod_name); // TODO: fix this
-            xclaim_processor(decoder, encoder);
-            (encoder->close_submod)(encoder->ctx);
-            (decoder->exit_submod)(decoder->ctx);
-        } else if( e == 88) {
-            /* It is a nested token. This can be processed as an opaque blob
-             * or there can be recursion, but it recursion must be at a
-             * larger level because it key material and such need to be
-             * supplied. */
-            (decoder->get_nested)(decoder->ctx, index, &type, &token);
-            (encoder->output_nested)(encoder->ctx, token);
-        } else if(e == 88) {
-            // Normal exit from loop
-            break;
-        } else {
-            return e;
-        }
-    }
-    (encoder->end_submods_section)(encoder->ctx);
-#endif
-
-    return 0;
-}
-
-
-
-
 /* This drives the encoding of the input in CBOR using ctoken. */
 int encode_as_cbor(xclaim_decoder *xclaim_decoder, FILE *output_file)
 {
-    xclaim_encode             xclaim_encoder;
+    xclaim_encoder            xclaim_encoder;
     struct ctoken_encode_ctx  ctoken_encoder;
     struct q_useful_buf       out_buf;
     struct q_useful_buf_c     completed_token;
@@ -137,7 +77,7 @@ int encode_as_cbor(xclaim_decoder *xclaim_decoder, FILE *output_file)
 
 int encode_as_json(xclaim_decoder *in, FILE *output_file)
 {
-    xclaim_encode output;
+    xclaim_encoder output;
     struct jtoken_encode_ctx jo;
 
     jo.out_file = output_file;
@@ -158,34 +98,12 @@ int encode_as_json(xclaim_decoder *in, FILE *output_file)
 
 
 
-int init_ctoken_iclaims(xclaim_decoder           *xclaim_decoder,
-                        struct ctoken_decode_ctx *ctx,
-                        struct q_useful_buf_c     input_bytes)
-{
-    int error;
-
-    ctoken_decode_init(ctx, 0, 0, CTOKEN_PROTECTION_NONE);
-
-    error = ctoken_decode_validate_token(ctx, input_bytes);
-    if(error) {
-        return -9;
-    }
-
-    xclaim_ctoken_decode_init(xclaim_decoder, ctx);
-
-    return 0;
-}
-
-
-
-
-
 int ctoken(const struct ctoken_arguments *arguments)
 {
     struct q_useful_buf_c    input_bytes = NULL_Q_USEFUL_BUF_C;
     FILE                    *output_file;
     struct ctoken_decode_ctx cctx;
-    struct parg parg;
+    struct claim_argument_decoder parg;
 
     xclaim_decoder decoder;
 
@@ -219,17 +137,14 @@ int ctoken(const struct ctoken_arguments *arguments)
 
         // TODO: need to handle JSON too. This assumes file is CBOR
         // TODO: key material and options for decoding CBOR
-        // TODO: actually set up output file for CBOR outputting
-        if(init_ctoken_iclaims(&decoder, &cctx, input_bytes)) {
+        if(xclaim_ctoken_decode_init(&decoder, &cctx, input_bytes)) {
             return 1;
         }
 
     } else {
         if(arguments->claims) {
             /* input is some claim arguments. */
-            if(setup1_parg_decode(&decoder, &parg, arguments->claims)) {
-                return 1;
-            }
+            xclaim_argument_decode_init(&decoder, &parg, arguments->claims);
 
         } else {
             fprintf(stderr, "No input given (neither -in or -claim given)\n");
@@ -266,13 +181,21 @@ int ctoken(const struct ctoken_arguments *arguments)
 
 
 
-void ct_main()
+
+int xclaim_main(int argc, char * argv[])
 {
+    int return_value = 0;
+
     struct ctoken_arguments arguments;
 
-    memset(&arguments, 0, sizeof(arguments));
+    return_value = parse_arguments(argc, argv, &arguments);
+    if(return_value != 0) {
+        return return_value;
+    }
 
-    arguments.input_file = "token.cbor";
+    return_value = ctoken(&arguments);
 
-    ctoken(&arguments);
+    free_arguments(&arguments);
+
+    return return_value;
 }

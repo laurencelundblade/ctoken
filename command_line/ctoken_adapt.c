@@ -1,10 +1,14 @@
-//
-//  ctoken_adapt.c
-//  CToken
-//
-//  Created by Laurence Lundblade on 2/14/21.
-//  Copyright © 2021 Laurence Lundblade. All rights reserved.
-//
+/*
+ * ctoken_adapt.c
+ *
+ * Copyright (c) 2021, Laurence Lundblade.
+ *
+ * Created by Laurence Lundblade on 2/14/21.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ *
+ * See BSD-3-Clause license in README.md
+ */
 
 #include "ctoken_adapt.h"
 
@@ -117,7 +121,7 @@ int encode_xclaim(void *ctx, const struct xclaim *claim)
 }
 
 
-int xclaim_ctoken_encode_init(xclaim_encode *out, struct ctoken_encode_ctx *ctx)
+int xclaim_ctoken_encode_init(xclaim_encoder *out, struct ctoken_encode_ctx *ctx)
 {
     out->ctx = ctx;
 
@@ -158,17 +162,36 @@ Done:
 }
 
 
-int
-xclaim_ctoken_decode_init(xclaim_decoder *ic, struct ctoken_decode_ctx *ctx)
+static void
+xclaim_ctoken_decode_setup(xclaim_decoder *ic, struct ctoken_decode_ctx *ctx)
 {
     ic->ctx = ctx;
 
+    /* Fill in the vtable */
     ic->next_claim   = decode_next_xclaim;
-
     /* Can use ctoken methods directly. Casts are only for the first arg */
+    ic->rewind       = (void (*)(void *))ctoken_decode_rewind;
     ic->enter_submod = (int (*)(void *, uint32_t, struct q_useful_buf_c *))ctoken_decode_enter_nth_submod;
     ic->exit_submod  = (int (*)(void *))ctoken_decode_exit_submod;
     ic->get_nested   = (int (*)(void *, uint32_t, enum ctoken_type_t *, struct q_useful_buf_c *))ctoken_decode_get_nth_nested_token;
-
-    return 0;// TODO: error code
 }
+
+
+int xclaim_ctoken_decode_init(xclaim_decoder           *xclaim_decoder,
+                              struct ctoken_decode_ctx *ctx,
+                              struct q_useful_buf_c     input_bytes)
+{
+    int error;
+
+    ctoken_decode_init(ctx, 0, 0, CTOKEN_PROTECTION_NONE);
+
+    error = ctoken_decode_validate_token(ctx, input_bytes);
+    if(error) {
+        return -9;
+    }
+
+    xclaim_ctoken_decode_setup(xclaim_decoder, ctx);
+
+    return 0;
+}
+

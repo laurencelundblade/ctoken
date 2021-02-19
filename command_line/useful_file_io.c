@@ -1,10 +1,14 @@
-//
-//  file_io.c
-//  CToken
-//
-//  Created by Laurence Lundblade on 2/1/21.
-//  Copyright © 2021 Laurence Lundblade. All rights reserved.
-//
+/*
+ * useful_file_io.c
+ *
+ * Copyright (c) 2021, Laurence Lundblade.
+ *
+ * Created by Laurence Lundblade on 2/1/21.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ *
+ * See BSD-3-Clause license in README.md
+ */
 
 #include "useful_file_io.h"
 
@@ -40,10 +44,15 @@ struct q_useful_buf_c read_file(int file_descriptor)
         if(file_content == NULL) {
             file_content = malloc(amount_read);
             if(file_content == NULL) {
+                /* malloc error exit */
                 return NULL_Q_USEFUL_BUF_C;
             }
         } else {
             file_content = realloc(file_content, amount_read + file_size);
+            if(file_content == NULL) {
+                /* malloc error exit */
+                return NULL_Q_USEFUL_BUF_C;
+            }
         }
 
         memcpy(file_content + file_size, input_buf, amount_read);

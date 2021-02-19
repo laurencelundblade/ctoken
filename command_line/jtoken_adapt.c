@@ -1,10 +1,14 @@
-//
-//  jtoken_adapt.c
-//  CToken
-//
-//  Created by Laurence Lundblade on 2/15/21.
-//  Copyright © 2021 Laurence Lundblade. All rights reserved.
-//
+/*
+ * jtoken_adapt.c
+ *
+ * Copyright (c) 2021, Laurence Lundblade.
+ *
+ * Created by Laurence Lundblade on 2/15/21.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ *
+ * See BSD-3-Clause license in README.md
+ */
 
 #include "jtoken_adapt.h"
 #include "ctoken_cwt_labels.h"
@@ -118,7 +122,7 @@ jtoken_output_claim(void *ctx, const struct xclaim *claim)
 
 
 
-int xclaim_jtoken_encode_init(xclaim_encode *out, struct jtoken_encode_ctx *ctx)
+int xclaim_jtoken_encode_init(xclaim_encoder *out, struct jtoken_encode_ctx *ctx)
 {
     out->ctx = ctx;
 

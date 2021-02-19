@@ -634,7 +634,7 @@ ctoken_decode_next_claim(struct ctoken_decode_ctx   *me,
     enum ctoken_err_t return_value;
 
     /* Loop is only to skip the submods section and executes only
-     * once in most cases. It executes twice if there is  submods section.
+     * once in most cases. It executes twice if there is a submods section.
      */
     do {
         cbor_error = QCBORDecode_GetNext(&(me->qcbor_decode_context), claim);
@@ -671,6 +671,11 @@ Done:
     return return_value;
 }
 
+// TODO: get rid of this
+void QCBORDecode_Rewind(QCBORDecodeContext *x)
+{
+    x->uDecodeMode =0 ;
+}
 
 
 static enum ctoken_err_t
@@ -899,7 +904,7 @@ Done:
 static enum ctoken_err_t
 ctoken_decode_submod_token(struct ctoken_decode_ctx  *me,
                            const QCBORItem           *item,
-                           enum ctoken_type_t          *type,
+                           enum ctoken_type_t        *type,
                            struct q_useful_buf_c     *token)
 {
     enum ctoken_err_t return_value;
@@ -936,9 +941,9 @@ Done:
  */
 enum ctoken_err_t
 ctoken_decode_get_nested_token_sz(struct ctoken_decode_ctx *me,
-                            const char              *name,
-                            enum ctoken_type_t        *type,
-                            struct q_useful_buf_c   *token)
+                                  const char              *name,
+                                  enum ctoken_type_t      *type,
+                                  struct q_useful_buf_c   *token)
 {
     QCBORItem         item;
     enum ctoken_err_t return_value;
@@ -996,7 +1001,7 @@ ctoken_decode_get_nth_nested_token(struct ctoken_decode_ctx *me,
     }
 
     QCBORDecode_VGetNext(&(me->qcbor_decode_context), &item);
-    /* Errors checked in next call to ctoken_decode_submod_token */
+    /* Errors are checked in following call to ctoken_decode_submod_token */
 
     return_value = ctoken_decode_submod_token(me, &item, type, token);
     if(return_value != CTOKEN_ERR_SUCCESS) {

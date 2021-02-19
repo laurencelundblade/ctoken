@@ -1054,6 +1054,14 @@ ctoken_decode_next_claim(struct ctoken_decode_ctx   *context,
                          QCBORItem                  *claim);
 
 
+
+/*
+ *
+ */
+static void
+ctoken_decode_rewind(struct ctoken_decode_ctx   *context);
+
+
 /**
  * \brief Get the number of submodules.
  *
@@ -1141,7 +1149,7 @@ ctoken_decode_exit_submod(struct ctoken_decode_ctx *context);
 enum ctoken_err_t
 ctoken_decode_get_nth_nested_token(struct ctoken_decode_ctx *context,
                                    uint32_t                  submod_index,
-                                   enum ctoken_type_t         *type,
+                                   enum ctoken_type_t       *type,
                                    struct q_useful_buf_c    *token);
 
 
@@ -1161,7 +1169,7 @@ ctoken_decode_get_nth_nested_token(struct ctoken_decode_ctx *context,
 enum ctoken_err_t
 ctoken_decode_get_nested_token_sz(struct ctoken_decode_ctx *context,
                                   const char               *name,
-                                  enum ctoken_type_t         *type,
+                                  enum ctoken_type_t       *type,
                                   struct q_useful_buf_c    *token);
 
 
@@ -1338,6 +1346,18 @@ ctoken_decode_intended_use(struct ctoken_decode_ctx    *me,
                                              CTOKEN_USE_PROOF_OF_POSSSION,
                                              (int64_t *)use);
 }
+
+
+// TODO: get rid of this
+void QCBORDecode_Rewind(QCBORDecodeContext *x)
+;
+
+static inline void
+ctoken_decode_rewind(struct ctoken_decode_ctx   *me)
+{
+    QCBORDecode_Rewind(&(me->qcbor_decode_context));
+}
+
 
 
 #ifdef __cplusplus
