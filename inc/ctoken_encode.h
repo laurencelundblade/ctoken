@@ -195,7 +195,7 @@ ctoken_encode_start(struct ctoken_encode_ctx  *context,
  * \param[in] value  The signed integer claim data.
  */
 static void ctoken_encode_add_integer(struct ctoken_encode_ctx *context,
-                                      int32_t                   label,
+                                      int64_t                   label,
                                       int64_t                   value);
 
 
@@ -207,7 +207,7 @@ static void ctoken_encode_add_integer(struct ctoken_encode_ctx *context,
  * \param[in] value  The binary claim data.
  */
 static void ctoken_encode_add_bstr(struct ctoken_encode_ctx *context,
-                                   int32_t                   label,
+                                   int64_t                   label,
                                    struct q_useful_buf_c     value);
 
 
@@ -219,7 +219,7 @@ static void ctoken_encode_add_bstr(struct ctoken_encode_ctx *context,
  * \param[in] value  The text claim data.
  */
 static void ctoken_encode_add_tstr(struct ctoken_encode_ctx *context,
-                                   int32_t                   label,
+                                   int64_t                   label,
                                    struct q_useful_buf_c     value);
 
 
@@ -228,7 +228,7 @@ static void ctoken_encode_add_tstr(struct ctoken_encode_ctx *context,
 
 static inline void
 ctoken_encode_add_tstr_z(struct ctoken_encode_ctx *me,
-                         int32_t label,
+                         int64_t label,
                          const char *tstr);
 
 
@@ -240,7 +240,7 @@ ctoken_encode_add_tstr_z(struct ctoken_encode_ctx *me,
  * \param[in] value  The text claim data.
  */
 static void ctoken_encode_add_bool(struct ctoken_encode_ctx *context,
-                                   int32_t                   label,
+                                   int64_t                   label,
                                    bool value);
 
 
@@ -251,7 +251,7 @@ static void ctoken_encode_add_bool(struct ctoken_encode_ctx *context,
 * \param[in] label  Integer label for claim.
 */
 static void ctoken_encode_add_null(struct ctoken_encode_ctx *context,
-                                   int32_t                   label);
+                                   int64_t                   label);
 
 
 /**
@@ -262,7 +262,7 @@ static void ctoken_encode_add_null(struct ctoken_encode_ctx *context,
  * \param[in] value  The signed integer claim data.
  */
 static void ctoken_encode_add_double(struct ctoken_encode_ctx *context,
-                                      int32_t                  label,
+                                      int64_t                  label,
                                       double                   value);
 
 /**
@@ -277,7 +277,7 @@ static void ctoken_encode_add_double(struct ctoken_encode_ctx *context,
  * and arrays, but they must all be complete.
  */
 static void ctoken_encode_add_cbor(struct ctoken_encode_ctx *context,
-                                   int32_t                   label,
+                                   int64_t                   label,
                                    struct q_useful_buf_c     encoded);
 
 
@@ -290,7 +290,7 @@ static void ctoken_encode_add_cbor(struct ctoken_encode_ctx *context,
  * This must be matched by a ctoken_encode_close_array().
  */
 static inline void
-ctoken_encode_open_array(struct ctoken_encode_ctx *context, int32_t label);
+ctoken_encode_open_array(struct ctoken_encode_ctx *context, int64_t label);
 
 
 /**
@@ -313,7 +313,7 @@ ctoken_encode_close_array(struct ctoken_encode_ctx *context);
  * This must be matched by a ctoken_encode_close_map().
  */
 static inline void
-ctoken_encode_open_map(struct ctoken_encode_ctx *context, int32_t label);
+ctoken_encode_open_map(struct ctoken_encode_ctx *context, int64_t label);
 
 
 /**
@@ -867,7 +867,7 @@ ctoken_encode_borrow_cbor_cntxt(struct ctoken_encode_ctx *me)
 
 static inline void
 ctoken_encode_add_integer(struct ctoken_encode_ctx *me,
-                          int32_t label,
+                          int64_t label,
                           int64_t Value)
 {
     QCBOREncode_AddInt64ToMapN(&(me->cbor_encode_context), label, Value);
@@ -876,7 +876,7 @@ ctoken_encode_add_integer(struct ctoken_encode_ctx *me,
 
 static inline void
 ctoken_encode_add_unsigned(struct ctoken_encode_ctx *me,
-                          int32_t label,
+                          int64_t label,
                           uint64_t Value)
 {
     QCBOREncode_AddUInt64ToMapN(&(me->cbor_encode_context), label, Value);
@@ -885,7 +885,7 @@ ctoken_encode_add_unsigned(struct ctoken_encode_ctx *me,
 
 static inline void
 ctoken_encode_add_bstr(struct ctoken_encode_ctx *me,
-                       int32_t label,
+                       int64_t label,
                        struct q_useful_buf_c bstr)
 {
     QCBOREncode_AddBytesToMapN(&(me->cbor_encode_context), label, bstr);
@@ -894,7 +894,7 @@ ctoken_encode_add_bstr(struct ctoken_encode_ctx *me,
 
 static inline void
 ctoken_encode_add_tstr(struct ctoken_encode_ctx *me,
-                       int32_t label,
+                       int64_t label,
                        struct q_useful_buf_c tstr)
 {
     QCBOREncode_AddTextToMapN(&(me->cbor_encode_context), label, tstr);
@@ -903,7 +903,7 @@ ctoken_encode_add_tstr(struct ctoken_encode_ctx *me,
 
 static inline void
 ctoken_encode_add_tstr_z(struct ctoken_encode_ctx *me,
-                         int32_t label,
+                         int64_t label,
                          const char *tstr)
 {
     QCBOREncode_AddSZStringToMapN(&(me->cbor_encode_context), label, tstr);
@@ -912,7 +912,7 @@ ctoken_encode_add_tstr_z(struct ctoken_encode_ctx *me,
 
 static inline void
 ctoken_encode_add_bool(struct ctoken_encode_ctx *me,
-                       int32_t                   label,
+                       int64_t                   label,
                        bool                      value)
 {
     QCBOREncode_AddBoolToMapN(&(me->cbor_encode_context), label, value);
@@ -921,7 +921,7 @@ ctoken_encode_add_bool(struct ctoken_encode_ctx *me,
 
 static inline void
 ctoken_encode_add_null(struct ctoken_encode_ctx *me,
-                       int32_t                   label)
+                       int64_t                   label)
 {
     QCBOREncode_AddNULLToMapN(&(me->cbor_encode_context), label);
 }
@@ -930,7 +930,7 @@ ctoken_encode_add_null(struct ctoken_encode_ctx *me,
 
 static inline void
 ctoken_encode_add_double(struct ctoken_encode_ctx *me,
-                         int32_t                   label,
+                         int64_t                   label,
                          double                    value)
 {
     QCBOREncode_AddDoubleToMapN(&(me->cbor_encode_context), label, value);
@@ -939,7 +939,7 @@ ctoken_encode_add_double(struct ctoken_encode_ctx *me,
 
 static inline void
 ctoken_encode_add_cbor(struct ctoken_encode_ctx *me,
-                       int32_t label,
+                       int64_t label,
                        struct q_useful_buf_c encoded)
 {
     QCBOREncode_AddEncodedToMapN(&(me->cbor_encode_context), label, encoded);
@@ -947,7 +947,7 @@ ctoken_encode_add_cbor(struct ctoken_encode_ctx *me,
 
 
 static inline void
-ctoken_encode_open_array(struct ctoken_encode_ctx *me, int32_t label)
+ctoken_encode_open_array(struct ctoken_encode_ctx *me, int64_t label)
 {
     QCBOREncode_OpenArrayInMapN(&(me->cbor_encode_context), label);
 }
@@ -961,7 +961,7 @@ ctoken_encode_close_array(struct ctoken_encode_ctx *me)
 
 
 static inline void
-ctoken_encode_open_map(struct ctoken_encode_ctx *me, int32_t label)
+ctoken_encode_open_map(struct ctoken_encode_ctx *me, int64_t label)
 {
     QCBOREncode_OpenMapInMapN(&(me->cbor_encode_context), label);
 }
