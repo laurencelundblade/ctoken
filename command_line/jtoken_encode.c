@@ -128,6 +128,78 @@ void jtoken_encode_null(struct jtoken_encode_ctx *me,
             claim_name);;
 }
 
+struct integer_string_map_t {
+    int64_t     cbor_label;
+    const char *json_name;
+};
+
+
+static const struct integer_string_map_t sec_levels[] = {
+    {JTOKEN_EAT_SL_UNRESTRICTED, "unrestricted"},
+    {JTOKEN_EAT_SL_RESTRICTED, "restricted"},
+    {JTOKEN_EAT_SL_SECURE_RESTRICTED, "secure_restricted"},
+    {JTOKEN_EAT_SL_HARDWARE, "hardware"},
+    {JTOKEN_EAT_SL_INVALID, NULL}
+};
+
+
+static const struct integer_string_map_t debug_states[] = {
+    {JTOKEN_DEBUG_ENABLED, "enabled"},
+    {JTOKEN_DEBUG_DISABLED, "disabled"},
+    {JTOKEN_DEBUG_DISABLED_SINCE_BOOT, "disabled_since_boot"},
+    {JTOKEN_DEBUG_DISABLED_PERMANENT, "disabled_permanent"},
+    {JTOKEN_DEBUG_DISABLED_FULL_PERMANENT, "disabled_full_permanent"},
+    {JTOKEN_DEBUG_INVALID, NULL}
+};
+
+/*
+static const struct integer_string_map_t intended_uses[] = {
+    {CTOKEN_USE_GENERAL, "general"},
+    {CTOKEN_USE_REGISTRATION, "registration"},
+    {CTOKEN_USE_PROVISIONING, "provisioning"},
+    {CTOKEN_USE_CERTIFICATE_ISSUANCE, "certificate_issuance"},
+    {CTOKEN_USE_PROOF_OF_POSSSION, "proof_of_possesion"},
+    {CTOKEN_USE_INVALID, NULL}
+};
+*/
+
+static const char *int_to_string(const struct integer_string_map_t *map, int64_t cbor_label)
+{
+    size_t i;
+
+    for(i = 0; map[i].json_name != NULL; i++) {
+        if(map[i].cbor_label == cbor_label) {
+            return map[i].json_name;
+        }
+    }
+
+    return NULL;
+}
+
+
+void
+jtoken_encode_security_level(struct jtoken_encode_ctx    *me,
+                             enum jtoken_security_level_t security_level)
+{
+    const char *sec_level_string = int_to_string(sec_levels, security_level);
+    if(sec_level_string == NULL) {
+        sec_level_string = "<<invalid security level";
+    }
+    jtoken_encode_text_string_z(me, "seclevel", sec_level_string);
+}
+
+
+void
+jtoken_encode_debug_state(struct jtoken_encode_ctx  *me,
+                          enum ctoken_debug_level_t  debug_state)
+{
+    const char *dbg_level_string = int_to_string(debug_states, debug_state);
+    if(dbg_level_string == NULL) {
+        dbg_level_string = "<<invalid debug state";
+    }
+    jtoken_encode_text_string_z(me, "dbgstate", dbg_level_string);
+}
+
 
 /* outputs location claim in json format */
 int jtoken_encode_location(struct jtoken_encode_ctx *me, const struct ctoken_location_t *location)
@@ -179,3 +251,5 @@ void jtoken_encode_close_submod_section(struct jtoken_encode_ctx *me)
     fprintf(me->out_file, "}\n");
     me->indent_level--;
 }
+
+

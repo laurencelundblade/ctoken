@@ -310,7 +310,7 @@ jtoken_encode_oemid(struct jtoken_encode_ctx *context,
  * the error state is entered. It is returned later when ctoken_encode_finish()
  * is called.
  */
-static void
+void
 jtoken_encode_security_level(struct jtoken_encode_ctx        *context,
                              enum jtoken_security_level_t security_level);
 
@@ -329,12 +329,12 @@ jtoken_encode_security_level(struct jtoken_encode_ctx        *context,
  * the error state is entered. It is returned later when ctoken_encode_finish()
  * is called.
  */
-static void
+void
 jtoken_encode_debug_state(struct jtoken_encode_ctx  *context,
                           enum ctoken_debug_level_t  debug_state);
 
 
-
+// TODO: intended use claim
 
 
 void jtoken_encode_start_submod_section(struct jtoken_encode_ctx  *context);
@@ -404,8 +404,6 @@ static inline void jtoken_encode_jti(struct jtoken_encode_ctx *me,
 }
 
 
-
-
 static inline void jtoken_encode_ueid(struct jtoken_encode_ctx *me,
                                       struct q_useful_buf_c     claim_value)
 {
@@ -428,21 +426,6 @@ jtoken_encode_oemid(struct jtoken_encode_ctx *me,
 
 }
 
-static inline void
-jtoken_encode_security_level(struct jtoken_encode_ctx    *me,
-                             enum jtoken_security_level_t security_level)
-{
-    // TODO: check for invalid
-    jtoken_encode_int64(me, "seclevel", security_level);
-}
-
-static inline void
-jtoken_encode_debug_state(struct jtoken_encode_ctx  *me,
-                          enum ctoken_debug_level_t  debug_state)
-{
-    // TODO: check for invalid
-    jtoken_encode_int64(me, "dbgstate", debug_state);
-}
 
 
 #endif /* jtoken_encode_h */

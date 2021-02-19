@@ -1,7 +1,7 @@
 /*
  * ctoken_encode.h (formerly attest_token_encode.h)
  *
- * Copyright (c) 2018-2020, Laurence Lundblade.
+ * Copyright (c) 2018-2021, Laurence Lundblade.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *

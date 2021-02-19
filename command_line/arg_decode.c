@@ -391,8 +391,8 @@ static const char *int_to_string(const struct integer_string_map_t *map, int64_t
     size_t i;
 
     for(i = 0; map[i].json_name != NULL; i++) {
-        if(label_map[i].cbor_label == cbor_label) {
-            return label_map[i].json_name;
+        if(map[i].cbor_label == cbor_label) {
+            return map[i].json_name;
         }
     }
 
@@ -407,11 +407,11 @@ static int64_t string_to_int(const struct integer_string_map_t *map, const char 
 
     for(i = 0; map[i].json_name != NULL; i++) {
         if(!strcmp(string, map[i].json_name)) {
-            return label_map[i].cbor_label;
+            return map[i].cbor_label;
         }
     }
 
-    return label_map[i].cbor_label;
+    return map[i].cbor_label;
 }
 
 
@@ -425,12 +425,6 @@ const char *cbor_label_to_json_name(int64_t cbor_label)
 int64_t json_name_to_cbor_label(const char *json_name)
 {
     return string_to_int(label_map, json_name);
-}
-
-
-static const char *sec_level_2(enum ctoken_security_level_t i)
-{
-    return int_to_string(sec_levels, i);
 }
 
 
