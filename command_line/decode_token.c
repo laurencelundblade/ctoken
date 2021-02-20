@@ -199,3 +199,16 @@ int xclaim_main(int argc, char * argv[])
 
     return return_value;
 }
+
+
+
+/*
+ args to json X
+ args to cbor
+ cbor to json X
+ cbor to cbor
+
+
+
+
+ */

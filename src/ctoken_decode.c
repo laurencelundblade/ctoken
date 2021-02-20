@@ -671,12 +671,6 @@ Done:
     return return_value;
 }
 
-// TODO: get rid of this
-void QCBORDecode_Rewind(QCBORDecodeContext *x)
-{
-    x->uDecodeMode =0 ;
-}
-
 
 static enum ctoken_err_t
 enter_submod_section(struct ctoken_decode_ctx *me)

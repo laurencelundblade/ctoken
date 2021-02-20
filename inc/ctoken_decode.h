@@ -15,6 +15,7 @@
 #include "ctoken.h"
 #include "t_cose/t_cose_sign1_verify.h"
 #include "qcbor/qcbor_decode.h"
+#include "qcbor/qcbor_spiffy_decode.h"
 
 #include "ctoken_cwt_labels.h"
 #include "ctoken_eat_labels.h"
@@ -1347,10 +1348,6 @@ ctoken_decode_intended_use(struct ctoken_decode_ctx    *me,
                                              (int64_t *)use);
 }
 
-
-// TODO: get rid of this
-void QCBORDecode_Rewind(QCBORDecodeContext *x)
-;
 
 static inline void
 ctoken_decode_rewind(struct ctoken_decode_ctx   *me)

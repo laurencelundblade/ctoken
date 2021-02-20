@@ -39,7 +39,7 @@ int xclaim_processor(xclaim_decoder *decoder, xclaim_encoder *encoder)
         // Error out
         return e;
     }
-
+#if 0
     index = 0;
     e = (decoder->enter_submod(decoder->ctx, index, &submod_name));
     if(e == 0 || e == 88) {
@@ -73,7 +73,7 @@ int xclaim_processor(xclaim_decoder *decoder, xclaim_encoder *encoder)
     } else {
         return e;
     }
-
+#endif
 
 #if 0
     (encoder->start_submods_section)(encoder->ctx);
