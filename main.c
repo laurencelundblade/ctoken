@@ -31,18 +31,16 @@ static void fputs_wrapper(const char *szString, void *pOutCtx, int bNewLine)
 
 
 
-int main(int argc, char * argv[])
+int main(int argc, const char * argv[])
 {
     int return_value;
 
-    return_value = xclaim_main(argc, argv);
-
     // This call prints out sizes of data structures to remind us
     // to keep them small.
-    //PrintSizesCToken(&fputs_wrapper, stdout);
+    PrintSizesCToken(&fputs_wrapper, stdout);
 
     // This runs all the tests
-    //return_value = RunTestsCToken(argv+1, &fputs_wrapper, stdout, NULL);
+    return_value = RunTestsCToken(argv+1, &fputs_wrapper, stdout, NULL);
 
 
     return return_value;
