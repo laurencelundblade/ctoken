@@ -647,7 +647,7 @@ static int parg_get_next(void *vv, struct xclaim *claim)
     struct claim_argument_decoder *me = (struct claim_argument_decoder *)vv;
 
     if(*me->iterator == NULL) {
-        return CTOKEN_ERR_NO_MORE_CLAIMS; // end of the list TODO: right error code
+        return XCLAIM_NO_MORE;
     }
 
     parse_claim_argument(*me->iterator, &submod, &label, &value, &claim_number);
@@ -749,6 +749,14 @@ static void rewind_d(void *ccc)
     ctx->iterator = ctx->claim_args;
 }
 
+static int enter_submod(void *ccc, uint32_t n, struct q_useful_buf_c *name)
+{
+    //struct claim_argument_decoder *ctx = (struct claim_argument_decoder *)ccc;
+
+    // For now, no submods in the command line
+    return XCLAIM_NO_MORE;
+}
+
 
 void xclaim_argument_decode_init(xclaim_decoder *ic, struct claim_argument_decoder *ctx, const char **claims)
 {
@@ -757,14 +765,11 @@ void xclaim_argument_decode_init(xclaim_decoder *ic, struct claim_argument_decod
 
     ic->ctx = ctx;
 
-    /*
-    ic->enter_submod = (int (*)(void *, uint32_t, struct q_useful_buf_c *))ctoken_decode_enter_nth_submod;
-    ic->exit_submod = (int (*)(void *))ctoken_decode_exit_submod;
-    ic->get_nested = (int (*)(void *, uint32_t, enum ctoken_type_t *, struct q_useful_buf_c *))ctoken_decode_get_nth_nested_token;
-*/
-
     ic->rewind     = rewind_d;
     ic->next_claim = parg_get_next;
+    ic->enter_submod = enter_submod;
+    ic->exit_submod = NULL;
+    ic->get_nested = NULL;
 }
 
 

@@ -36,6 +36,21 @@ struct xclaim {
 };
 
 
+enum xclaim_errors_t {
+    XCLAIM_SUCCESS = 0,
+
+    XCLAIM_NO_MORE = 1,
+
+    XCLAIM_SUBMOD_IS_TOKEN = 2,
+
+    XCLAIM_CTOKEN_ERROR_BASE = 100,
+
+    XCLAIM_JTOKEN_ERROR_BASE = 200,
+
+    XCLAIM_ARG_ERROR_BASE = 300
+};
+
+
 
 
 typedef struct {

@@ -146,8 +146,12 @@ decode_next_xclaim(void *decode_ctx, struct xclaim *xclaim)
     struct ctoken_decode_ctx *dctx = (struct ctoken_decode_ctx *)decode_ctx;
 
     err = ctoken_decode_next_claim(dctx, &(xclaim->qcbor_item));
-    if(err != 0) {
+    if(err == CTOKEN_ERR_NO_MORE_CLAIMS) {
         /* End of claims or error getting them. */
+        err =  (enum ctoken_err_t)XCLAIM_NO_MORE;
+        goto Done;
+    } else if(err != 0) {
+        err += XCLAIM_CTOKEN_ERROR_BASE;
         goto Done;
     }
 
@@ -162,6 +166,26 @@ Done:
 }
 
 
+
+//static enum xclaim_errors_t e_submod(void *decode_ctx, uint32_t n, struct q_useful_buf_c *x)
+static int e_submod(void *decode_ctx, uint32_t n, struct q_useful_buf_c *x)
+{
+    struct ctoken_decode_ctx *dctx = (struct ctoken_decode_ctx *)decode_ctx;
+
+    enum ctoken_err_t error;
+
+    error = ctoken_decode_enter_nth_submod(dctx, n, x);
+
+    if(error == CTOKEN_ERR_SUBMOD_INDEX_TOO_LARGE) {
+        return XCLAIM_NO_MORE;
+    } else if(error == CTOKEN_ERR_SUCCESS) {
+        return XCLAIM_SUCCESS;
+    } else {
+        return XCLAIM_CTOKEN_ERROR_BASE + error;
+    }
+}
+
+
 static void
 xclaim_ctoken_decode_setup(xclaim_decoder *ic, struct ctoken_decode_ctx *ctx)
 {
@@ -169,9 +193,11 @@ xclaim_ctoken_decode_setup(xclaim_decoder *ic, struct ctoken_decode_ctx *ctx)
 
     /* Fill in the vtable */
     ic->next_claim   = decode_next_xclaim;
+    ic->enter_submod = e_submod;
+
     /* Can use ctoken methods directly. Casts are only for the first arg */
+    // TODO: glue functions to translate error codes for these.
     ic->rewind       = (void (*)(void *))ctoken_decode_rewind;
-    ic->enter_submod = (int (*)(void *, uint32_t, struct q_useful_buf_c *))ctoken_decode_enter_nth_submod;
     ic->exit_submod  = (int (*)(void *))ctoken_decode_exit_submod;
     ic->get_nested   = (int (*)(void *, uint32_t, enum ctoken_type_t *, struct q_useful_buf_c *))ctoken_decode_get_nth_nested_token;
 }
