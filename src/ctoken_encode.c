@@ -1,7 +1,7 @@
 /*
  * ctoken_encode.c (formerly attest_token_encode.c)
  *
- * Copyright (c) 2018-2020, Laurence Lundblade. All rights reserved.
+ * Copyright (c) 2018-2021, Laurence Lundblade. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -44,7 +44,8 @@
  First from the SUBMODS_IN_SECTION state, a submodule can be opened and
  claims added to it. This puts the current level in the
  SUBMODS_IN_SECTION_AND_SUBMOD state and opens up a new level
- that is in the SUBMODS_NONE state. This is handled by submod_state_open_submod().
+ that is in the SUBMODS_NONE state. This is handled by
+ submod_state_open_submod().
 
  Second from the SUBMODS_IN_SECTION state, a whole formatted
  and secured token can be added. This happens in one go and doesn't
@@ -224,10 +225,11 @@ ctoken_encode_start2(struct ctoken_encode_ctx *me, const struct q_useful_buf out
     } else if(me->cose_protection_type == CTOKEN_PROTECTION_NONE) {
         /* UCCS -- not much to do */
         if(!(me->ctoken_opt_flags & CTOKEN_OPT_TOP_LEVEL_NOT_TAG)) {
-            QCBOREncode_AddTag(&(me->cbor_encode_context), 601); // TODO: proper define for UCCS tag
+            // TODO: proper define for UCCS tag
+            QCBOREncode_AddTag(&(me->cbor_encode_context), 601);
         }
         return_value = CTOKEN_ERR_SUCCESS;
-        
+
     } else {
         return_value = CTOKEN_ERR_UNSUPPORTED_PROTECTION_TYPE;
     }

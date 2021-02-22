@@ -224,8 +224,8 @@ ctoken_decode_validate_token(struct ctoken_decode_ctx *me,
     expected_tag    = CBOR_TAG_INVALID32; /* to be different from CBOR_TAG_INVALID64 */
 
     /* Peek to get the tag number from the first item if there is one.
-     * This also
-     * initializes the decoder for UCCS decoding (the same decoder is re initialized for COSE decoding. */
+     * This also initializes the decoder for UCCS decoding (the same
+     * decoder is re initialized for COSE decoding. */
     QCBORDecode_Init(&(me->qcbor_decode_context), token, 0);
     QCBORDecode_PeekNext(&(me->qcbor_decode_context), &item);
 
@@ -235,7 +235,8 @@ ctoken_decode_validate_token(struct ctoken_decode_ctx *me,
     if(tag_number == CBOR_TAG_COSE_SIGN1 ||
        tag_number == CBOR_TAG_CWT ||
        (tag_number == CBOR_TAG_INVALID64 && protection_type == CTOKEN_PROTECTION_COSE_SIGN1)) {
-        /* It is a case where COSE protection is expected. Call COSE and let it work. */
+        /* It is a case where COSE protection is expected. Call COSE
+          and let it work. */
 
         t_cose_error = t_cose_sign1_verify(&(me->verify_context), token, &me->payload, NULL);
         if(t_cose_error != T_COSE_SUCCESS) {
@@ -258,14 +259,15 @@ ctoken_decode_validate_token(struct ctoken_decode_ctx *me,
         me->actual_protection_type = CTOKEN_PROTECTION_NONE;
 
         expected_tag = 601;
-        
+
     } else {
         /* Neither the tag nor the argument told us the protection type */
         return_value = CTOKEN_ERR_UNDETERMINED_PROTECTION_TYPE;
         goto Done;
     }
 
-    /* Copy the tags not processed so they are available to caller and do check on innermost tag */
+    /* Copy the tags not processed so they are available to caller and do
+     * check on innermost tag */
     item_tag_index = 0;
     for(returned_tag_index = 0; returned_tag_index < CTOKEN_MAX_TAGS_TO_RETURN; returned_tag_index++) {
         tag_number = get_nth_tag(me, protection_type, &item, item_tag_index);
@@ -291,7 +293,8 @@ ctoken_decode_validate_token(struct ctoken_decode_ctx *me,
         me->auTags[returned_tag_index] = tag_number;
     }
 
-    /* Now processing for either COSE-secured or UCCS. Enter the map that holds all the claims */
+    /* Now processing for either COSE-secured or UCCS. Enter the map
+       that holds all the claims */
     QCBORDecode_EnterMap(&(me->qcbor_decode_context), NULL);
     qcbor_error = QCBORDecode_GetError(&(me->qcbor_decode_context));
     if(qcbor_error != QCBOR_SUCCESS) {

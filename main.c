@@ -12,7 +12,6 @@
 
 #include <stdio.h>
 #include "run_tests.h"
-#include "decode_token.h"
 #include <string.h>
 #include <stdlib.h>
 
