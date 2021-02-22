@@ -139,7 +139,7 @@ ctoken_encode_init(struct ctoken_encode_ctx  *context,
  * \brief Set the signing key.
  *
  *
- * \param[in] context           The token creation context.
+ * \param[in] context      The token creation context.
  * \param[in] signing_key  The signing key to use or \ref T_COSE_NULL_KEY.
  * \param[in] kid          COSE kid (key ID) parameter or \c NULL_Q_USEFUL_BUF_C.
  *
@@ -163,7 +163,7 @@ ctoken_encode_set_key(struct ctoken_encode_ctx *context,
 /**
  * \brief Give output buffer and start token creation
  *
- * \param[in] context          The token creation context.
+ * \param[in] context     The token creation context.
  * \param[in] out_buffer  The pointer and length of buffer to write token to.
  *
  * \returns               0 on success or error.
@@ -190,9 +190,9 @@ ctoken_encode_start(struct ctoken_encode_ctx  *context,
 /**
  * \brief Add a 64-bit signed integer claim
  *
- * \param[in] context     Token creation context.
- * \param[in] label  Integer label for claim.
- * \param[in] value  The signed integer claim data.
+ * \param[in] context  Token creation context.
+ * \param[in] label    Integer label for claim.
+ * \param[in] value    The signed integer claim data.
  */
 static void ctoken_encode_add_integer(struct ctoken_encode_ctx *context,
                                       int64_t                   label,
@@ -202,9 +202,9 @@ static void ctoken_encode_add_integer(struct ctoken_encode_ctx *context,
 /**
  * \brief Add a binary string claim
  *
- * \param[in] context     Token creation context.
- * \param[in] label  Integer label for claim.
- * \param[in] value  The binary claim data.
+ * \param[in] context  Token creation context.
+ * \param[in] label    Integer label for claim.
+ * \param[in] value    The binary claim data.
  */
 static void ctoken_encode_add_bstr(struct ctoken_encode_ctx *context,
                                    int64_t                   label,
@@ -214,56 +214,54 @@ static void ctoken_encode_add_bstr(struct ctoken_encode_ctx *context,
 /**
  * \brief Add a text string claim
  *
- * \param[in] context     Token creation context.
- * \param[in] label  Integer label for claim.
- * \param[in] value  The text claim data.
+ * \param[in] context  Token creation context.
+ * \param[in] label    Integer label for claim.
+ * \param[in] tstr     The text claim data.
  */
 static void ctoken_encode_add_tstr(struct ctoken_encode_ctx *context,
                                    int64_t                   label,
-                                   struct q_useful_buf_c     value);
-
-
-
+                                   struct q_useful_buf_c     tstr);
 
 
 static inline void
 ctoken_encode_add_tstr_z(struct ctoken_encode_ctx *me,
-                         int64_t label,
-                         const char *tstr);
+                         int64_t                   label,
+                         const char               *tstr);
 
 
 /**
- * \brief Add a text string claim TODO: document correctly
+ * \brief Add a Boolean claim
  *
- * \param[in] context     Token creation context.
- * \param[in] label  Integer label for claim.
- * \param[in] value  The text claim data.
+ * \param[in] context  Token creation context.
+ * \param[in] label    Integer label for claim.
+ * \param[in] value    The Boolean claim value.
  */
 static void ctoken_encode_add_bool(struct ctoken_encode_ctx *context,
                                    int64_t                   label,
-                                   bool value);
+                                   bool                      value);
 
 
 /**
-* \brief Add a text string claim TODO: document correctly
-*
-* \param[in] context     Token creation context.
-* \param[in] label  Integer label for claim.
-*/
+ * \brief Add the \c NULL value as a claim.
+ *
+ *  \param[in] context  Token creation context.
+ * \param[in] label     Integer label for claim.
+ */
 static void ctoken_encode_add_null(struct ctoken_encode_ctx *context,
                                    int64_t                   label);
 
 
 /**
- * \brief Add a 64-bit signed integer claim  TODO: document correctly
+ * \brief Add a double floating-point claim.
  *
- * \param[in] context     Token creation context.
- * \param[in] label  Integer label for claim.
- * \param[in] value  The signed integer claim data.
+ * \param[in] context  Token creation context.
+ * \param[in] label    Integer label for claim.
+ * \param[in] value    The double floating-point.
  */
 static void ctoken_encode_add_double(struct ctoken_encode_ctx *context,
                                       int64_t                  label,
                                       double                   value);
+
 
 /**
  * \brief Add some already-encoded CBOR to payload
@@ -307,7 +305,7 @@ ctoken_encode_close_array(struct ctoken_encode_ctx *context);
 /**
  * \brief Open an map.
  *
- * \param[in] context       Token creation context.
+ * \param[in] context  Token creation context.
  * \param[in] label    Integer label for new map.
  *
  * This must be matched by a ctoken_encode_close_map().
