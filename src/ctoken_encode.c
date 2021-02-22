@@ -190,7 +190,8 @@ static enum ctoken_err_t t_cose_err_to_attest_err(enum t_cose_err_t err)
 
 
 static enum ctoken_err_t
-ctoken_encode_start2(struct ctoken_encode_ctx *me, const struct q_useful_buf out_buf)
+ctoken_encode_start2(struct ctoken_encode_ctx *me,
+                     const struct q_useful_buf out_buf)
 {
     enum t_cose_err_t cose_return_value;
     enum ctoken_err_t return_value;
@@ -260,7 +261,8 @@ ctoken_encode_start(struct ctoken_encode_ctx  *me,
 
 
 static enum ctoken_err_t
-ctoken_encode_finish2(struct ctoken_encode_ctx *me, struct q_useful_buf_c *completed_token)
+ctoken_encode_finish2(struct ctoken_encode_ctx *me,
+                      struct q_useful_buf_c    *completed_token)
 {
     QCBORError            qcbor_result;
     enum t_cose_err_t     cose_return_value;
@@ -469,8 +471,8 @@ void ctoken_encode_close_submod(struct ctoken_encode_ctx *me)
  */
 void ctoken_encode_nested_token(struct ctoken_encode_ctx *me,
                              enum ctoken_type_t          type,
-                             const  char              *submod_name,
-                             struct q_useful_buf_c     token)
+                             const  char                *submod_name,
+                             struct q_useful_buf_c       token)
 {
     if(me->error != CTOKEN_ERR_SUCCESS) {
         return; /* In the error state so do nothing */

@@ -43,117 +43,158 @@ extern "C" {
 enum ctoken_err_t {
     /** Success */
     CTOKEN_ERR_SUCCESS = 0,
+
     /** The buffer passed in to receive the output is too small. */
-    CTOKEN_ERR_TOO_SMALL,
+    CTOKEN_ERR_TOO_SMALL = 1,
+
     /** Something went wrong formatting the CBOR, most likely the
      payload has maps or arrays that are not closed. */
-    CTOKEN_ERR_CBOR_FORMATTING,
+    CTOKEN_ERR_CBOR_FORMATTING = 2,
+
     /** A general, unspecific error when creating or decoding the
         token. */
-    CTOKEN_ERR_GENERAL,
+    CTOKEN_ERR_GENERAL = 3,
+
     /** A hash function that is needed to make the token is not
         available. */
-    CTOKEN_ERR_HASH_UNAVAILABLE,
+    CTOKEN_ERR_HASH_UNAVAILABLE = 4,
+
     /** CBOR Syntax not well-formed -- a CBOR syntax error. */
-    CTOKEN_ERR_CBOR_NOT_WELL_FORMED,
+    CTOKEN_ERR_CBOR_NOT_WELL_FORMED = 5,
+
     /** Bad CBOR structure, for example not a map when was is
         required. */
-    CTOKEN_ERR_CBOR_STRUCTURE,
+    CTOKEN_ERR_CBOR_STRUCTURE = 6,
+
     /** Bad CBOR type, for example an not a text string, when a text
         string is required. */
-    CTOKEN_ERR_CBOR_TYPE,
+    CTOKEN_ERR_CBOR_TYPE = 7,
+
     /** Integer too large, for example an \c int32_t is required, but
         value only fits in \c int64_t */
-    CTOKEN_ERR_INTEGER_VALUE,
+    CTOKEN_ERR_INTEGER_VALUE = 8,
+
     /** Something is wrong with the COSE signing structure, missing
         headers or such. */
-    CTOKEN_ERR_COSE_SIGN1_FORMAT,
+    CTOKEN_ERR_COSE_SIGN1_FORMAT = 9,
+
     /** COSE signature is invalid, data is corrupted. */
-    CTOKEN_ERR_COSE_SIGN1_VALIDATION,
+    CTOKEN_ERR_COSE_SIGN1_VALIDATION = 10,
+
     /** The signing algorithm is not supported. */
-    CTOKEN_ERR_UNSUPPORTED_SIG_ALG,
+    CTOKEN_ERR_UNSUPPORTED_SIG_ALG = 11,
+
     /** Out of memory. */
-    CTOKEN_ERR_INSUFFICIENT_MEMORY,
+    CTOKEN_ERR_INSUFFICIENT_MEMORY = 12,
+
     /** Tampering detected in cryptographic function. */
-    CTOKEN_ERR_TAMPERING_DETECTED,
+    CTOKEN_ERR_TAMPERING_DETECTED = 13,
+
     /** Verification key is not found or of wrong type. */
-    CTOKEN_ERR_VERIFICATION_KEY,
+    CTOKEN_ERR_VERIFICATION_KEY = 14,
+
     /** No token was given or validated. */
-    CTOKEN_ERR_NO_VALID_TOKEN,
+    CTOKEN_ERR_NO_VALID_TOKEN = 15,
+
     /** Data item with label wasn't found. */
-    CTOKEN_ERR_NOT_FOUND,
+    CTOKEN_ERR_NOT_FOUND = 16,
+
     /** SW Compoments absence not correctly indicated. */
-    CTOKEN_ERR_SW_COMPONENTS_MISSING,
+    CTOKEN_ERR_SW_COMPONENTS_MISSING = 17,
+
     /** Trying to nest more than \ref CTOKEN_MAX_SUBMOD_NESTING. */
-    CTOKEN_ERR_SUBMOD_NESTING_TOO_DEEP,
+    CTOKEN_ERR_SUBMOD_NESTING_TOO_DEEP = 18,
+
     /** Trying to close a submod with no submods open. */
-    CTOKEN_ERR_NO_SUBMOD_OPEN,
+    CTOKEN_ERR_NO_SUBMOD_OPEN = 19,
+
     /** When decoding, something wrong with the token format other
      * than CBOR not well formed. */
-    CTOKEN_ERR_TOKEN_FORMAT,
+    CTOKEN_ERR_TOKEN_FORMAT = 20,
+
     /** Can't start submodule section because one is already started,
       * or one was started and completed for this submodule. */
-    CTOKEN_CANT_START_SUBMOD_SECTION,
+    CTOKEN_CANT_START_SUBMOD_SECTION = 21,
+
     /** Trying to end a submod section with no submod section
      * started. */
-    CTOKEN_ERR_NO_SUBMOD_SECTION_STARTED,
+    CTOKEN_ERR_NO_SUBMOD_SECTION_STARTED = 22,
+
     /** Attempting to make a submod or add a token without starting a
       * submod section */
-    CTOKEN_ERR_CANT_MAKE_SUBMOD_IN_SUBMOD,
+    CTOKEN_ERR_CANT_MAKE_SUBMOD_IN_SUBMOD = 23,
+
     /** All submodules and submodule sections were not closed out. */
-    CTOKEN_ERR_SUBMODS_NOT_CLOSED,
+    CTOKEN_ERR_SUBMODS_NOT_CLOSED = 24,
+
     /** The name of a submodule is not a text string. */
-    CTOKEN_ERR_SUBMOD_NAME_NOT_A_TEXT_STRING,
+    CTOKEN_ERR_SUBMOD_NAME_NOT_A_TEXT_STRING = 25,
+
     /** Index beyond the number of submodules. */
-    CTOKEN_ERR_SUBMOD_INDEX_TOO_LARGE,
+    CTOKEN_ERR_SUBMOD_INDEX_TOO_LARGE = 26,
+
     /** No submodule of the given name as found. */
-    CTOKEN_NAMED_SUBMOD_NOT_FOUND,
+    CTOKEN_NAMED_SUBMOD_NOT_FOUND = 27,
 
     /** Claim is not present in the token */
-    CTOKEN_ERR_CLAIM_NOT_PRESENT,
+    CTOKEN_ERR_CLAIM_NOT_PRESENT = 28,
 
-    CTOKEN_ERR_NAMED_SUBMOD_NOT_FOUND,
+    /** The named submodule was not found. */
+    CTOKEN_ERR_NAMED_SUBMOD_NOT_FOUND = 29,
+
     /** Submodule is the wrong CBOR type */
-    CTOKEN_ERR_SUBMOD_TYPE,
-    /** Submods section is missing or wrong type */
-    CTOKEN_ERR_SUBMOD_SECTION,
-    /** Something is wrong with the content of a claim such as mandatory
-     * parts are missing, the CBOR structure is wrong or other
-     */
-    CTOKEN_ERR_CLAIM_FORMAT,
-    /** The latitude and longitude fields are required in the location claim */
-    CTOKEN_ERR_LAT_LONG_REQUIRED,
+    CTOKEN_ERR_SUBMOD_TYPE = 30,
 
-    CTOKEN_ERR_TOO_MANY_TAGS,
+    /** Submods section is missing or wrong type */
+    CTOKEN_ERR_SUBMOD_SECTION = 31,
+
+    /** Something is wrong with the content of a claim such as mandatory
+     * parts are missing, the CBOR structure is wrong or other. */
+    CTOKEN_ERR_CLAIM_FORMAT = 32,
+
+    /** The latitude and longitude fields are required in the location claim */
+    CTOKEN_ERR_LAT_LONG_REQUIRED = 33,
+
+    /** */
+    CTOKEN_ERR_TOO_MANY_TAGS = 34,
 
     /** The @ref ctoken_protection_t type passed to encode or decode
-	is not supported. */
-    CTOKEN_ERR_UNSUPPORTED_PROTECTION_TYPE,
+     * is not supported. */
+    CTOKEN_ERR_UNSUPPORTED_PROTECTION_TYPE = 35,
 
     /** When decoding the token is not a tag that specifies a
      protection type (e.g. CWT/COSE) nor was a protection type given
      as an argument. */
-    CTOKEN_ERR_UNDETERMINED_PROTECTION_TYPE,
+    CTOKEN_ERR_UNDETERMINED_PROTECTION_TYPE = 36,
 
     /** The content of a tag is not of the right type. */
-    CTOKEN_ERR_TAG_CONTENT,
+    CTOKEN_ERR_TAG_CONTENT = 37,
 
     /** The value of the claim is outside allowed range. */
-    CTOKEN_ERR_CLAIM_RANGE,
+    CTOKEN_ERR_CLAIM_RANGE = 38,
 
     /** CWT requires a COSE tag be the content of a CWT tag. */
-    CTOKEN_ERR_TAG_COMBO_NOT_ALLOWED,
+    CTOKEN_ERR_TAG_COMBO_NOT_ALLOWED = 39,
 
     /** The input token was a tag when a decode options was set to
 	prohibit a tag and accept only bare/unwrapped tag content. */
-    CTOKEN_ERR_SHOULD_NOT_BE_TAG,
+    CTOKEN_ERR_SHOULD_NOT_BE_TAG = 40,
 
     /** The input token was bare/unwrapped tag content when a decode
-	options was set to require a tag. */
-    CTOKEN_ERR_SHOULD_BE_TAG,
+	 * options was set to require a tag. */
+    CTOKEN_ERR_SHOULD_BE_TAG = 41,
 
-    /** When calling ctoken_decode_next_claim(), no more claims in the token or submodule. */
-    CTOKEN_ERR_NO_MORE_CLAIMS,
+    /** When calling ctoken_decode_next_claim(), no more
+     * claims in the token or submodule. */
+    CTOKEN_ERR_NO_MORE_CLAIMS = 42,
+
+    /** A duplicate label was found in the token (two instances of the same claim).
+     * It may not be the claim that was being decoded. */
+    CTOKEN_ERR_DUPLICATE_LABEL = 43,
+
+    /** An unexpected error was returned by the CBOR decoder, one
+     * that is not specifically mapped to another error here.*/
+    CTOKEN_ERR_CBOR_DECODE = 44,
 };
 
 

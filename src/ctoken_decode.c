@@ -110,17 +110,18 @@ static enum ctoken_err_t t_cose_verify_error_map[] = {
 };
 
 
-static inline enum ctoken_err_t map_qcbor_error(QCBORError error)
+enum ctoken_err_t map_qcbor_error(QCBORError cbor_error)
 {
-    // TODO: make this better
-    if(QCBORDecode_IsNotWellFormedError(error)) {
+    if(QCBORDecode_IsNotWellFormedError(cbor_error)) {
         return CTOKEN_ERR_CBOR_NOT_WELL_FORMED;
-    } else if(error == QCBOR_ERR_LABEL_NOT_FOUND) {
+    } else if(cbor_error == QCBOR_ERR_LABEL_NOT_FOUND) {
         return CTOKEN_ERR_CLAIM_NOT_PRESENT;
-    } else if(error == QCBOR_ERR_UNEXPECTED_TYPE) {
+    } else if(cbor_error == QCBOR_ERR_UNEXPECTED_TYPE) {
         return CTOKEN_ERR_CBOR_TYPE;
-    } else if(error) {
-        return CTOKEN_ERR_GENERAL;
+    } else if(cbor_error == QCBOR_ERR_DUPLICATE_LABEL) {
+        return CTOKEN_ERR_DUPLICATE_LABEL;
+    } else if(cbor_error) {
+        return CTOKEN_ERR_CBOR_DECODE;
     } else {
         return CTOKEN_ERR_SUCCESS;
     }
