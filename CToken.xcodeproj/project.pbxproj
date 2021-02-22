@@ -100,6 +100,13 @@
 		0FBE2D9F23FA149200A31C46 /* eat_example_psa.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = eat_example_psa.c; sourceTree = "<group>"; };
 		0FBE2DA223FA17A700A31C46 /* libmbedcrypto.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libmbedcrypto.a; path = "../../mbed-crypto/library/libmbedcrypto.a"; sourceTree = "<group>"; };
 		E7FDBF1725787DD1007138A8 /* t_cose */ = {isa = PBXFileReference; lastKnownFileType = folder; name = t_cose; path = ../../t_cose/master/inc/t_cose; sourceTree = "<group>"; };
+		E7FDBF3225C2BB55007138A8 /* qcbor_decode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = qcbor_decode.h; path = ../../QCBOR/master/inc/qcbor/qcbor_decode.h; sourceTree = "<group>"; };
+		E7FDBF3325C2BB55007138A8 /* UsefulBuf.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = UsefulBuf.h; path = ../../QCBOR/master/inc/qcbor/UsefulBuf.h; sourceTree = "<group>"; };
+		E7FDBF3425C2BB55007138A8 /* qcbor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = qcbor.h; path = ../../QCBOR/master/inc/qcbor/qcbor.h; sourceTree = "<group>"; };
+		E7FDBF3525C2BB55007138A8 /* qcbor_encode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = qcbor_encode.h; path = ../../QCBOR/master/inc/qcbor/qcbor_encode.h; sourceTree = "<group>"; };
+		E7FDBF3625C2BB55007138A8 /* qcbor_common.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = qcbor_common.h; path = ../../QCBOR/master/inc/qcbor/qcbor_common.h; sourceTree = "<group>"; };
+		E7FDBF3725C2BB55007138A8 /* qcbor_spiffy_decode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = qcbor_spiffy_decode.h; path = ../../QCBOR/master/inc/qcbor/qcbor_spiffy_decode.h; sourceTree = "<group>"; };
+		E7FDBF3825C2BB56007138A8 /* qcbor_private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = qcbor_private.h; path = ../../QCBOR/master/inc/qcbor/qcbor_private.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -136,13 +143,14 @@
 		0F3AF31023E4DB6100A60561 = {
 			isa = PBXGroup;
 			children = (
-				0F3AF37423F1B9FF00A60561 /* examples */,
 				0F3AF37323F0567A00A60561 /* README.md */,
+				0F3AF37423F1B9FF00A60561 /* examples */,
 				0F3AF33F23E5005900A60561 /* main.c */,
 				0F3AF33423E4FD7D00A60561 /* inc */,
 				0F3AF32C23E4FD4C00A60561 /* src */,
 				0F3AF34123E5006300A60561 /* test */,
 				0F3AF32323E4E86A00A60561 /* t_cose */,
+				E7FDBF3125C2BAA3007138A8 /* QCBOR */,
 				0F3AF36823EE513100A60561 /* Frameworks */,
 				0F3AF31A23E4DB6100A60561 /* Products */,
 			);
@@ -237,6 +245,20 @@
 				0F3AF37523F1BACE00A60561 /* eat_example_ossl.c */,
 			);
 			path = examples;
+			sourceTree = "<group>";
+		};
+		E7FDBF3125C2BAA3007138A8 /* QCBOR */ = {
+			isa = PBXGroup;
+			children = (
+				E7FDBF3625C2BB55007138A8 /* qcbor_common.h */,
+				E7FDBF3225C2BB55007138A8 /* qcbor_decode.h */,
+				E7FDBF3525C2BB55007138A8 /* qcbor_encode.h */,
+				E7FDBF3825C2BB56007138A8 /* qcbor_private.h */,
+				E7FDBF3725C2BB55007138A8 /* qcbor_spiffy_decode.h */,
+				E7FDBF3425C2BB55007138A8 /* qcbor.h */,
+				E7FDBF3325C2BB55007138A8 /* UsefulBuf.h */,
+			);
+			name = QCBOR;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
