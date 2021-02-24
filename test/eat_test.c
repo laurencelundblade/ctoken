@@ -799,14 +799,14 @@ int32_t submod_decode_errors_test()
 
     /* submodule is a array and should have been a map */
     ctoken_result = ctoken_decode_enter_submod_sz(&decode_context, "notmap");
-    if(ctoken_result != CTOKEN_ERR_SUBMOD_TYPE) {
+    if(ctoken_result != CTOKEN_ERR_CBOR_TYPE) {
         return 1300 + (int32_t)ctoken_result;
     }
 
     /* submodule is time string and should have been a map */
     ctoken_result = ctoken_decode_enter_submod_sz(&decode_context, "notbs");
-    if(ctoken_result != CTOKEN_ERR_SUBMOD_TYPE) {
-        return 1300 + (int32_t)ctoken_result;
+    if(ctoken_result != CTOKEN_ERR_CBOR_TYPE) {
+        return 1350 + (int32_t)ctoken_result;
     }
 
     /* Try to get a submod token that is not of the right type */

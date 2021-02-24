@@ -258,7 +258,7 @@ static inline void init_decode_tag_tests(struct decode_tag_test test[])
         .cose_tag        = T_COSE_OPT_TAG_PROHIBITED,
         .protection_type = CTOKEN_PROTECTION_BY_TAG,
         .token_to_decode = Q_USEFUL_BUF_FROM_BYTE_ARRAY_LITERAL(cwt_cose_tag),
-        .expected_error  = CTOKEN_ERR_GENERAL // TODO: sort our this error code
+        .expected_error  = CTOKEN_ERROR_COSE_TAG
     };
 
     test[7] = (struct decode_tag_test) {
@@ -404,7 +404,7 @@ int32_t cwt_tags_test()
         }
 
         /* Does nothing; just for setting break point on particular test */
-        if(test->test_number == 12) {
+        if(test->test_number == 7) {
             result = 0;
         }
         ctoken_decode_init(&decode_context,

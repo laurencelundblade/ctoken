@@ -59,72 +59,154 @@ void ctoken_decode_init(struct ctoken_decode_ctx *me,
 }
 
 
-
-
-static enum ctoken_err_t t_cose_verify_error_map[] = {
-    /*     T_COSE_SUCCESS = 0 */
-    CTOKEN_ERR_SUCCESS,
-    /*     T_COSE_ERR_UNSUPPORTED_SIGNING_ALG */
-    CTOKEN_ERR_UNSUPPORTED_SIG_ALG,
-    /*     T_COSE_ERR_PROTECTED_HEADERS */
-    CTOKEN_ERR_GENERAL,
-    /*     T_COSE_ERR_UNSUPPORTED_HASH */
-    CTOKEN_ERR_HASH_UNAVAILABLE,
-    /*     T_COSE_ERR_HASH_GENERAL_FAIL */
-    CTOKEN_ERR_GENERAL,
-    /*     T_COSE_ERR_HASH_BUFFER_SIZE */
-    CTOKEN_ERR_GENERAL,
-    /*     T_COSE_ERR_SIG_BUFFER_SIZE */
-    CTOKEN_ERR_GENERAL,
-    /*     T_COSE_ERR_KEY_BUFFER_SIZE */
-    CTOKEN_ERR_GENERAL,
-    /*     T_COSE_ERR_SIGN1_FORMAT */
-    CTOKEN_ERR_COSE_SIGN1_FORMAT,
-    /*     T_COSE_ERR_CBOR_NOT_WELL_FORMED */
-    CTOKEN_ERR_CBOR_NOT_WELL_FORMED,
-    /*     T_COSE_ERR_NO_ALG_ID */
-    CTOKEN_ERR_COSE_SIGN1_FORMAT,
-    /*     T_COSE_ERR_NO_KID */
-    0, // TODO: fix this list
-    CTOKEN_ERR_COSE_SIGN1_FORMAT,
-    /*     T_COSE_ERR_SIG_VERIFY */
-    CTOKEN_ERR_COSE_SIGN1_VALIDATION,
-    /*     T_COSE_ERR_BAD_SHORT_CIRCUIT_KID */
-    CTOKEN_ERR_COSE_SIGN1_FORMAT,
-    /*     T_COSE_ERR_INVALID_ARGUMENT */
-    CTOKEN_ERR_GENERAL,
-    /*     T_COSE_ERR_INSUFFICIENT_MEMORY */
-    CTOKEN_ERR_INSUFFICIENT_MEMORY,
-    /*     T_COSE_ERR_FAIL */
-    CTOKEN_ERR_GENERAL,
-    /*     T_COSE_ERR_TAMPERING_DETECTED */
-    CTOKEN_ERR_TAMPERING_DETECTED,
-    /*     T_COSE_ERR_UNKNOWN_KEY */
-    CTOKEN_ERR_VERIFICATION_KEY,
-    /*     T_COSE_ERR_WRONG_TYPE_OF_KEY */
-    CTOKEN_ERR_VERIFICATION_KEY,
-    /*     T_COSE_ERR_SIG_STRUCT */
-    CTOKEN_ERR_COSE_SIGN1_FORMAT,
-    /*     T_COSE_ERR_SHORT_CIRCUIT_SIG */
-    CTOKEN_ERR_COSE_SIGN1_VALIDATION
-};
-
-
-static inline enum ctoken_err_t map_qcbor_error(QCBORError error)
+/**
+ * \brief Get most recent QCBOR error and map QCBOR into ctoken error
+ *
+ * \param[in] decode_context  Decode context from which to get recent error.
+ *
+ * \return The ctoken error.
+ */
+static enum ctoken_err_t get_and_reset_error(QCBORDecodeContext *decode_context)
 {
-    // TODO: make this better
-    if(QCBORDecode_IsNotWellFormedError(error)) {
+    QCBORError cbor_error;
+
+    cbor_error = QCBORDecode_GetAndResetError(decode_context);
+
+    if(QCBORDecode_IsNotWellFormedError(cbor_error)) {
         return CTOKEN_ERR_CBOR_NOT_WELL_FORMED;
-    } else if(error == QCBOR_ERR_LABEL_NOT_FOUND) {
+    } else if(cbor_error == QCBOR_ERR_NO_MORE_ITEMS) {
+        return CTOKEN_ERR_NO_MORE_CLAIMS;
+    } else if(cbor_error == QCBOR_ERR_LABEL_NOT_FOUND) {
         return CTOKEN_ERR_CLAIM_NOT_PRESENT;
-    } else if(error == QCBOR_ERR_UNEXPECTED_TYPE) {
+    } else if(cbor_error == QCBOR_ERR_UNEXPECTED_TYPE) {
         return CTOKEN_ERR_CBOR_TYPE;
-    } else if(error) {
-        return CTOKEN_ERR_GENERAL;
+    } else if(cbor_error == QCBOR_ERR_DUPLICATE_LABEL) {
+        return CTOKEN_ERR_DUPLICATE_LABEL;
+    } else if(cbor_error) {
+        return CTOKEN_ERR_CBOR_DECODE;
     } else {
         return CTOKEN_ERR_SUCCESS;
     }
 }
+
+
+/* Use uint8_t instead of enum so map will be 4x smaller. Compilers usually
+ * make enums 4 bytes. */
+static const uint8_t t_cose_verify_error_map[] = {
+    /* T_COSE_SUCCESS = 0 */
+    CTOKEN_ERR_SUCCESS,
+
+    /* T_COSE_ERR_UNSUPPORTED_SIGNING_ALG = 1 */
+    CTOKEN_ERR_UNSUPPORTED_SIG_ALG,
+
+    /* T_COSE_ERR_MAKING_PROTECTED = 2 */
+    CTOKEN_ERROR_GENERAL_T_COSE,
+
+    /* T_COSE_ERR_UNSUPPORTED_HASH = 3 */
+    CTOKEN_ERR_HASH_UNAVAILABLE,
+
+    /* T_COSE_ERR_HASH_GENERAL_FAIL = 4 */
+    CTOKEN_ERROR_T_COSE_CRYPTO,
+
+    /* T_COSE_ERR_HASH_BUFFER_SIZE = 5 */
+    CTOKEN_ERROR_GENERAL_T_COSE,
+
+    /* T_COSE_ERR_SIG_BUFFER_SIZE = 6 */
+    CTOKEN_ERROR_GENERAL_T_COSE,
+
+    /* Unassigned by t_cose */
+    CTOKEN_ERROR_GENERAL_T_COSE,
+
+    /* T_COSE_ERR_SIGN1_FORMAT = 8 */
+    CTOKEN_ERR_COSE_SIGN1_FORMAT,
+
+    /* T_COSE_ERR_CBOR_NOT_WELL_FORMED = 9 */
+    CTOKEN_ERR_CBOR_NOT_WELL_FORMED,
+
+    /* T_COSE_ERR_PARAMETER_CBOR = 10 */
+    CTOKEN_ERR_COSE_SIGN1_FORMAT,
+
+    /* T_COSE_ERR_NO_ALG_ID = 11 */
+    CTOKEN_ERR_COSE_SIGN1_FORMAT,
+
+    /* T_COSE_ERR_NO_KID = 12 */
+    CTOKEN_ERR_COSE_SIGN1_FORMAT,
+
+    /* T_COSE_ERR_SIG_VERIFY = 13 */
+    CTOKEN_ERR_COSE_SIGN1_VALIDATION,
+
+    /* T_COSE_ERR_BAD_SHORT_CIRCUIT_KID = 14 */
+    CTOKEN_ERROR_SHORT_CIRCUIT_SIG,
+
+    /* T_COSE_ERR_INVALID_ARGUMENT = 15 */
+    CTOKEN_ERROR_GENERAL_T_COSE,
+
+    /* T_COSE_ERR_INSUFFICIENT_MEMORY = 16 */
+    CTOKEN_ERR_INSUFFICIENT_MEMORY,
+
+    /* T_COSE_ERR_FAIL = 17 */
+    CTOKEN_ERROR_GENERAL_T_COSE,
+
+    /* T_COSE_ERR_TAMPERING_DETECTED = 18 */
+    CTOKEN_ERR_TAMPERING_DETECTED,
+
+    /* T_COSE_ERR_UNKNOWN_KEY = 19 */
+    CTOKEN_ERR_VERIFICATION_KEY,
+
+    /* T_COSE_ERR_WRONG_TYPE_OF_KEY = 20 */
+    CTOKEN_ERR_VERIFICATION_KEY,
+
+    /* T_COSE_ERR_SIG_STRUCT = 21 */
+    CTOKEN_ERR_COSE_SIGN1_FORMAT,
+
+    /* T_COSE_ERR_SHORT_CIRCUIT_SIG = 22 */
+    CTOKEN_ERROR_SHORT_CIRCUIT_SIG,
+
+    /* T_COSE_ERR_SIG_FAIL = 23 */
+    CTOKEN_ERROR_T_COSE_CRYPTO,
+
+    /* T_COSE_ERR_CBOR_FORMATTING = 24 */
+    CTOKEN_ERR_COSE_SIGN1_FORMAT,
+
+    /* T_COSE_ERR_TOO_SMALL = 25 */
+    CTOKEN_ERR_TOO_SMALL,
+
+    /* T_COSE_ERR_TOO_MANY_PARAMETERS = 26 */
+    CTOKEN_ERROR_COSE_PARAMETERS,
+
+    /* T_COSE_ERR_UNKNOWN_CRITICAL_PARAMETER = 27 */
+    CTOKEN_ERROR_COSE_PARAMETERS,
+
+    /* T_COSE_ERR_SHORT_CIRCUIT_SIG_DISABLED = 28 */
+    CTOKEN_ERROR_SHORT_CIRCUIT_SIG,
+
+    /* T_COSE_ERR_INCORRECT_KEY_FOR_LIB = 29 */
+    CTOKEN_ERROR_T_COSE_CRYPTO,
+
+    /* T_COSE_ERR_NON_INTEGER_ALG_ID = 30 */
+    CTOKEN_ERROR_COSE_PARAMETERS,
+
+    /* T_COSE_ERR_BAD_CONTENT_TYPE = 31 */
+    CTOKEN_ERROR_COSE_PARAMETERS,
+
+    /* T_COSE_ERR_INCORRECTLY_TAGGED = 32 */
+    CTOKEN_ERROR_COSE_TAG,
+
+    /* T_COSE_ERR_EMPTY_KEY = 33 */
+    CTOKEN_ERROR_KEY,
+
+    /* T_COSE_ERR_DUPLICATE_PARAMETER = 34 */
+    CTOKEN_ERROR_COSE_PARAMETERS,
+
+    /* T_COSE_ERR_PARAMETER_NOT_PROTECTED = 35 */
+    CTOKEN_ERROR_COSE_PARAMETERS,
+
+    /* T_COSE_ERR_CRIT_PARAMETER = 36 */
+    CTOKEN_ERROR_COSE_PARAMETERS,
+
+    /* T_COSE_ERR_TOO_MANY_TAGS = 37 */
+    CTOKEN_ERR_TOO_MANY_TAGS
+};
 
 
 /**
@@ -137,15 +219,12 @@ static inline enum ctoken_err_t map_qcbor_error(QCBORError error)
 static inline enum ctoken_err_t
 map_t_cose_errors(enum t_cose_err_t t_cose_error)
 {
-    /*
-     * Object code is smaller by using the mapping array, assuming
-     * compiler makes enums as small as possible.
-     */
+    /* Object code is smaller by using the mapping array */
     enum ctoken_err_t return_value;
-    const size_t map_size = sizeof(t_cose_verify_error_map) /  sizeof(enum ctoken_err_t);
+    const size_t map_size = sizeof(t_cose_verify_error_map) /  sizeof(uint8_t);
 
     if(t_cose_error >= map_size) {
-        return_value = CTOKEN_ERR_GENERAL;
+        return_value = CTOKEN_ERROR_GENERAL_T_COSE;
     } else {
         return_value = t_cose_verify_error_map[t_cose_error];
     }
@@ -155,12 +234,12 @@ map_t_cose_errors(enum t_cose_err_t t_cose_error)
 
 
 /*
-* Public function. See ctoken_decode.h
-*/
+ * Public function. See ctoken_decode.h
+ */
 enum ctoken_err_t
 ctoken_decode_get_kid(struct ctoken_decode_ctx *me,
-                      struct q_useful_buf_c   token,
-                      struct q_useful_buf_c  *kid)
+                      struct q_useful_buf_c    token,
+                      struct q_useful_buf_c   *kid)
 {
     struct q_useful_buf_c     payload;
     struct t_cose_parameters  parameters;
@@ -170,17 +249,18 @@ ctoken_decode_get_kid(struct ctoken_decode_ctx *me,
     t_cose_sign1_verify_init(&(me->verify_context), T_COSE_OPT_DECODE_ONLY);
     t_cose_error = t_cose_sign1_verify(&(me->verify_context), token, &payload, &parameters);
 
-    if(t_cose_error) {
-        return 99;
+    if(t_cose_error != T_COSE_SUCCESS) {
+        return map_t_cose_errors(t_cose_error);
     }
 
     *kid = parameters.kid;
 
-    return 0;
+    return CTOKEN_ERR_SUCCESS;
 }
 
 
-uint64_t get_nth_tag(struct ctoken_decode_ctx *me, int protection_type, QCBORItem *item, uint32_t n)
+static uint64_t
+get_nth_tag(struct ctoken_decode_ctx *me, int protection_type, QCBORItem *item, uint32_t n)
 {
     uint64_t tag_number;
 
@@ -296,14 +376,7 @@ ctoken_decode_validate_token(struct ctoken_decode_ctx *me,
     /* Now processing for either COSE-secured or UCCS. Enter the map
        that holds all the claims */
     QCBORDecode_EnterMap(&(me->qcbor_decode_context), NULL);
-    qcbor_error = QCBORDecode_GetError(&(me->qcbor_decode_context));
-    if(qcbor_error != QCBOR_SUCCESS) {
-        // TODO: better error conversion
-        return_value = CTOKEN_ERR_CBOR_STRUCTURE;
-        goto Done;
-    }
-
-    return_value = CTOKEN_ERR_SUCCESS;
+    return_value = get_and_reset_error(&(me->qcbor_decode_context));
 
 Done:
     me->last_error = return_value;
@@ -319,11 +392,10 @@ Done:
  */
 enum ctoken_err_t
 ctoken_decode_get_bstr(struct ctoken_decode_ctx *me,
-                       int32_t                  label,
+                       int64_t                  label,
                        struct q_useful_buf_c   *claim)
 {
     enum ctoken_err_t return_value;
-    QCBORError        qcbor_error;
 
     if(me->last_error != CTOKEN_ERR_SUCCESS) {
         return_value = me->last_error;
@@ -332,9 +404,8 @@ ctoken_decode_get_bstr(struct ctoken_decode_ctx *me,
     }
 
     QCBORDecode_GetByteStringInMapN(&(me->qcbor_decode_context), label, claim);
-    qcbor_error = QCBORDecode_GetAndResetError(&(me->qcbor_decode_context));
 
-    return_value = map_qcbor_error(qcbor_error);
+    return_value = get_and_reset_error(&(me->qcbor_decode_context));
 
 Done:
     return return_value;
@@ -346,11 +417,10 @@ Done:
  */
 enum ctoken_err_t
 ctoken_decode_get_tstr(struct ctoken_decode_ctx *me,
-                       int32_t                   label,
+                       int64_t                   label,
                        struct q_useful_buf_c    *claim)
 {
     enum ctoken_err_t return_value;
-    QCBORError        qcbor_error;
 
     if(me->last_error != CTOKEN_ERR_SUCCESS) {
         return_value = me->last_error;
@@ -359,9 +429,8 @@ ctoken_decode_get_tstr(struct ctoken_decode_ctx *me,
     }
 
     QCBORDecode_GetTextStringInMapN(&(me->qcbor_decode_context), label, claim);
-    qcbor_error = QCBORDecode_GetAndResetError(&(me->qcbor_decode_context));
 
-    return_value = map_qcbor_error(qcbor_error);
+    return_value = get_and_reset_error(&(me->qcbor_decode_context));
 
 Done:
     return return_value;
@@ -373,11 +442,10 @@ Done:
  */
 enum ctoken_err_t
 ctoken_decode_get_int(struct ctoken_decode_ctx *me,
-                      int32_t                   label,
+                      int64_t                   label,
                       int64_t                  *integer)
 {
     enum ctoken_err_t return_value;
-    QCBORError        qcbor_error;
 
     if(me->last_error != CTOKEN_ERR_SUCCESS) {
         return_value = me->last_error;
@@ -386,9 +454,8 @@ ctoken_decode_get_int(struct ctoken_decode_ctx *me,
     }
 
     QCBORDecode_GetInt64InMapN(&(me->qcbor_decode_context), label, integer);
-    qcbor_error = QCBORDecode_GetAndResetError(&(me->qcbor_decode_context));
 
-    return_value = map_qcbor_error(qcbor_error);
+    return_value = get_and_reset_error(&(me->qcbor_decode_context));
 
 Done:
     return return_value;
@@ -400,11 +467,10 @@ Done:
  */
 enum ctoken_err_t
 ctoken_decode_get_uint(struct ctoken_decode_ctx *me,
-                       int32_t                   label,
+                       int64_t                   label,
                        uint64_t                 *integer)
 {
     enum ctoken_err_t return_value;
-    QCBORError        qcbor_error;
 
     if(me->last_error != CTOKEN_ERR_SUCCESS) {
         return_value = me->last_error;
@@ -413,9 +479,8 @@ ctoken_decode_get_uint(struct ctoken_decode_ctx *me,
     }
 
     QCBORDecode_GetUInt64InMapN(&(me->qcbor_decode_context), label, integer);
-    qcbor_error = QCBORDecode_GetAndResetError(&(me->qcbor_decode_context));
 
-    return_value = map_qcbor_error(qcbor_error);
+    return_value = get_and_reset_error(&(me->qcbor_decode_context));
 
 Done:
     return return_value;
@@ -428,11 +493,10 @@ Done:
  */
 enum ctoken_err_t
 ctoken_decode_get_bool(struct ctoken_decode_ctx *me,
-                       int32_t                   label,
+                       int64_t                   label,
                        bool                     *b)
 {
     enum ctoken_err_t return_value;
-    QCBORError        qcbor_error;
 
     if(me->last_error != CTOKEN_ERR_SUCCESS) {
         return_value = me->last_error;
@@ -440,9 +504,8 @@ ctoken_decode_get_bool(struct ctoken_decode_ctx *me,
     }
 
     QCBORDecode_GetBoolInMapN(&(me->qcbor_decode_context), label, b);
-    qcbor_error = QCBORDecode_GetAndResetError(&(me->qcbor_decode_context));
 
-    return_value = map_qcbor_error(qcbor_error);
+    return_value = get_and_reset_error(&(me->qcbor_decode_context));
 
 Done:
     return return_value;
@@ -482,24 +545,24 @@ Done:
  */
 enum ctoken_err_t
 ctoken_decode_get_int_constrained(struct ctoken_decode_ctx *me,
-                                  int32_t                   label,
+                                  int64_t                   label,
                                   int64_t                   min,
                                   int64_t                   max,
                                   int64_t                  *claim)
 {
-    enum ctoken_err_t error;
+    enum ctoken_err_t return_value;
 
-    error = ctoken_decode_get_int(me, label, claim);
-    if(error != CTOKEN_ERR_SUCCESS) {
+    return_value = ctoken_decode_get_int(me, label, claim);
+    if(return_value != CTOKEN_ERR_SUCCESS) {
         goto Done;
     }
 
     if(*claim < min || *claim > max) {
-        error = CTOKEN_ERR_CLAIM_RANGE;
+        return_value = CTOKEN_ERR_CLAIM_RANGE;
     }
 
 Done:
-    return error;
+    return return_value;
 }
 
 
@@ -513,7 +576,6 @@ ctoken_decode_location(struct ctoken_decode_ctx   *me,
     enum ctoken_err_t  return_value = CTOKEN_ERR_SUCCESS;
     double             d;
     int                label;
-    QCBORError         cbor_error;
 
     if(me->last_error != CTOKEN_ERR_SUCCESS) {
         return_value = me->last_error;
@@ -524,22 +586,24 @@ ctoken_decode_location(struct ctoken_decode_ctx   *me,
 
     QCBORDecode_EnterMapFromMapN(&(me->qcbor_decode_context),
                                  CTOKEN_EAT_LABEL_LOCATION);
-    cbor_error = QCBORDecode_GetAndResetError(&(me->qcbor_decode_context));
-    if(cbor_error != QCBOR_SUCCESS) {
-        return_value = map_qcbor_error(cbor_error);
+    return_value = get_and_reset_error(&(me->qcbor_decode_context));
+
+    if(return_value != CTOKEN_ERR_SUCCESS) {
         goto Done;
     }
 
     for(label = CTOKEN_EAT_LABEL_LATITUDE; label <= NUM_FLOAT_LOCATION_ITEMS; label++) {
         QCBORDecode_GetDoubleInMapN(&(me->qcbor_decode_context), label, &d);
-        cbor_error = QCBORDecode_GetAndResetError(&(me->qcbor_decode_context));
-        if(cbor_error == QCBOR_SUCCESS) {
-            location->items[label-1] = d;
-            ctoken_location_mark_item_present(location, label);
-        } else if(cbor_error != QCBOR_ERR_LABEL_NOT_FOUND) {
-            return_value = map_qcbor_error(cbor_error);
+        return_value = get_and_reset_error(&(me->qcbor_decode_context));
+        if(return_value == CTOKEN_ERR_CLAIM_NOT_PRESENT) {
+            continue;
+        }
+        if(return_value != CTOKEN_ERR_SUCCESS) {
             goto Done;
         }
+
+        location->items[label-1] = d;
+        ctoken_location_mark_item_present(location, label);
     }
 
     if(!ctoken_location_is_item_present(location, CTOKEN_EAT_LABEL_LATITUDE) ||
@@ -550,78 +614,26 @@ ctoken_decode_location(struct ctoken_decode_ctx   *me,
     }
 
     QCBORDecode_GetUInt64InMapN(&(me->qcbor_decode_context), CTOKEN_EAT_LABEL_TIME_STAMP, &(location->time_stamp));
-    cbor_error = QCBORDecode_GetAndResetError(&(me->qcbor_decode_context));
-    if(cbor_error == QCBOR_SUCCESS) {
+    return_value = get_and_reset_error(&(me->qcbor_decode_context));
+    if(return_value == CTOKEN_ERR_SUCCESS) {
         ctoken_location_mark_item_present(location, CTOKEN_EAT_LABEL_TIME_STAMP);
-    } else if(cbor_error != QCBOR_ERR_LABEL_NOT_FOUND) {
-        return_value = map_qcbor_error(cbor_error);
+    } else if(return_value != CTOKEN_ERR_CLAIM_NOT_PRESENT) {
         goto Done;
     }
 
     QCBORDecode_GetUInt64InMapN(&(me->qcbor_decode_context), CTOKEN_EAT_LABEL_AGE, &(location->age));
-    cbor_error = QCBORDecode_GetAndResetError(&(me->qcbor_decode_context));
-    if(cbor_error == QCBOR_SUCCESS) {
+    return_value = get_and_reset_error(&(me->qcbor_decode_context));
+    if(return_value == CTOKEN_ERR_SUCCESS) {
         ctoken_location_mark_item_present(location, CTOKEN_EAT_LABEL_AGE);
-    } else if(cbor_error != QCBOR_ERR_LABEL_NOT_FOUND) {
-        return_value = map_qcbor_error(cbor_error);
+    } else if(return_value != CTOKEN_ERR_CLAIM_NOT_PRESENT) {
         goto Done;
     }
 
     QCBORDecode_ExitMap(&(me->qcbor_decode_context));
-    cbor_error = QCBORDecode_GetAndResetError(&(me->qcbor_decode_context));
-    if(cbor_error != QCBOR_SUCCESS) {
-        return_value = map_qcbor_error(cbor_error);
-    }
-
-    return_value = CTOKEN_ERR_SUCCESS;
+    return_value = get_and_reset_error(&(me->qcbor_decode_context));
 
 Done:
     me->last_error = return_value;
-    return return_value;
-}
-
-
-static inline bool
-QCBORItem_IsMapOrArray(const QCBORItem *pMe)
-{
-   const uint8_t uDataType = pMe->uDataType;
-   return uDataType == QCBOR_TYPE_MAP ||
-          uDataType == QCBOR_TYPE_ARRAY ||
-          uDataType == QCBOR_TYPE_MAP_AS_ARRAY;
-}
-
-
-static inline QCBORError
-consume_item(QCBORDecodeContext *decode_context, const QCBORItem  *first_item)
-{
-   QCBORError return_value;
-   QCBORItem  Item;
-
-   /* If it is a map or array, this will tell if it is empty. */
-   const bool is_empty = (first_item->uNextNestLevel <= first_item->uNestingLevel);
-
-   if(QCBORItem_IsMapOrArray(first_item) && !is_empty) {
-      /* There is only real work to do for non-empty maps and arrays */
-
-      /* This works for definite and indefinite length
-       * maps and arrays by using the nesting level
-       */
-      do {
-          return_value = QCBORDecode_GetNext(decode_context, &Item);
-          if(QCBORDecode_IsUnrecoverableError(return_value) ||
-              return_value == QCBOR_ERR_NO_MORE_ITEMS) {
-              goto Done;
-          }
-
-      } while(Item.uNextNestLevel >= first_item->uNextNestLevel);
-
-      return_value = QCBOR_SUCCESS;
-
-   } else {
-      return_value = QCBOR_SUCCESS;
-   }
-
-Done:
     return return_value;
 }
 
@@ -633,41 +645,24 @@ enum ctoken_err_t
 ctoken_decode_next_claim(struct ctoken_decode_ctx   *me,
                          QCBORItem                  *claim)
 {
-    QCBORError        cbor_error;
     enum ctoken_err_t return_value;
 
     /* Loop is only to skip the submods section and executes only
      * once in most cases. It executes twice if there is a submods section.
+     * This is necessary because no ordering of the map is expected.
      */
     do {
-        cbor_error = QCBORDecode_GetNext(&(me->qcbor_decode_context), claim);
-        if(cbor_error == QCBOR_ERR_NO_MORE_ITEMS) {
-            return_value = CTOKEN_ERR_NO_MORE_CLAIMS;
-            goto Done;
-        }
-        if(cbor_error) {
-            // TODO: refine this error.
-            return_value = CTOKEN_ERR_CBOR_NOT_WELL_FORMED;
-            goto Done;
-        }
+        QCBORDecode_VGetNextConsume(&(me->qcbor_decode_context), claim);
 
-        cbor_error = consume_item(&(me->qcbor_decode_context), claim);
-        if(cbor_error == QCBOR_ERR_NO_MORE_ITEMS) {
-             return_value = CTOKEN_ERR_NO_MORE_CLAIMS;
-             goto Done;
-         }
-        if(cbor_error) {
-            // TODO: refine this error.
-            return_value = CTOKEN_ERR_CBOR_NOT_WELL_FORMED;
+        return_value = get_and_reset_error(&(me->qcbor_decode_context));
+        if(return_value != CTOKEN_ERR_SUCCESS) {
             goto Done;
         }
 
     } while(claim->label.int64 == CTOKEN_EAT_LABEL_SUBMODS &&
             claim->uLabelType == QCBOR_TYPE_INT64);
 
-    return_value = CTOKEN_ERR_SUCCESS;
-
-    claim->uNestingLevel = 0;
+    claim->uNestingLevel  = 0;
     claim->uNextNestLevel = 0;
 
 Done:
@@ -678,17 +673,25 @@ Done:
 static enum ctoken_err_t
 enter_submod_section(struct ctoken_decode_ctx *me)
 {
+    static enum ctoken_err_t return_value;
+
     if(me->in_submods >= CTOKEN_MAX_SUBMOD_NESTING) {
         return CTOKEN_ERR_SUBMOD_NESTING_TOO_DEEP;
     }
     QCBORDecode_EnterMapFromMapN(&(me->qcbor_decode_context),
                                  CTOKEN_EAT_LABEL_SUBMODS);
-    if(QCBORDecode_GetAndResetError(&(me->qcbor_decode_context))) {
-        return CTOKEN_ERR_SUBMOD_SECTION;
-    }
-    me->in_submods++;
 
-    return CTOKEN_ERR_SUCCESS;
+    return_value = get_and_reset_error(&(me->qcbor_decode_context));
+    if(return_value == CTOKEN_ERR_CLAIM_NOT_PRESENT) {
+        return_value = CTOKEN_ERR_SUBMOD_SECTION;
+        goto Done;
+    }
+    if(return_value == CTOKEN_ERR_SUCCESS ) {
+        me->in_submods++;
+    }
+
+Done:
+    return return_value;
 }
 
 
@@ -709,47 +712,32 @@ leave_submod_section(struct ctoken_decode_ctx *me)
 
 static enum ctoken_err_t
 ctoken_decode_nth_submod(struct ctoken_decode_ctx *me,
-                             uint32_t                  submod_index,
-                             uint32_t                 *num_submods)
+                         uint32_t                  submod_index,
+                         uint32_t                 *num_submods)
 {
     /* Traverse submods map until nth one is found and stop */
-    QCBORItem         map_item;
-    QCBORError        error;
-    uint32_t          submod_count;
-    enum ctoken_err_t return_value;
+    QCBORItem           map_item;
+    uint32_t            submod_count;
+    enum ctoken_err_t   return_value;
     QCBORDecodeContext *decode_context = &(me->qcbor_decode_context);
 
     /* Must be entered into submods before calling this */
-
     submod_count = 0;
     return_value = CTOKEN_ERR_SUCCESS;
+
     while(submod_index > 0) {
-        error = QCBORDecode_GetAndResetError(decode_context);
-        if(error == QCBOR_SUCCESS) {
-            error = QCBORDecode_PeekNext(decode_context, &map_item);
-        }
-        if(error != QCBOR_SUCCESS) {
-            if(error == QCBOR_ERR_NO_MORE_ITEMS) {
-                /* Got to the end of the submods map */
-                return_value = CTOKEN_ERR_SUCCESS;
-            } else if(QCBORDecode_IsNotWellFormedError(error)) {
-                return_value = CTOKEN_ERR_CBOR_NOT_WELL_FORMED;
-            } else  {
-                return_value = CTOKEN_ERR_TOKEN_FORMAT;
-            }
-            goto Done;
+        QCBORDecode_VGetNextConsume(decode_context, &map_item);
+        return_value = get_and_reset_error(&(me->qcbor_decode_context));
+        if(return_value != CTOKEN_ERR_SUCCESS) {
+            break;
         }
 
-        if(map_item.uDataType == QCBOR_TYPE_MAP) {
-            /* Enter and Exit is the way to skip over the whole submod */
-            QCBORDecode_EnterMap(decode_context, &map_item);
-            QCBORDecode_ExitMap(decode_context);
-        } else {
-            QCBORDecode_VGetNext(decode_context, &map_item);
-        }
-        // TODO: should this check skipped submods for correctness?
         submod_count++;
         submod_index--;
+    }
+
+    if(return_value == CTOKEN_ERR_NO_MORE_CLAIMS) {
+        return_value = CTOKEN_ERR_SUCCESS;
     }
 
 Done:
@@ -768,6 +756,10 @@ ctoken_decode_get_num_submods(struct ctoken_decode_ctx *me,
     enum ctoken_err_t return_value;
 
     return_value = enter_submod_section(me);
+    if(return_value == CTOKEN_ERR_CLAIM_NOT_PRESENT) {
+        return_value = CTOKEN_ERR_SUBMOD_SECTION;
+        goto Done;
+    }
     if(return_value != CTOKEN_ERR_SUCCESS) {
         goto Done;
     }
@@ -793,7 +785,6 @@ ctoken_decode_enter_nth_submod(struct ctoken_decode_ctx *me,
                                struct q_useful_buf_c    *name)
 {
     QCBORItem         map_item;
-    QCBORError        qcbor_error;
     enum ctoken_err_t return_value;
     uint32_t          num_submods;
 
@@ -814,9 +805,8 @@ ctoken_decode_enter_nth_submod(struct ctoken_decode_ctx *me,
     }
 
     QCBORDecode_EnterMap(&(me->qcbor_decode_context), &map_item);
-    qcbor_error = QCBORDecode_GetAndResetError(&(me->qcbor_decode_context));
-    if(qcbor_error != QCBOR_SUCCESS) {
-        return_value = map_qcbor_error(qcbor_error);
+    return_value = get_and_reset_error(&(me->qcbor_decode_context));
+    if(return_value != CTOKEN_ERR_SUCCESS) {
         leave_submod_section(me);
         goto Done;
     }
@@ -836,15 +826,15 @@ Done:
     return return_value;
 }
 
+
 /*
-* Public function. See ctoken_decode.h
-*/
+ * Public function. See ctoken_decode.h
+ */
 enum ctoken_err_t
 ctoken_decode_enter_submod_sz(struct ctoken_decode_ctx *me,
                               const char               *name)
 {
     enum ctoken_err_t return_value;
-    QCBORError        error;
 
     return_value = enter_submod_section(me);
     if(return_value != CTOKEN_ERR_SUCCESS) {
@@ -852,20 +842,16 @@ ctoken_decode_enter_submod_sz(struct ctoken_decode_ctx *me,
     }
 
     QCBORDecode_EnterMapFromMapSZ(&(me->qcbor_decode_context), name);
-    error = QCBORDecode_GetAndResetError(&(me->qcbor_decode_context));
-    if(error == QCBOR_ERR_LABEL_NOT_FOUND) {
+
+    return_value = get_and_reset_error(&(me->qcbor_decode_context));
+    if(return_value == CTOKEN_ERR_CLAIM_NOT_PRESENT) {
+        /* Translate error code for submod */
         return_value = CTOKEN_ERR_NAMED_SUBMOD_NOT_FOUND;
-        goto Done;
-    } else if(error == QCBOR_ERR_UNEXPECTED_TYPE) {
-        return_value = CTOKEN_ERR_SUBMOD_TYPE;
-    } else if(error != QCBOR_SUCCESS) {
-        return_value = map_qcbor_error(error);
-        goto Done;
     }
 
 Done:
     if(return_value != CTOKEN_ERR_SUCCESS) {
-        /* try to reset decoding can continue even on error. */
+        /* try to reset so decoding can continue even on error. */
         leave_submod_section(me);
     }
     return return_value;
@@ -879,12 +865,10 @@ enum ctoken_err_t
 ctoken_decode_exit_submod(struct ctoken_decode_ctx *me)
 {
     enum ctoken_err_t return_value;
-    QCBORError        error;
 
     QCBORDecode_ExitMap(&(me->qcbor_decode_context));
-    error = QCBORDecode_GetAndResetError(&(me->qcbor_decode_context));
-    if(error != QCBOR_SUCCESS) {
-        return_value = map_qcbor_error(error);
+    return_value = get_and_reset_error(&(me->qcbor_decode_context));
+    if(return_value != CTOKEN_ERR_SUCCESS) {
         goto Done;
     }
 
@@ -898,6 +882,8 @@ Done:
 }
 
 
+// TODO: be consistent about name of nested token in submod
+// TODO: return submod name
 static enum ctoken_err_t
 ctoken_decode_submod_token(struct ctoken_decode_ctx  *me,
                            const QCBORItem           *item,
@@ -905,18 +891,16 @@ ctoken_decode_submod_token(struct ctoken_decode_ctx  *me,
                            struct q_useful_buf_c     *token)
 {
     enum ctoken_err_t return_value;
-    QCBORError        qcbor_error;
 
-    qcbor_error = QCBORDecode_GetAndResetError(&(me->qcbor_decode_context));
-    if(qcbor_error == QCBOR_ERR_LABEL_NOT_FOUND) {
+    return_value = get_and_reset_error(&(me->qcbor_decode_context));
+
+    if(return_value == CTOKEN_ERR_CLAIM_NOT_PRESENT) {
         return_value = CTOKEN_ERR_NAMED_SUBMOD_NOT_FOUND;
         goto Done;
-    } else if(qcbor_error != QCBOR_SUCCESS) {
-        return_value = map_qcbor_error(qcbor_error);
+    } else if(return_value != CTOKEN_ERR_SUCCESS) {
         goto Done;
     }
 
-    return_value = CTOKEN_ERR_SUCCESS;
     if(item->uDataType == QCBOR_TYPE_BYTE_STRING) {
         *token = item->val.string;
         *type = CTOKEN_TYPE_CWT;
@@ -962,7 +946,6 @@ ctoken_decode_get_nested_token_sz(struct ctoken_decode_ctx *me,
     }
 
 Done:
-
     return return_value;
 }
 
@@ -972,26 +955,26 @@ Done:
  */
 enum ctoken_err_t
 ctoken_decode_get_nth_nested_token(struct ctoken_decode_ctx *me,
-                             uint32_t                  submod_index,
-                             enum ctoken_type_t         *type,
-                             struct q_useful_buf_c    *token)
+                                   uint32_t                  submod_index,
+                                   enum ctoken_type_t       *type,
+                                   struct q_useful_buf_c    *token)
 {
     QCBORItem         item;
     enum ctoken_err_t return_value;
-    uint32_t          n;
+    uint32_t          returned_index;
 
     return_value = enter_submod_section(me);
     if(return_value != CTOKEN_ERR_SUCCESS) {
         goto Done;
     }
 
-    return_value = ctoken_decode_nth_submod(me, submod_index, &n);
+    return_value = ctoken_decode_nth_submod(me, submod_index, &returned_index);
     if(return_value != CTOKEN_ERR_SUCCESS) {
         leave_submod_section(me);
         goto Done;
     }
 
-    if(n != submod_index) {
+    if(returned_index != submod_index) {
         return_value = CTOKEN_ERR_SUBMOD_INDEX_TOO_LARGE;
         leave_submod_section(me);
         goto Done;
@@ -1002,8 +985,8 @@ ctoken_decode_get_nth_nested_token(struct ctoken_decode_ctx *me,
 
     return_value = ctoken_decode_submod_token(me, &item, type, token);
     if(return_value != CTOKEN_ERR_SUCCESS) {
-         return return_value;
-     }
+        goto Done;
+    }
 
     return_value = leave_submod_section(me);
 
