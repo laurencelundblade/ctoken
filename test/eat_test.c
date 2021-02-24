@@ -715,8 +715,9 @@ int32_t submod_decode_errors_test()
 {
     struct ctoken_decode_ctx  decode_context;
     enum ctoken_err_t         ctoken_result;
-    enum ctoken_type_t          type;
+    enum ctoken_type_t        type;
     struct q_useful_buf_c     token;
+    struct q_useful_buf_c     name;
     UsefulBuf_MAKE_STACK_UB(  out, 400);
     uint32_t uNum;
 
@@ -741,7 +742,7 @@ int32_t submod_decode_errors_test()
         return 300 + (int32_t)ctoken_result;
     }
 
-    ctoken_result = ctoken_decode_get_nth_nested_token(&decode_context, 6, &type, &token);
+    ctoken_result = ctoken_decode_get_nth_nested_token(&decode_context, 6, &type, &name, &token);
     if(ctoken_result != CTOKEN_ERR_SUBMOD_INDEX_TOO_LARGE) {
         return 400 + (int32_t)ctoken_result;
     }
@@ -786,7 +787,6 @@ int32_t submod_decode_errors_test()
     }
 
     /* A submodule with an integer name */
-    struct q_useful_buf_c name;
     ctoken_result = ctoken_decode_enter_nth_submod(&decode_context, 1, &name);
     if(ctoken_result != CTOKEN_ERR_SUBMOD_NAME_NOT_A_TEXT_STRING) {
         return 1100 + (int32_t)ctoken_result;

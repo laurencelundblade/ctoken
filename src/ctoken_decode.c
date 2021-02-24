@@ -290,7 +290,6 @@ ctoken_decode_validate_token(struct ctoken_decode_ctx *me,
 {
     enum t_cose_err_t        t_cose_error;
     enum ctoken_err_t        return_value;
-    QCBORError               qcbor_error;
     enum ctoken_protection_t protection_type;
     int                      returned_tag_index;
     uint64_t                 tag_number;
@@ -882,10 +881,8 @@ Done:
 }
 
 
-// TODO: be consistent about name of nested token in submod
-// TODO: return submod name
 static enum ctoken_err_t
-ctoken_decode_submod_token(struct ctoken_decode_ctx  *me,
+ctoken_decode_nested_token(struct ctoken_decode_ctx  *me,
                            const QCBORItem           *item,
                            enum ctoken_type_t        *type,
                            struct q_useful_buf_c     *token)
@@ -898,6 +895,11 @@ ctoken_decode_submod_token(struct ctoken_decode_ctx  *me,
         return_value = CTOKEN_ERR_NAMED_SUBMOD_NOT_FOUND;
         goto Done;
     } else if(return_value != CTOKEN_ERR_SUCCESS) {
+        goto Done;
+    }
+
+    if(item->uLabelType != QCBOR_TYPE_TEXT_STRING) {
+        return_value = CTOKEN_ERR_SUBMOD_TYPE;
         goto Done;
     }
 
@@ -938,7 +940,7 @@ ctoken_decode_get_nested_token_sz(struct ctoken_decode_ctx *me,
     QCBORDecode_GetItemInMapSZ(&(me->qcbor_decode_context), name, QCBOR_TYPE_ANY, &item);
     /* Errors checked in next call to ctoken_decode_submod_token */
 
-    return_value = ctoken_decode_submod_token(me, &item, type, token);
+    return_value = ctoken_decode_nested_token(me, &item, type, token);
 
     return_value2 = leave_submod_section(me);
     if(return_value == CTOKEN_ERR_SUCCESS) {
@@ -957,6 +959,7 @@ enum ctoken_err_t
 ctoken_decode_get_nth_nested_token(struct ctoken_decode_ctx *me,
                                    uint32_t                  submod_index,
                                    enum ctoken_type_t       *type,
+                                   struct q_useful_buf_c    *name,
                                    struct q_useful_buf_c    *token)
 {
     QCBORItem         item;
@@ -983,10 +986,13 @@ ctoken_decode_get_nth_nested_token(struct ctoken_decode_ctx *me,
     QCBORDecode_VGetNext(&(me->qcbor_decode_context), &item);
     /* Errors are checked in following call to ctoken_decode_submod_token */
 
-    return_value = ctoken_decode_submod_token(me, &item, type, token);
+    return_value = ctoken_decode_nested_token(me, &item, type, token);
     if(return_value != CTOKEN_ERR_SUCCESS) {
         goto Done;
     }
+
+    /* label type was checked in ctoken_decode_nested_token(). */
+    *name = item.label.string;
 
     return_value = leave_submod_section(me);
 
@@ -994,3 +1000,10 @@ Done:
     return return_value;
 }
 
+
+
+/*
+nested token
+submodule
+
+ */

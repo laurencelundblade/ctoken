@@ -1104,7 +1104,7 @@ ctoken_decode_enter_nth_submod(struct ctoken_decode_ctx *context,
 /**
  * \brief Enter a submodule by name.
  *
- * \param[in] context         The decoding context.
+ * \param[in] context  The decoding context.
  * \param[in] name     The name of the submodule to enter.
  *
  * \returns A ctoken error code
@@ -1137,6 +1137,7 @@ ctoken_decode_exit_submod(struct ctoken_decode_ctx *context);
  * \param[in] context       The decoding context.
  * \param[in] submod_index  Index of the submodule to fetch.
  * \param[out] type         The type of the nested token returned.
+ * \param[out] name         The name of the submodule.
  * \param[out] token        Pointer and length of the token returned.
  *
  * \returns A ctoken error code.
@@ -1151,6 +1152,7 @@ enum ctoken_err_t
 ctoken_decode_get_nth_nested_token(struct ctoken_decode_ctx *context,
                                    uint32_t                  submod_index,
                                    enum ctoken_type_t       *type,
+                                   struct q_useful_buf_c    *name,
                                    struct q_useful_buf_c    *token);
 
 

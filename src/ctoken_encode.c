@@ -470,9 +470,9 @@ void ctoken_encode_close_submod(struct ctoken_encode_ctx *me)
  * Public function. See ctoken_encode.h
  */
 void ctoken_encode_nested_token(struct ctoken_encode_ctx *me,
-                             enum ctoken_type_t          type,
-                             const  char                *submod_name,
-                             struct q_useful_buf_c       token)
+                                enum ctoken_type_t        type,
+                                const char               *submod_name,
+                                struct q_useful_buf_c     token)
 {
     if(me->error != CTOKEN_ERR_SUCCESS) {
         return; /* In the error state so do nothing */
