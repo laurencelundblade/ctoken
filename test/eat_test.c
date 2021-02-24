@@ -110,7 +110,7 @@ int32_t basic_eat_test(void)
 
     ctoken_encode_start_submod_section(&encode_ctx);
 
-    ctoken_encode_open_submod(&encode_ctx, "a submodule");
+    ctoken_encode_open_submod(&encode_ctx, Q_USEFUL_BUF_FROM_SZ_LITERAL("a submodule"));
 
     ctoken_encode_uptime(&encode_ctx, 5);
 
@@ -302,15 +302,18 @@ int32_t submods_test(void)
 
     ctoken_encode_start_submod_section(&encode_ctx);
 
-      ctoken_encode_open_submod(&encode_ctx, "sub1");
+      ctoken_encode_open_submod(&encode_ctx, Q_USEFUL_BUF_FROM_SZ_LITERAL("sub1"));
 
         ctoken_encode_ueid(&encode_ctx, test_ueid);
 
         ctoken_encode_start_submod_section(&encode_ctx);
 
-          ctoken_encode_nested_token(&encode_ctx, CTOKEN_TYPE_JSON, "json", UsefulBuf_FromSZ( "{ \"ueid\", \"xyz\"" ));
+          ctoken_encode_nested_token(&encode_ctx,
+                                     CTOKEN_TYPE_JSON,
+                                     Q_USEFUL_BUF_FROM_SZ_LITERAL("json"),
+                                     UsefulBuf_FromSZ( "{ \"ueid\", \"xyz\"" ));
 
-          ctoken_encode_open_submod(&encode_ctx, "subsub");
+          ctoken_encode_open_submod(&encode_ctx, Q_USEFUL_BUF_FROM_SZ_LITERAL("subsub"));
 
             ctoken_encode_oemid(&encode_ctx, test_oemid);
 
@@ -422,7 +425,7 @@ int32_t submods_errors_test(void)
     }
 
 
-    ctoken_encode_open_submod(&encode_ctx, "foo");
+    ctoken_encode_open_submod(&encode_ctx, Q_USEFUL_BUF_FROM_SZ_LITERAL("foo"));
 
     result = ctoken_encode_finish(&encode_ctx, &completed_token);
     if(result != CTOKEN_ERR_NO_SUBMOD_SECTION_STARTED) {
@@ -481,7 +484,7 @@ int32_t submods_errors_test(void)
 
     ctoken_encode_nested_token(&encode_ctx,
                             CTOKEN_TYPE_JSON,
-                            "jason",
+                            Q_USEFUL_BUF_FROM_SZ_LITERAL("jason"),
                             UsefulBuf_FROM_SZ_LITERAL("{}"));
 
     result = ctoken_encode_finish(&encode_ctx, &completed_token);
@@ -527,7 +530,7 @@ int32_t submods_errors_test(void)
         ii[0] = i;
         ii[0] = 0;
         ctoken_encode_start_submod_section(&encode_ctx);
-        ctoken_encode_open_submod(&encode_ctx, ii);
+        ctoken_encode_open_submod(&encode_ctx, q_useful_buf_from_sz(ii));
     }
 
     ctoken_encode_uptime(&encode_ctx, 55);
@@ -559,7 +562,7 @@ int32_t submods_errors_test(void)
         ii[0] = i;
         ii[0] = 0;
         ctoken_encode_start_submod_section(&encode_ctx);
-        ctoken_encode_open_submod(&encode_ctx, ii);
+        ctoken_encode_open_submod(&encode_ctx, q_useful_buf_from_sz(ii));
     }
 
     ctoken_encode_uptime(&encode_ctx, 55);

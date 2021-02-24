@@ -660,7 +660,7 @@ ctoken_encode_location(struct ctoken_encode_ctx       *context,
  */
 static void
 ctoken_encode_uptime(struct ctoken_encode_ctx  *context,
-                         uint64_t                    uptime);
+                     uint64_t                    uptime);
 
 
 /**
@@ -731,8 +731,8 @@ void ctoken_encode_end_submod_section(struct ctoken_encode_ctx *context);
  * If an error occurs, such as nesting too deep, it will be reported
  * when ctoken_encode_finish() is called.
  */
-void ctoken_encode_open_submod(struct ctoken_encode_ctx *context,
-                               const char               *submod_name);
+void ctoken_encode_open_submod(struct ctoken_encode_ctx    *context,
+                               const struct q_useful_buf_c  submod_name);
 
 
 /**
@@ -776,10 +776,10 @@ void ctoken_encode_close_submod(struct ctoken_encode_ctx *context);
  * If an error occurs it will be reported when ctoken_encode_finish()
  * is called.
  */
-void ctoken_encode_nested_token(struct ctoken_encode_ctx *context,
-                                enum ctoken_type_t          type,
-                                const char               *submod_name,
-                                struct q_useful_buf_c     token);
+void ctoken_encode_nested_token(struct ctoken_encode_ctx    *context,
+                                enum ctoken_type_t           type,
+                                const struct q_useful_buf_c  submod_name,
+                                const struct q_useful_buf_c  token);
 
 
 /**
