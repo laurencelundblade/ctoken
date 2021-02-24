@@ -195,6 +195,24 @@ enum ctoken_err_t {
     /** An unexpected error was returned by the CBOR decoder, one
      * that is not specifically mapped to another error here.*/
     CTOKEN_ERR_CBOR_DECODE = 44,
+
+    /** A t_cose error that is not mapped to any particular ctoken error. */
+    CTOKEN_ERROR_GENERAL_T_COSE = 45,
+
+    /** Something went wrong with the crypto library called by t_cose. */
+    CTOKEN_ERROR_T_COSE_CRYPTO = 46,
+
+    /** Something is wrong with the COSE header parameters. */
+    CTOKEN_ERROR_COSE_PARAMETERS = 47,
+
+    /** Error with short-circuit signature (see t_cose).  */
+    CTOKEN_ERROR_SHORT_CIRCUIT_SIG = 48,
+
+    /** An issue with a signing or verification key. */
+    CTOKEN_ERROR_KEY = 49,
+
+    /** An issue with the CBOR tags on the COSE structures. */
+    CTOKEN_ERROR_COSE_TAG = 50
 };
 
 
