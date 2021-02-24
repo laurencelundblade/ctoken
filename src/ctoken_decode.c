@@ -881,6 +881,8 @@ Done:
 }
 
 
+// TODO: be consistent about name of nested token in submod
+// TODO: return submod name
 static enum ctoken_err_t
 ctoken_decode_nested_token(struct ctoken_decode_ctx  *me,
                            const QCBORItem           *item,
