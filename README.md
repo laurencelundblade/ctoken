@@ -1,6 +1,6 @@
 # ctoken
 
-This is a library implementation of CWT, EAT and things that are a signed CBOR Token
+This is a library implementation of CWT, EAT, UCCS and things that are a signed CBOR Token
 made up of label-value pairs.  It includes the CWT and EAT claims. Other claims
 can easily be added.
 
@@ -26,6 +26,8 @@ but new claims will be added to the IANA CWT registry.
 
 EAT is an up and coming standard in development in the RATS working group. It
 is in flux and parts of it are likely to change.  See [draft-ietf-rats-eat-08](https://tools.ietf.org/html/draft-ietf-rats-eat-08)
+
+UCCS is a CWT that is not signed. See [draft-birkholz-rats-uccs-02](https://tools.ietf.org/html/draft-birkholz-rats-uccs-02)
 
 PSA Initial Attestation is also implemented here. It is a derivative of EAT and is also proposed
 as an IETF standard. It may also change. See [draft-tschofenig-rats-psa-token-04](https://tools.ietf.org/html/draft-tschofenig-rats-psa-token-04)
