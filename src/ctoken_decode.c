@@ -249,13 +249,13 @@ ctoken_decode_get_kid(struct ctoken_decode_ctx *me,
     t_cose_sign1_verify_init(&(me->verify_context), T_COSE_OPT_DECODE_ONLY);
     t_cose_error = t_cose_sign1_verify(&(me->verify_context), token, &payload, &parameters);
 
-    if(t_cose_error) {
-        return 99; // TODO:
+    if(t_cose_error != T_COSE_SUCCESS) {
+        return map_t_cose_errors(t_cose_error);
     }
 
     *kid = parameters.kid;
 
-    return 0;
+    return CTOKEN_ERR_SUCCESS;
 }
 
 
@@ -376,14 +376,7 @@ ctoken_decode_validate_token(struct ctoken_decode_ctx *me,
     /* Now processing for either COSE-secured or UCCS. Enter the map
        that holds all the claims */
     QCBORDecode_EnterMap(&(me->qcbor_decode_context), NULL);
-    qcbor_error = QCBORDecode_GetError(&(me->qcbor_decode_context));
-    if(qcbor_error != QCBOR_SUCCESS) {
-        // TODO: better error conversion
-        return_value = CTOKEN_ERR_CBOR_STRUCTURE;
-        goto Done;
-    }
-
-    return_value = CTOKEN_ERR_SUCCESS;
+    return_value = get_and_reset_error(&(me->qcbor_decode_context));
 
 Done:
     me->last_error = return_value;
@@ -890,6 +883,7 @@ Done:
 
 
 // TODO: be consistent about name of nested token in submod
+// TODO: return submod name
 static enum ctoken_err_t
 ctoken_decode_submod_token(struct ctoken_decode_ctx  *me,
                            const QCBORItem           *item,
@@ -952,7 +946,6 @@ ctoken_decode_get_nested_token_sz(struct ctoken_decode_ctx *me,
     }
 
 Done:
-
     return return_value;
 }
 

@@ -378,7 +378,7 @@ ctoken_decode_borrow_context(struct ctoken_decode_ctx *context);
  */
 enum ctoken_err_t
 ctoken_decode_get_bstr(struct ctoken_decode_ctx  *context,
-                       int32_t                    label,
+                       int64_t                    label,
                        struct q_useful_buf_c     *claim);
 
 
@@ -413,7 +413,7 @@ ctoken_decode_get_bstr(struct ctoken_decode_ctx  *context,
  */
 enum ctoken_err_t
 ctoken_decode_get_tstr(struct ctoken_decode_ctx *context,
-                       int32_t                   label,
+                       int64_t                   label,
                        struct q_useful_buf_c    *claim);
 
 
@@ -454,7 +454,7 @@ ctoken_decode_get_tstr(struct ctoken_decode_ctx *context,
  */
 enum ctoken_err_t
 ctoken_decode_get_int(struct ctoken_decode_ctx *context,
-                      int32_t                   label,
+                      int64_t                   label,
                       int64_t                  *claim);
 
 
@@ -478,7 +478,7 @@ ctoken_decode_get_int(struct ctoken_decode_ctx *context,
  */
 enum ctoken_err_t
 ctoken_decode_get_int_constrained(struct ctoken_decode_ctx *context,
-                                  int32_t                   label,
+                                  int64_t                   label,
                                   int64_t                   min,
                                   int64_t                   max,
                                   int64_t                  *claim);
@@ -520,14 +520,14 @@ ctoken_decode_get_int_constrained(struct ctoken_decode_ctx *context,
  */
 enum ctoken_err_t
 ctoken_decode_get_uint(struct ctoken_decode_ctx *context,
-                       int32_t                  label,
+                       int64_t                  label,
                        uint64_t                *claim);
 
 
 
 enum ctoken_err_t
 ctoken_decode_get_bool(struct ctoken_decode_ctx *context,
-                       int32_t                   label,
+                       int64_t                   label,
                        bool                     *b);
 
 

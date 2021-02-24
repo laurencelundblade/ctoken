@@ -177,11 +177,11 @@ enum ctoken_err_t {
     CTOKEN_ERR_TAG_COMBO_NOT_ALLOWED = 39,
 
     /** The input token was a tag when a decode options was set to
-	prohibit a tag and accept only bare/unwrapped tag content. */
+     * prohibit a tag and accept only bare/unwrapped tag content. */
     CTOKEN_ERR_SHOULD_NOT_BE_TAG = 40,
 
     /** The input token was bare/unwrapped tag content when a decode
-	 * options was set to require a tag. */
+     * options was set to require a tag. */
     CTOKEN_ERR_SHOULD_BE_TAG = 41,
 
     /** When calling ctoken_decode_next_claim(), no more
@@ -282,7 +282,7 @@ enum ctoken_err_t {
      Call:  ctoken_encode_init(context, 0, CTOKEN_OPT_TOP_LEVEL_NOT_TAG, CTOKEN_PROTECTION_NONE, 0);
 
  3. COSE protected and indication by tags.
- 
+
 COSE signing and/or encryption is used. The output is a CWT tag plus a
 COSE tag to tell the recipient that the token is an CWT/EAT and what
 sort of COSE protection is in use.
@@ -306,7 +306,8 @@ sort of COSE protection is in use.
  that COSE protection is used and c) the type of COSE protection used.
 
     Token: Cose_Sign1 array, claims map in the payload
-    Call:  ctoken_encode_init(context, T_COSE_OPT_OMIT_CBOR_TAG, CTOKEN_OPT_TOP_LEVEL_NOT_TAG, CTOKEN_PROTECTION_COSE_SIGN1, ECDSA256);
+    Call:  ctoken_encode_init(context, T_COSE_OPT_OMIT_CBOR_TAG,
+                              CTOKEN_OPT_TOP_LEVEL_NOT_TAG, CTOKEN_PROTECTION_COSE_SIGN1, ECDSA256);
 
  The default configuration for ctoken_decode_init() is to require that
  protection type be indicated by CBOR tags in the token to be
@@ -359,24 +360,24 @@ enum ctoken_protection_t {
     CTOKEN_PROTECTION_BY_TAG,
 
     /** There is no COSE signing or encryption. The UCCS format is
-	used. */
+     * used. */
     CTOKEN_PROTECTION_NONE,
 
     /** The token is a CWT with authenticity protected using a
-	COSE_Sign1 */
+     * COSE_Sign1 */
     CTOKEN_PROTECTION_COSE_SIGN1,
 
     /** The token is a CWT with authenticity protected using a
-	COSE_Mac0. Not yet supported. */
+     * COSE_Mac0. Not yet supported. */
     CTOKEN_PROTECTION_COSE_MAC0,
 
     /** The token is a CWT with authenticity protected using a
-	COSE_Sign1 and privacy protected by COSE_Encrypt0. Not yet
-	supported. */
+     * COSE_Sign1 and privacy protected by COSE_Encrypt0. Not yet
+     * supported. */
     CTOKEN_PROTECTION_SIGN1_ENCRYPT0,
 
     /** Returned from decoder if the protection type is not yet know
-	or can't be known .*/
+     * or can't be known .*/
     CTOKEN_PROTECTION_UNKNOWN,
 };
 
