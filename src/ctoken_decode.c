@@ -831,7 +831,7 @@ Done:
  */
 enum ctoken_err_t
 ctoken_decode_enter_named_submod(struct ctoken_decode_ctx *me,
-                              const char               *name)
+                                 const char               *name)
 {
     enum ctoken_err_t return_value;
 
@@ -926,9 +926,9 @@ Done:
  */
 enum ctoken_err_t
 ctoken_decode_get_named_nested_token(struct ctoken_decode_ctx *me,
-                                  const char              *name,
-                                  enum ctoken_type_t      *type,
-                                  struct q_useful_buf_c   *token)
+                                     const char              *name,
+                                     enum ctoken_type_t      *type,
+                                     struct q_useful_buf_c   *token)
 {
     QCBORItem         item;
     enum ctoken_err_t return_value;
@@ -1002,10 +1002,3 @@ Done:
     return return_value;
 }
 
-
-
-/*
-nested token
-submodule
-
- */
