@@ -433,11 +433,35 @@ void ctoken_encode_end_submod_section(struct ctoken_encode_ctx *me)
 }
 
 
+/* Wish QCBOR had these. Maybe it will someday. It isn't any more
+ * code than it would be if these were in QCBOR. */
+static inline void
+OpenMapInMapUB(QCBOREncodeContext *pMe, const struct q_useful_buf_c label)
+{
+    QCBOREncode_AddText(pMe, label);
+    QCBOREncode_OpenMap(pMe);
+}
+
+static inline void
+AddBytesToMapUB(QCBOREncodeContext *pMe, UsefulBufC Label, UsefulBufC Bytes)
+{
+   QCBOREncode_AddText(pMe, Label);
+   QCBOREncode_AddBytes(pMe, Bytes);
+}
+
+static inline void
+AddTextToMapUB(QCBOREncodeContext *pMe, UsefulBufC Label, UsefulBufC Text)
+{
+   QCBOREncode_AddText(pMe, Label);
+   QCBOREncode_AddText(pMe, Text);
+}
+
+
 /*
  * Public function. See ctoken_encode.h
  */
 void ctoken_encode_open_submod(struct ctoken_encode_ctx *me,
-                               const char               *submod_name)
+                               const struct q_useful_buf_c submod_name)
 {
     if(me->error != CTOKEN_ERR_SUCCESS) {
         return; /* In the error state so do nothing */
@@ -445,7 +469,7 @@ void ctoken_encode_open_submod(struct ctoken_encode_ctx *me,
 
     me->error = submod_state_open_submod(&(me->submod_state));
     if(me->error == CTOKEN_ERR_SUCCESS) {
-        QCBOREncode_OpenMapInMap(&(me->cbor_encode_context), submod_name);
+        OpenMapInMapUB(&(me->cbor_encode_context), submod_name);
     }
 }
 
@@ -466,13 +490,15 @@ void ctoken_encode_close_submod(struct ctoken_encode_ctx *me)
 }
 
 
+
+
 /*
  * Public function. See ctoken_encode.h
  */
-void ctoken_encode_nested_token(struct ctoken_encode_ctx *me,
-                             enum ctoken_type_t          type,
-                             const  char                *submod_name,
-                             struct q_useful_buf_c       token)
+void ctoken_encode_nested_token(struct ctoken_encode_ctx    *me,
+                                enum ctoken_type_t           type,
+                                const struct q_useful_buf_c  submod_name,
+                                struct q_useful_buf_c        token)
 {
     if(me->error != CTOKEN_ERR_SUCCESS) {
         return; /* In the error state so do nothing */
@@ -481,9 +507,9 @@ void ctoken_encode_nested_token(struct ctoken_encode_ctx *me,
     me->error = submod_state_ok_for_token(&(me->submod_state));
     if(me->error == CTOKEN_ERR_SUCCESS) {
         if(type == CTOKEN_TYPE_CWT) {
-            QCBOREncode_AddBytesToMap(&(me->cbor_encode_context), submod_name, token);
+            AddBytesToMapUB(&(me->cbor_encode_context), submod_name, token);
         } else {
-            QCBOREncode_AddTextToMap(&(me->cbor_encode_context), submod_name, token);
+            AddTextToMapUB(&(me->cbor_encode_context), submod_name, token);
         }
     }
 }

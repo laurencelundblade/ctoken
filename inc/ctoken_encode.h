@@ -82,7 +82,7 @@ struct ctoken_encode_ctx {
     uint32_t                      t_cose_opt_flags;
     enum ctoken_err_t             error;
     enum ctoken_protection_t      cose_protection_type;
-    struct ctoken_submod_state_t    submod_state;
+    struct ctoken_submod_state_t  submod_state;
     QCBOREncodeContext            cbor_encode_context;
     struct t_cose_sign1_sign_ctx  signer_ctx;
 };
@@ -547,7 +547,7 @@ ctoken_encode_ueid(struct ctoken_encode_ctx *context,
  */
 static void
 ctoken_encode_oemid(struct ctoken_encode_ctx *context,
-                        struct q_useful_buf_c     oemid);
+                    struct q_useful_buf_c     oemid);
 
 
 /**
@@ -567,7 +567,7 @@ ctoken_encode_oemid(struct ctoken_encode_ctx *context,
  */
 static void
 ctoken_encode_origination(struct ctoken_encode_ctx *context,
-                              struct q_useful_buf_c     origination);
+                          struct q_useful_buf_c     origination);
 
 
 /**
@@ -586,8 +586,8 @@ ctoken_encode_origination(struct ctoken_encode_ctx *context,
  * is called.
  */
 static void
-ctoken_encode_security_level(struct ctoken_encode_ctx        *context,
-                                 enum ctoken_security_level_t security_level);
+ctoken_encode_security_level(struct ctoken_encode_ctx    *context,
+                             enum ctoken_security_level_t security_level);
 
 
 
@@ -605,8 +605,8 @@ ctoken_encode_security_level(struct ctoken_encode_ctx        *context,
  * is called.
  */
 static void
-ctoken_encode_secure_boot(struct ctoken_encode_ctx     *context,
-                          bool                          secure_boot_enabled);
+ctoken_encode_secure_boot(struct ctoken_encode_ctx  *context,
+                          bool                       secure_boot_enabled);
 
 
 /**
@@ -660,7 +660,7 @@ ctoken_encode_location(struct ctoken_encode_ctx       *context,
  */
 static void
 ctoken_encode_uptime(struct ctoken_encode_ctx  *context,
-                         uint64_t                    uptime);
+                     uint64_t                    uptime);
 
 
 /**
@@ -712,7 +712,7 @@ void ctoken_encode_end_submod_section(struct ctoken_encode_ctx *context);
 /**
  * \brief  Start encoding claims in an EAT submodule.
  *
- * \param[in] context  Encoding context
+ * \param[in] context       Encoding context
  * \param [in] submod_name  Text string naming sub module.
  *
  * Initiates the creation of a sub module. All claims added after this
@@ -720,9 +720,9 @@ void ctoken_encode_end_submod_section(struct ctoken_encode_ctx *context);
  * the named submodule.
  *
  * ctoken_encode_start_submod_section() must be called before this is
- * called to open the submodules
- * section. ctoken_encode_end_submod_section() must be called at some
- * point after this is called.
+ * called to open the submodules section. 
+ * ctoken_encode_end_submod_section() must be called at some point
+ * after this is called.
  *
  * Submodules can nest to a depth of \ref CTOKEN_MAX_SUBMOD_NESTING.
  * To nest one submodule inside another, simply call this again before
@@ -731,8 +731,8 @@ void ctoken_encode_end_submod_section(struct ctoken_encode_ctx *context);
  * If an error occurs, such as nesting too deep, it will be reported
  * when ctoken_encode_finish() is called.
  */
-void ctoken_encode_open_submod(struct ctoken_encode_ctx *context,
-                               const char               *submod_name);
+void ctoken_encode_open_submod(struct ctoken_encode_ctx    *context,
+                               const struct q_useful_buf_c  submod_name);
 
 
 /**
@@ -776,10 +776,10 @@ void ctoken_encode_close_submod(struct ctoken_encode_ctx *context);
  * If an error occurs it will be reported when ctoken_encode_finish()
  * is called.
  */
-void ctoken_encode_nested_token(struct ctoken_encode_ctx *context,
-                                enum ctoken_type_t          type,
-                                const char               *submod_name,
-                                struct q_useful_buf_c     token);
+void ctoken_encode_nested_token(struct ctoken_encode_ctx    *context,
+                                enum ctoken_type_t           type,
+                                const struct q_useful_buf_c  submod_name,
+                                const struct q_useful_buf_c  token);
 
 
 /**
