@@ -434,7 +434,7 @@ void ctoken_encode_end_submod_section(struct ctoken_encode_ctx *me)
 
 
 /* Wish QCBOR had these. Maybe it will someday. It isn't any more
- * code than it would be if this were in QCBOR. */
+ * code than it would be if these were in QCBOR. */
 static inline void
 OpenMapInMapUB(QCBOREncodeContext *pMe, const struct q_useful_buf_c label)
 {

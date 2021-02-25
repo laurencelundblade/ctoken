@@ -547,7 +547,7 @@ ctoken_encode_ueid(struct ctoken_encode_ctx *context,
  */
 static void
 ctoken_encode_oemid(struct ctoken_encode_ctx *context,
-                        struct q_useful_buf_c     oemid);
+                    struct q_useful_buf_c     oemid);
 
 
 /**
@@ -567,7 +567,7 @@ ctoken_encode_oemid(struct ctoken_encode_ctx *context,
  */
 static void
 ctoken_encode_origination(struct ctoken_encode_ctx *context,
-                              struct q_useful_buf_c     origination);
+                          struct q_useful_buf_c     origination);
 
 
 /**
@@ -586,8 +586,8 @@ ctoken_encode_origination(struct ctoken_encode_ctx *context,
  * is called.
  */
 static void
-ctoken_encode_security_level(struct ctoken_encode_ctx        *context,
-                                 enum ctoken_security_level_t security_level);
+ctoken_encode_security_level(struct ctoken_encode_ctx    *context,
+                             enum ctoken_security_level_t security_level);
 
 
 
@@ -605,8 +605,8 @@ ctoken_encode_security_level(struct ctoken_encode_ctx        *context,
  * is called.
  */
 static void
-ctoken_encode_secure_boot(struct ctoken_encode_ctx     *context,
-                          bool                          secure_boot_enabled);
+ctoken_encode_secure_boot(struct ctoken_encode_ctx  *context,
+                          bool                       secure_boot_enabled);
 
 
 /**
@@ -712,7 +712,7 @@ void ctoken_encode_end_submod_section(struct ctoken_encode_ctx *context);
 /**
  * \brief  Start encoding claims in an EAT submodule.
  *
- * \param[in] context  Encoding context
+ * \param[in] context       Encoding context
  * \param [in] submod_name  Text string naming sub module.
  *
  * Initiates the creation of a sub module. All claims added after this
@@ -720,9 +720,9 @@ void ctoken_encode_end_submod_section(struct ctoken_encode_ctx *context);
  * the named submodule.
  *
  * ctoken_encode_start_submod_section() must be called before this is
- * called to open the submodules
- * section. ctoken_encode_end_submod_section() must be called at some
- * point after this is called.
+ * called to open the submodules section. 
+ * ctoken_encode_end_submod_section() must be called at some point
+ * after this is called.
  *
  * Submodules can nest to a depth of \ref CTOKEN_MAX_SUBMOD_NESTING.
  * To nest one submodule inside another, simply call this again before

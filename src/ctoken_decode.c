@@ -830,7 +830,7 @@ Done:
  * Public function. See ctoken_decode.h
  */
 enum ctoken_err_t
-ctoken_decode_enter_submod_sz(struct ctoken_decode_ctx *me,
+ctoken_decode_enter_named_submod(struct ctoken_decode_ctx *me,
                               const char               *name)
 {
     enum ctoken_err_t return_value;
@@ -925,7 +925,7 @@ Done:
  * Public function. See ctoken_decode.h
  */
 enum ctoken_err_t
-ctoken_decode_get_nested_token_sz(struct ctoken_decode_ctx *me,
+ctoken_decode_get_named_nested_token(struct ctoken_decode_ctx *me,
                                   const char              *name,
                                   enum ctoken_type_t      *type,
                                   struct q_useful_buf_c   *token)
