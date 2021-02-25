@@ -82,7 +82,7 @@ struct ctoken_encode_ctx {
     uint32_t                      t_cose_opt_flags;
     enum ctoken_err_t             error;
     enum ctoken_protection_t      cose_protection_type;
-    struct ctoken_submod_state_t    submod_state;
+    struct ctoken_submod_state_t  submod_state;
     QCBOREncodeContext            cbor_encode_context;
     struct t_cose_sign1_sign_ctx  signer_ctx;
 };

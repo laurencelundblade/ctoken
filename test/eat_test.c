@@ -367,6 +367,7 @@ int32_t submods_test(void)
 
     enum ctoken_type_t type;
     struct q_useful_buf_c token;
+    struct q_useful_buf_c submod_name;
 
     ctoken_decode_get_nested_token_sz(&decode_context, "json", &type, &token);
 
@@ -376,7 +377,10 @@ int32_t submods_test(void)
         return 99;
     }
 
-    ctoken_decode_enter_nth_submod(&decode_context, 1, NULL);
+    ctoken_decode_enter_nth_submod(&decode_context, 1, &submod_name);
+    if(ub_compare_sz("subsub", submod_name)) {
+        return 540;
+    }
 
     result = ctoken_decode_oemid(&decode_context, &oemid);
     if(result) {
@@ -740,7 +744,7 @@ int32_t submod_decode_errors_test()
         return 200 + (int32_t)ctoken_result;
     }
 
-    ctoken_result = ctoken_decode_enter_nth_submod(&decode_context, 6, NULL);
+    ctoken_result = ctoken_decode_enter_nth_submod(&decode_context, 6, &name);
     if(ctoken_result != CTOKEN_ERR_SUBMOD_INDEX_TOO_LARGE) {
         return 300 + (int32_t)ctoken_result;
     }
