@@ -1171,7 +1171,7 @@ ctoken_decode_get_nth_nested_token(struct ctoken_decode_ctx *context,
  */
 enum ctoken_err_t
 ctoken_decode_get_named_nested_token(struct ctoken_decode_ctx *context,
-                                     const char               *submod_name,
+                                     struct q_useful_buf_c     submod_name,
                                      enum ctoken_type_t       *type,
                                      struct q_useful_buf_c    *token);
 

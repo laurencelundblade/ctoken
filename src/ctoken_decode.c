@@ -881,8 +881,6 @@ Done:
 }
 
 
-// TODO: be consistent about name of nested token in submod
-// TODO: return submod name
 static enum ctoken_err_t
 ctoken_decode_nested_token(struct ctoken_decode_ctx  *me,
                            const QCBORItem           *item,
@@ -897,6 +895,11 @@ ctoken_decode_nested_token(struct ctoken_decode_ctx  *me,
         return_value = CTOKEN_ERR_NAMED_SUBMOD_NOT_FOUND;
         goto Done;
     } else if(return_value != CTOKEN_ERR_SUCCESS) {
+        goto Done;
+    }
+
+    if(item->uDataType == QCBOR_TYPE_NONE) {
+        return_value = CTOKEN_ERR_NAMED_SUBMOD_NOT_FOUND;
         goto Done;
     }
 
@@ -926,23 +929,29 @@ Done:
  */
 enum ctoken_err_t
 ctoken_decode_get_named_nested_token(struct ctoken_decode_ctx *me,
-                                     const char              *name,
-                                     enum ctoken_type_t      *type,
-                                     struct q_useful_buf_c   *token)
+                                     struct q_useful_buf_c     submod_name,
+                                     enum ctoken_type_t       *type,
+                                     struct q_useful_buf_c    *token)
 {
-    QCBORItem         item;
     enum ctoken_err_t return_value;
     enum ctoken_err_t return_value2;
+    QCBORItem         search[2];
+
 
     return_value = enter_submod_section(me);
     if(return_value != CTOKEN_ERR_SUCCESS) {
         goto Done;
     }
 
-    QCBORDecode_GetItemInMapSZ(&(me->qcbor_decode_context), name, QCBOR_TYPE_ANY, &item);
-    /* Errors checked in next call to ctoken_decode_submod_token */
+     search[0].uLabelType   = QCBOR_TYPE_TEXT_STRING;
+     search[0].label.string = submod_name;
+     search[0].uDataType    = QCBOR_TYPE_ANY;
+     search[1].uLabelType   = QCBOR_TYPE_NONE; // Indicates end of array
 
-    return_value = ctoken_decode_nested_token(me, &item, type, token);
+     QCBORDecode_GetItemsInMap(&(me->qcbor_decode_context), search);
+    /* last QCBOR checked in next call to ctoken_decode_submod_token */
+
+    return_value = ctoken_decode_nested_token(me, &search[0], type, token);
 
     return_value2 = leave_submod_section(me);
     if(return_value == CTOKEN_ERR_SUCCESS) {

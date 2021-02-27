@@ -720,7 +720,7 @@ void ctoken_encode_end_submod_section(struct ctoken_encode_ctx *context);
  * the named submodule.
  *
  * ctoken_encode_start_submod_section() must be called before this is
- * called to open the submodules section. 
+ * called to open the submodules section.
  * ctoken_encode_end_submod_section() must be called at some point
  * after this is called.
  *
