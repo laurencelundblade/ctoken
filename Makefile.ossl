@@ -48,8 +48,6 @@ CRYPTO_INC=-I /usr/local/include
 CRYPTO_LIB=-lcrypto
 
 # ---- compiler configuration -----
-CC=cc
-
 # Optimize for size
 C_OPTS=-Os -fPIC
 
@@ -92,15 +90,15 @@ clean:
 
 
 # ---- public headers -----
-PUBLIC_INTERFACE=inc/ctoken.h inc/ctoken_encode.h inc/ctoken_decode.h \
-                  inc/ctoken_cwt_labels.h inc/ctoken_eat_labels.h \
-                  inc/ctoken_psaia_decode.h inc/ctoken_psaia_encode.h inc/ctoken_psaia_labels.h
+PUBLIC_INTERFACE=inc/ctoken/ctoken.h inc/ctoken/ctoken_encode.h inc/ctoken/ctoken_decode.h \
+                  inc/ctoken/ctoken_cwt_labels.h inc/ctoken/ctoken_eat_labels.h \
+                  inc/ctoken/ctoken_psaia_decode.h inc/ctoken/ctoken_psaia_encode.h inc/ctoken/ctoken_psaia_labels.h
 
 # ---- source dependecies -----
-src/ctoken_encode.o:	inc/ctoken_encode.h inc/ctoken.h inc/ctoken_cwt_labels.h inc/ctoken_eat_labels.h
-src/ctoken_decode.o:	inc/ctoken_decode.h inc/ctoken.h inc/ctoken_cwt_labels.h inc/ctoken_eat_labels.h
-src/ctoken_psaia_encode.o:	inc/ctoken_psaia_encode.h inc/ctoken.h inc/ctoken_psaia_labels.h  inc/ctoken_cwt_labels.h inc/ctoken_eat_labels.h
-src/ctoken_psaia_decode.o:	inc/ctoken_psaia_decode.h inc/ctoken.h inc/ctoken_psaia_labels.h  inc/ctoken_cwt_labels.h inc/ctoken_eat_labels.h
+src/ctoken_encode.o:	inc/ctoken/ctoken_encode.h inc/ctoken/ctoken.h inc/ctoken/ctoken_cwt_labels.h inc/ctoken/ctoken_eat_labels.h
+src/ctoken_decode.o:	inc/ctoken/ctoken_decode.h inc/ctoken/ctoken.h inc/ctoken/ctoken_cwt_labels.h inc/ctoken/ctoken_eat_labels.h
+src/ctoken_psaia_encode.o:	inc/ctoken/ctoken_psaia_encode.h inc/ctoken/ctoken.h inc/ctoken/ctoken_psaia_labels.h  inc/ctoken/ctoken_cwt_labels.h inc/ctoken/ctoken_eat_labels.h
+src/ctoken_psaia_decode.o:	inc/ctoken/ctoken_psaia_decode.h inc/ctoken/ctoken.h inc/ctoken/ctoken_psaia_labels.h  inc/ctoken/ctoken_cwt_labels.h inc/ctoken/ctoken_eat_labels.h
 
 
 # ---- test dependencies -----

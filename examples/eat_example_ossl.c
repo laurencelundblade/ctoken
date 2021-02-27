@@ -20,8 +20,8 @@
  * with crypto libraries works.
  */
 
-#include "ctoken_encode.h"
-#include "ctoken_decode.h"
+#include "ctoken/ctoken_encode.h"
+#include "ctoken/ctoken_decode.h"
 
 #include "t_cose/t_cose_common.h"
 #include "t_cose/t_cose_sign1_sign.h"

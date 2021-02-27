@@ -8,7 +8,7 @@
  * See BSD-3-Clause license in README.md
  */
 
-#include "ctoken_decode.h"
+#include "ctoken/ctoken_decode.h"
 #include "t_cose/t_cose_sign1_verify.h"
 #include "t_cose/q_useful_buf.h"
 #include "qcbor/qcbor_spiffy_decode.h"

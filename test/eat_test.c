@@ -12,8 +12,8 @@
 
 
 #include "eat_test.h"
-#include "ctoken_encode.h"
-#include "ctoken_decode.h"
+#include "ctoken/ctoken_encode.h"
+#include "ctoken/ctoken_decode.h"
 
 
 /* Return code is

@@ -251,8 +251,8 @@ static void PrintSize(const char *szWhat,
 
 
 
-#include "ctoken_encode.h" /* For struct size printing */
-#include "ctoken_decode.h" /* For struct size printing */
+#include "ctoken/ctoken_encode.h" /* For struct size printing */
+#include "ctoken/ctoken_decode.h" /* For struct size printing */
 
 /*
  Public function. See run_test.h.
