@@ -11,7 +11,7 @@
  */
 
 
-#include "ctoken_psaia_encode.h"
+#include "ctoken/ctoken_psaia_encode.h"
 
 
 void ctoken_psaia_encode_simple_claims(struct ctoken_encode_ctx *me,

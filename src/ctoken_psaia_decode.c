@@ -9,7 +9,7 @@
  */
 
 
-#include "ctoken_psaia_decode.h"
+#include "ctoken/ctoken_psaia_decode.h"
 #include "qcbor/qcbor_spiffy_decode.h"
 
 

@@ -12,7 +12,7 @@
 #ifndef __CTOKEN_ENCODE_H__
 #define __CTOKEN_ENCODE_H__
 
-#include "ctoken.h"
+#include "ctoken/ctoken.h"
 #include "qcbor/qcbor_encode.h"
 #include "t_cose/t_cose_sign1_sign.h"
 
