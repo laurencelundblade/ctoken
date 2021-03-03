@@ -175,7 +175,7 @@ ctoken_encode_set_key(struct ctoken_encode_ctx *context,
  * signing key size. It is about 150 bytes for 256-bit ECDSA.
  *
  * If \c out_buffer->ptr is \c NULL and \c out_buffer_ptr->len is
- * large like \c UINT32_MAX no token will be created but the length of
+ * large like \c SIZE_MAX no token will be created but the length of
  * the token that would be created will be in \c completed_token as
  * returned by ctoken_encode_finish(). None of the cryptographic
  * functions run during this, but the sizes of what they would output
