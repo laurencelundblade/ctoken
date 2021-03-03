@@ -1,7 +1,7 @@
 /*
  * ctoken_eat_labels.h
  *
- * Copyright (c) 2020 Laurence Lundblade.
+ * Copyright (c) 2020-2021, Laurence Lundblade.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -59,6 +59,8 @@ extern "C" {
  * This gives a rough notion of the security level of the attester.
  */
 enum ctoken_security_level_t {
+    /* Never appears in a protocol message. */
+    EAT_SL_INVALID           = 0,
     /** Signing key is protected by a general purpose OS running on generic
       * hardware
       */
@@ -81,6 +83,8 @@ enum ctoken_security_level_t {
  * attestor.
  */
 enum ctoken_debug_level_t {
+    /* Never appears in a protocol message. */
+    CTOKEN_DEBUG_INVALID = -1,
     /** The debug system is enabled */
     CTOKEN_DEBUG_ENABLED = 0,
     /** The debug system is disabled, but might have been enabled recently,
@@ -121,6 +125,8 @@ enum ctoken_debug_level_t {
 
 /** Value for the Intended Use claim. */
 enum ctoken_intended_use_t {
+    /* Never appears in a protocol message. */
+    CTOKEN_USE_INVALID = 0,
     /** The token is for general use. No specific use is given. */
     CTOKEN_USE_GENERAL = 1,
     /** The token is intended to be used for a registration step. */

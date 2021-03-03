@@ -1,7 +1,7 @@
 /*
  * ctoken_decode.h (formerly attest_token_decode.h)
  *
- * Copyright (c) 2019-2020, Laurence Lundblade.
+ * Copyright (c) 2019-2021, Laurence Lundblade.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -15,6 +15,7 @@
 #include "ctoken.h"
 #include "t_cose/t_cose_sign1_verify.h"
 #include "qcbor/qcbor_decode.h"
+#include "qcbor/qcbor_spiffy_decode.h"
 
 #include "ctoken_cwt_labels.h"
 #include "ctoken_eat_labels.h"
@@ -116,7 +117,6 @@ struct ctoken_decode_ctx {
     enum ctoken_protection_t       actual_protection_type;
 
 };
-
 
 
 
@@ -234,8 +234,8 @@ ctoken_decode_get_kid(struct ctoken_decode_ctx *context,
  *
  * The signature on the token is validated. If it is successful the
  * token and its payload is remembered in the \ref
- * attest_token_decode_context \c me so the \c
- * attest_token_decode_get_xxx() functions can be called to get the
+ * ctoken_decode_ctx \c context so the \c
+ * ctoken_decode_get_xxx() functions can be called to get the
  * various claims out of it.
  *
  * Generally, a public key has to be configured for this to work. It
@@ -243,15 +243,15 @@ ctoken_decode_get_kid(struct ctoken_decode_ctx *context,
  * set.
  *
  * The code for any error that occurs during validation is remembered
- * in decode context. The \c attest_token_decode_get_xxx() functions
+ * in decode context. The \c ctoken_decode_get_xxx() functions
  * can be called and they will just return this error. The \c
- * attest_token_decode_get_xxx() functions will generally return 0 or
+ * ctoken_decode_get_xxx() functions will generally return 0 or
  * \c NULL if the token is in error.
  *
- * It is thus possible to call attest_token_decode_validate_token()
- * and all the \c attest_token_decode_get_xxx() functions to parse the
+ * It is thus possible to call ctoken_decode_validate_token()
+ * and all the \c ctoken_decode_get_xxx() functions to parse the
  * token and ignore the error codes as long as
- * attest_token_decode_get_error() is called before any of the claim
+ * ctoken_decode_get_error() is called before any of the claim
  * data returned is used.
  *
  * TODO: this may need an option to be able to decode fields in the
@@ -266,7 +266,7 @@ ctoken_decode_validate_token(struct ctoken_decode_ctx *context,
 /**
  * \brief Get the actual protection type that was used on the token.
  *
- * \param[in] me The token decoder context.
+ * \param[in] context The token decoder context.
  *
  * \return The protection type from \ref ctoken_protection_t.
  *
@@ -274,18 +274,18 @@ ctoken_decode_validate_token(struct ctoken_decode_ctx *context,
  * succeeded.
  */
 static enum ctoken_protection_t
-ctoken_decode_get_protection_type(const struct ctoken_decode_ctx *me);
+ctoken_decode_get_protection_type(const struct ctoken_decode_ctx *context);
 
 
 /**
  * \brief Get the last decode error.
  *
- * \param[in] me The token decoder context.
+ * \param[in] context The token decoder context.
  *
  * \return An error from \ref CTOKEN_ERR_t.
  */
 static enum ctoken_err_t
-ctoken_decode_get_error(struct ctoken_decode_ctx *me);
+ctoken_decode_get_error(struct ctoken_decode_ctx *context);
 
 
 /**
@@ -328,7 +328,26 @@ ctoken_decode_get_payload(struct ctoken_decode_ctx *context,
                           struct q_useful_buf_c    *payload);
 
 
-// TODO: A method to iterate over all claims present
+/*
+ * \brief Get the QCBOR decoder context.
+ *
+ * \param[in]  context    The token decoder context.
+ * \returns The QCBOR decoder context
+ *
+ * Use this to decode claims that are not supported
+ * by ctoken. This allows use of all the QCBORDecode
+ * functions.
+ *
+ * Some care is needed when using this to avoid confusing
+ * ctokens internal state, particularly when decoding
+ * submodules. Use of spiffy decode functions to find
+ * data items in the map works well. The CBOR nesting
+ * level must be left the same as it was before the
+ * claim(s) were decoded.
+ */
+static QCBORDecodeContext *
+ctoken_decode_borrow_context(struct ctoken_decode_ctx *context);
+
 
 /**
  *
@@ -354,12 +373,12 @@ ctoken_decode_get_payload(struct ctoken_decode_ctx *context,
  *         Data item for \c label was not found in token.
  *
  * If an error occurs, the claim will be set to \c NULL_Q_USEFUL_BUF_C
- * and the error state inside \c attest_token_decode_context will
+ * and the error state inside \c ctoken_decode_ctx will
  * be set.
  */
 enum ctoken_err_t
 ctoken_decode_get_bstr(struct ctoken_decode_ctx  *context,
-                       int32_t                    label,
+                       int64_t                    label,
                        struct q_useful_buf_c     *claim);
 
 
@@ -389,12 +408,12 @@ ctoken_decode_get_bstr(struct ctoken_decode_ctx  *context,
  * Even though this is a text string, it is not NULL-terminated.
  *
  * If an error occurs, the claim will be set to \c NULL_Q_USEFUL_BUF_C
- * and the error state inside \c attest_token_decode_context will
+ * and the error state inside \c ctoken_decode_ctx will
  * be set.
  */
 enum ctoken_err_t
 ctoken_decode_get_tstr(struct ctoken_decode_ctx *context,
-                       int32_t                   label,
+                       int64_t                   label,
                        struct q_useful_buf_c    *claim);
 
 
@@ -428,14 +447,14 @@ ctoken_decode_get_tstr(struct ctoken_decode_ctx *context,
  * positive or negative integer as long as the value is between \c
  * INT64_MIN and \c INT64_MAX.
  *
- * See also attest_token_decode_get_uint().
+ * See also ctoken_decode_get_uint().
  *
  * If an error occurs the value 0 will be returned and the error
- * inside the \c attest_token_decode_context will be set.
+ * inside the \c ctoken_decode_ctx will be set.
  */
 enum ctoken_err_t
 ctoken_decode_get_int(struct ctoken_decode_ctx *context,
-                      int32_t                   label,
+                      int64_t                   label,
                       int64_t                  *claim);
 
 
@@ -459,7 +478,7 @@ ctoken_decode_get_int(struct ctoken_decode_ctx *context,
  */
 enum ctoken_err_t
 ctoken_decode_get_int_constrained(struct ctoken_decode_ctx *context,
-                                  int32_t                   label,
+                                  int64_t                   label,
                                   int64_t                   min,
                                   int64_t                   max,
                                   int64_t                  *claim);
@@ -494,21 +513,21 @@ ctoken_decode_get_int_constrained(struct ctoken_decode_ctx *context,
  * positive or negative integer as long as the value is between 0 and
  * \c MAX_UINT64.
  *
- * See also attest_token_decode_get_int().
+ * See also ctoken_decode_get_int().
  *
  *  If an error occurs the value 0 will be returned and the error
- *  inside the \c attest_token_decode_context will be set.
+ *  inside the \c ctoken_decode_ctx will be set.
  */
 enum ctoken_err_t
 ctoken_decode_get_uint(struct ctoken_decode_ctx *context,
-                       int32_t                  label,
+                       int64_t                  label,
                        uint64_t                *claim);
 
 
 
 enum ctoken_err_t
 ctoken_decode_get_bool(struct ctoken_decode_ctx *context,
-                       int32_t                   label,
+                       int64_t                   label,
                        bool                     *b);
 
 
@@ -990,6 +1009,60 @@ ctoken_decode_intended_use(struct ctoken_decode_ctx   *context,
                            enum ctoken_intended_use_t *use);
 
 
+
+
+/**
+ * \brief Decode next claim in token or submodule
+ *
+ * \param[in] context  The decoding context.
+ * \param[out] claim      The decoded claim.
+ *
+ * All the claims in a token or submodule can be iterated over by
+ * calling this until the end is indicated.  This will not decsend in
+ * to submodules. The various submodule-related tunctions must be
+ * called to enter the submodule. Once a submodule is entered this can
+ * be used to iterate over all the claims in it.
+ *
+ * This always returns the label for a claim, but can only return the
+ * value for a claim that is a common non-aggregate type. For example,
+ * the value for the UEID claim is returned because it is a byte
+ * string, but the value for the location claim is not returned
+ * because it is a map made up of several values.
+ *
+ * To decode values that aren't decoded by this function call the
+ * specific function to decode that type of claim. Alternately, use
+ * QCBOR decode functions to decode it. See
+ * ctoken_decode_borrow_context().
+ *
+ * This uses \ref QCBORItem to return the claims. The nest level
+ * fields are never filled in and should be ignored. The other fields
+ * work as documented. In particular pay attention to uDataType to
+ * know the type of value of the claim.
+ *
+ * When the claim is an aggregate type, and array or map, the data
+ * type will indicate an array or map however iteration will not
+ * desened into the array or mpa. Instead the whole content of the
+ * array or map will be skipped over with the iteration going on to
+ * the next claim. This is the main difference between this function
+ * and QCBORDecode_GetNext().
+ *
+ * Note that this maintains its own iteration cursor indepdent of the
+ * other functions for getting claims so calls to this can be
+ * intermixed with the other calls.
+*/
+enum ctoken_err_t
+ctoken_decode_next_claim(struct ctoken_decode_ctx   *context,
+                         QCBORItem                  *claim);
+
+
+
+/*
+ *
+ */
+static void
+ctoken_decode_rewind(struct ctoken_decode_ctx   *context);
+
+
 /**
  * \brief Get the number of submodules.
  *
@@ -1005,12 +1078,13 @@ enum ctoken_err_t
 ctoken_decode_get_num_submods(struct ctoken_decode_ctx *context,
                               uint32_t                 *num_submods);
 
+
 /**
  * \brief Enter the nth submodule.
  *
- * \param[in] context       The decoding context.
- * \param[in] submod_index  Index of the submodule to enter.
- * \param[out] name         The returned string name of the submodule.
+ * \param[in] context        The decoding context.
+ * \param[in] submod_index   Index of the submodule to enter.
+ * \param[out] submod_name   The returned string name of the submodule.
  *
  * \returns A ctoken error code
  *
@@ -1024,14 +1098,14 @@ ctoken_decode_get_num_submods(struct ctoken_decode_ctx *context,
 enum ctoken_err_t
 ctoken_decode_enter_nth_submod(struct ctoken_decode_ctx *context,
                                uint32_t                  submod_index,
-                               struct q_useful_buf_c    *name);
+                               struct q_useful_buf_c    *submod_name);
 
 
 /**
  * \brief Enter a submodule by name.
  *
- * \param[in] context         The decoding context.
- * \param[in] name     The name of the submodule to enter.
+ * \param[in] context      The decoding context.
+ * \param[in] submod_name  The name of the submodule to enter.
  *
  * \returns A ctoken error code
  *
@@ -1040,14 +1114,14 @@ ctoken_decode_enter_nth_submod(struct ctoken_decode_ctx *context,
  * may be called multiple times to enter nested submodules.
  */
 enum ctoken_err_t
-ctoken_decode_enter_submod_sz(struct ctoken_decode_ctx *context,
-                              const char               *name);
+ctoken_decode_enter_named_submod(struct ctoken_decode_ctx *context,
+                                 const char               *submod_name);
 
 
 /**
  * \brief Exit one submodule level.
  *
- * \param[in] context         The decoding context.
+ * \param[in] context   The decoding context.
  *
  * \returns A ctoken error code
  *
@@ -1060,10 +1134,11 @@ ctoken_decode_exit_submod(struct ctoken_decode_ctx *context);
 /**
  * \brief Get the nth nested token.
  *
- * \param[in] context       The decoding context.
- * \param[in] submod_index  Index of the submodule to fetch.
- * \param[out] type         The type of the nested token returned.
- * \param[out] token        Pointer and length of the token returned.
+ * \param[in] context        The decoding context.
+ * \param[in] submod_index   Index of the submodule to fetch.
+ * \param[out] type          The type of the nested token returned.
+ * \param[out] submod_name   The name of the submodule.
+ * \param[out] token         Pointer and length of the token returned.
  *
  * \returns A ctoken error code.
  *
@@ -1076,17 +1151,18 @@ ctoken_decode_exit_submod(struct ctoken_decode_ctx *context);
 enum ctoken_err_t
 ctoken_decode_get_nth_nested_token(struct ctoken_decode_ctx *context,
                                    uint32_t                  submod_index,
-                                   enum ctoken_type         *type,
+                                   enum ctoken_type_t       *type,
+                                   struct q_useful_buf_c    *submod_name,
                                    struct q_useful_buf_c    *token);
 
 
 /**
  * \brief Get a nested token by name.
  *
- * \param[in] context  The decoding context.
- * \param[in] name     Index of the submodule to fetch.
- * \param[out] type    The type of the nested token returned.
- * \param[out] token   Pointer and length of the token returned.
+ * \param[in] context      The decoding context.
+ * \param[in] submod_name  The name of the submodule to fetch.
+ * \param[out] type        The type of the nested token returned.
+ * \param[out] token       Pointer and length of the token returned.
  *
  * \returns A ctoken error code
  *
@@ -1094,10 +1170,10 @@ ctoken_decode_get_nth_nested_token(struct ctoken_decode_ctx *context,
  * token returned.
  */
 enum ctoken_err_t
-ctoken_decode_get_nested_token_sz(struct ctoken_decode_ctx *context,
-                                  const char               *name,
-                                  enum ctoken_type         *type,
-                                  struct q_useful_buf_c    *token);
+ctoken_decode_get_named_nested_token(struct ctoken_decode_ctx *context,
+                                     struct q_useful_buf_c     submod_name,
+                                     enum ctoken_type_t       *type,
+                                     struct q_useful_buf_c    *token);
 
 
 
@@ -1126,6 +1202,13 @@ static inline enum ctoken_protection_t
 ctoken_decode_get_protection_type(const struct ctoken_decode_ctx *me)
 {
     return me->actual_protection_type;
+}
+
+
+static inline QCBORDecodeContext *
+ctoken_decode_borrow_context(struct ctoken_decode_ctx *me)
+{
+    return &me->qcbor_decode_context;
 }
 
 
@@ -1266,6 +1349,14 @@ ctoken_decode_intended_use(struct ctoken_decode_ctx    *me,
                                              CTOKEN_USE_PROOF_OF_POSSSION,
                                              (int64_t *)use);
 }
+
+
+static inline void
+ctoken_decode_rewind(struct ctoken_decode_ctx   *me)
+{
+    QCBORDecode_Rewind(&(me->qcbor_decode_context));
+}
+
 
 
 #ifdef __cplusplus

@@ -1,7 +1,7 @@
 /*
  *  main.c
  *
- * Copyright 2019-2020, Laurence Lundblade
+ * Copyright 2019-2021, Laurence Lundblade
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -12,6 +12,8 @@
 
 #include <stdio.h>
 #include "run_tests.h"
+#include <string.h>
+#include <stdlib.h>
 
 
 /*
@@ -27,11 +29,10 @@ static void fputs_wrapper(const char *szString, void *pOutCtx, int bNewLine)
 }
 
 
+
 int main(int argc, const char * argv[])
 {
     int return_value;
-
-    (void)argc; // Avoid unused parameter error
 
     // This call prints out sizes of data structures to remind us
     // to keep them small.

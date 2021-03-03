@@ -1,7 +1,7 @@
 /*
  * eat_test.h
  *
- * Copyright (c) 2020 Laurence Lundblade.
+ * Copyright (c) 2020-2021 Laurence Lundblade.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -39,6 +39,10 @@ int32_t location_test(void);
 
 
 int32_t debug_and_boot_test(void);
+
+
+int32_t get_next_test(void);
+
 
 
 #ifdef __cplusplus

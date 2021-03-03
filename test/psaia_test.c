@@ -10,10 +10,10 @@
 
 #include "psaia_test.h"
 #include "t_cose/q_useful_buf.h"
-#include "ctoken_decode.h"
-#include "ctoken_encode.h"
-#include "ctoken_psaia_encode.h"
-#include "ctoken_psaia_decode.h"
+#include "ctoken/ctoken_decode.h"
+#include "ctoken/ctoken_encode.h"
+#include "ctoken/ctoken_psaia_encode.h"
+#include "ctoken/ctoken_psaia_decode.h"
 
 
 
@@ -136,7 +136,6 @@ int32_t psaia_basic_test()
 
 #if REFACTOR_THIS
 
-#include "attest_token_test_values.h"
 
 /**
  * \file psaiai_test.c

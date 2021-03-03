@@ -50,7 +50,7 @@ extern "C" {
  * one.
  *
  * Use \ref IS_ITEM_FLAG_SET on \c item_flags in \c
- * attest_token_iat_simple_t to determine if the data item was found or
+ * ctoken_psaia_simple_claims_t to determine if the data item was found or
  * not and whether the corresponding member in the structure is valid.
  */
 enum ctoken_err_t
@@ -181,13 +181,13 @@ ctoken_psaia_decode_security_lifecycle(struct ctoken_decode_ctx *me,
 
 /**
  * Use \ref IS_ITEM_FLAG_SET macro with these values and \c
- * attest_token_sw_component_t.item_flags to find out if the
- * data item is filled in in the attest_token_sw_component_t structure.
+ * ctoken_psaia_simple_claims_t.item_flags to find out if the
+ * data item is filled in in the ctoken_psaia_sw_component_t structure.
  *
  * Items that are of type \c struct \c q_useful_buf_c will also be \c
  * NULL_Q_USEFUL_BUF_C when they are absent.
  */
-enum attest_token_sw_index_t {
+enum ctoken_psaia_sw_index_t {
     SW_MEASUREMENT_TYPE_FLAG = 0,
     SW_MEASURMENT_VAL_FLAG = 1,
     SW_EPOCH_FLAG = 2,

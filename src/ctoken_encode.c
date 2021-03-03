@@ -1,14 +1,14 @@
 /*
  * ctoken_encode.c (formerly attest_token_encode.c)
  *
- * Copyright (c) 2018-2020, Laurence Lundblade. All rights reserved.
+ * Copyright (c) 2018-2021, Laurence Lundblade. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
  * See BSD-3-Clause license in README.md
  */
 
-#include "ctoken_encode.h"
+#include "ctoken/ctoken_encode.h"
 #include "qcbor/qcbor_encode.h"
 #include "t_cose/t_cose_sign1_sign.h"
 
@@ -44,7 +44,8 @@
  First from the SUBMODS_IN_SECTION state, a submodule can be opened and
  claims added to it. This puts the current level in the
  SUBMODS_IN_SECTION_AND_SUBMOD state and opens up a new level
- that is in the SUBMODS_NONE state. This is handled by submod_state_open_submod().
+ that is in the SUBMODS_NONE state. This is handled by
+ submod_state_open_submod().
 
  Second from the SUBMODS_IN_SECTION state, a whole formatted
  and secured token can be added. This happens in one go and doesn't
@@ -68,14 +69,14 @@
  out call submod_state_all_finished().
  */
 static inline void
-submodstate_init(struct ctoken_submod_state *me)
+submodstate_init(struct ctoken_submod_state_t *me)
 {
     me->current_level    = &me->level_state[0];
     *(me->current_level) = SUBMODS_NONE;
 }
 
 static inline enum ctoken_err_t
-submod_state_start_section(struct ctoken_submod_state *me)
+submod_state_start_section(struct ctoken_submod_state_t *me)
 {
     if(*(me->current_level) != SUBMODS_NONE) {
         return CTOKEN_CANT_START_SUBMOD_SECTION;
@@ -85,7 +86,7 @@ submod_state_start_section(struct ctoken_submod_state *me)
 }
 
 static inline enum ctoken_err_t
-submod_state_end_section(struct ctoken_submod_state *me)
+submod_state_end_section(struct ctoken_submod_state_t *me)
 {
     if(*(me->current_level) != SUBMODS_IN_SECTION) {
         return CTOKEN_ERR_NO_SUBMOD_SECTION_STARTED;
@@ -95,7 +96,7 @@ submod_state_end_section(struct ctoken_submod_state *me)
 }
 
 static inline enum ctoken_err_t
-submod_state_open_submod(struct ctoken_submod_state *me)
+submod_state_open_submod(struct ctoken_submod_state_t *me)
 {
     if(*(me->current_level) != SUBMODS_IN_SECTION) {
         return CTOKEN_ERR_NO_SUBMOD_SECTION_STARTED;
@@ -114,7 +115,7 @@ submod_state_open_submod(struct ctoken_submod_state *me)
 }
 
 static inline enum ctoken_err_t
-submod_state_close_submod(struct ctoken_submod_state *me)
+submod_state_close_submod(struct ctoken_submod_state_t *me)
 {
     if(*(me->current_level) != SUBMODS_NONE &&
        *(me->current_level) != SUBMODS_SECTION_DONE) {
@@ -135,7 +136,7 @@ submod_state_close_submod(struct ctoken_submod_state *me)
 }
 
 static inline enum ctoken_err_t
-submod_state_ok_for_token(struct ctoken_submod_state *me)
+submod_state_ok_for_token(struct ctoken_submod_state_t *me)
 {
     if(*(me->current_level) != SUBMODS_IN_SECTION) {
         return CTOKEN_ERR_CANT_MAKE_SUBMOD_IN_SUBMOD;
@@ -145,7 +146,7 @@ submod_state_ok_for_token(struct ctoken_submod_state *me)
 }
 
 static inline enum ctoken_err_t
-submod_state_all_finished(struct ctoken_submod_state *me)
+submod_state_all_finished(struct ctoken_submod_state_t *me)
 {
     if(me->current_level != &me->level_state[0]) {
         return CTOKEN_ERR_SUBMODS_NOT_CLOSED;
@@ -189,7 +190,8 @@ static enum ctoken_err_t t_cose_err_to_attest_err(enum t_cose_err_t err)
 
 
 static enum ctoken_err_t
-ctoken_encode_start2(struct ctoken_encode_ctx *me, const struct q_useful_buf out_buf)
+ctoken_encode_start2(struct ctoken_encode_ctx *me,
+                     const struct q_useful_buf out_buf)
 {
     enum t_cose_err_t cose_return_value;
     enum ctoken_err_t return_value;
@@ -224,10 +226,11 @@ ctoken_encode_start2(struct ctoken_encode_ctx *me, const struct q_useful_buf out
     } else if(me->cose_protection_type == CTOKEN_PROTECTION_NONE) {
         /* UCCS -- not much to do */
         if(!(me->ctoken_opt_flags & CTOKEN_OPT_TOP_LEVEL_NOT_TAG)) {
-            QCBOREncode_AddTag(&(me->cbor_encode_context), 601); // TODO: proper define for UCCS tag
+            // TODO: proper define for UCCS tag
+            QCBOREncode_AddTag(&(me->cbor_encode_context), 601);
         }
         return_value = CTOKEN_ERR_SUCCESS;
-        
+
     } else {
         return_value = CTOKEN_ERR_UNSUPPORTED_PROTECTION_TYPE;
     }
@@ -239,7 +242,7 @@ Done:
 
 
 /*
- * Public function. See attest_token_decode.h
+ * Public function. See ctoken_decode.h
  */
 enum ctoken_err_t
 ctoken_encode_start(struct ctoken_encode_ctx  *me,
@@ -258,7 +261,8 @@ ctoken_encode_start(struct ctoken_encode_ctx  *me,
 
 
 static enum ctoken_err_t
-ctoken_encode_finish2(struct ctoken_encode_ctx *me, struct q_useful_buf_c *completed_token)
+ctoken_encode_finish2(struct ctoken_encode_ctx *me,
+                      struct q_useful_buf_c    *completed_token)
 {
     QCBORError            qcbor_result;
     enum t_cose_err_t     cose_return_value;
@@ -429,11 +433,35 @@ void ctoken_encode_end_submod_section(struct ctoken_encode_ctx *me)
 }
 
 
+/* Wish QCBOR had these. Maybe it will someday. It isn't any more
+ * code than it would be if these were in QCBOR. */
+static inline void
+OpenMapInMapUB(QCBOREncodeContext *pMe, const struct q_useful_buf_c label)
+{
+    QCBOREncode_AddText(pMe, label);
+    QCBOREncode_OpenMap(pMe);
+}
+
+static inline void
+AddBytesToMapUB(QCBOREncodeContext *pMe, UsefulBufC Label, UsefulBufC Bytes)
+{
+   QCBOREncode_AddText(pMe, Label);
+   QCBOREncode_AddBytes(pMe, Bytes);
+}
+
+static inline void
+AddTextToMapUB(QCBOREncodeContext *pMe, UsefulBufC Label, UsefulBufC Text)
+{
+   QCBOREncode_AddText(pMe, Label);
+   QCBOREncode_AddText(pMe, Text);
+}
+
+
 /*
  * Public function. See ctoken_encode.h
  */
 void ctoken_encode_open_submod(struct ctoken_encode_ctx *me,
-                               const char               *submod_name)
+                               const struct q_useful_buf_c submod_name)
 {
     if(me->error != CTOKEN_ERR_SUCCESS) {
         return; /* In the error state so do nothing */
@@ -441,7 +469,7 @@ void ctoken_encode_open_submod(struct ctoken_encode_ctx *me,
 
     me->error = submod_state_open_submod(&(me->submod_state));
     if(me->error == CTOKEN_ERR_SUCCESS) {
-        QCBOREncode_OpenMapInMap(&(me->cbor_encode_context), submod_name);
+        OpenMapInMapUB(&(me->cbor_encode_context), submod_name);
     }
 }
 
@@ -462,13 +490,15 @@ void ctoken_encode_close_submod(struct ctoken_encode_ctx *me)
 }
 
 
+
+
 /*
  * Public function. See ctoken_encode.h
  */
-void ctoken_encode_nested_token(struct ctoken_encode_ctx *me,
-                             enum ctoken_type          type,
-                             const  char              *submod_name,
-                             struct q_useful_buf_c     token)
+void ctoken_encode_nested_token(struct ctoken_encode_ctx    *me,
+                                enum ctoken_type_t           type,
+                                const struct q_useful_buf_c  submod_name,
+                                struct q_useful_buf_c        token)
 {
     if(me->error != CTOKEN_ERR_SUCCESS) {
         return; /* In the error state so do nothing */
@@ -477,9 +507,9 @@ void ctoken_encode_nested_token(struct ctoken_encode_ctx *me,
     me->error = submod_state_ok_for_token(&(me->submod_state));
     if(me->error == CTOKEN_ERR_SUCCESS) {
         if(type == CTOKEN_TYPE_CWT) {
-            QCBOREncode_AddBytesToMap(&(me->cbor_encode_context), submod_name, token);
+            AddBytesToMapUB(&(me->cbor_encode_context), submod_name, token);
         } else {
-            QCBOREncode_AddTextToMap(&(me->cbor_encode_context), submod_name, token);
+            AddTextToMapUB(&(me->cbor_encode_context), submod_name, token);
         }
     }
 }
