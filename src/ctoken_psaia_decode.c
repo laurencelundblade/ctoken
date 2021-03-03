@@ -83,13 +83,13 @@ ctoken_psaia_decode_simple_claims(struct ctoken_decode_ctx            *me,
         goto Done;
     }
 
-    /* ---- NONCE ---- */
+    /* ---- NONCE ---- */ // TODO: temp label
     if(list[NONCE_FLAG].uDataType != QCBOR_TYPE_NONE) {
         items->nonce = list[NONCE_FLAG].val.string;
         items->item_flags |= CLAIM_PRESENT_BIT(NONCE_FLAG);
     }
 
-    /* ---- UEID ---- */
+    /* ---- UEID ---- */ // TODO: temp label
     if(list[UEID_FLAG].uDataType != QCBOR_TYPE_NONE) {
         items->ueid = list[UEID_FLAG].val.string;
         items->item_flags |= CLAIM_PRESENT_BIT(UEID_FLAG);
@@ -101,11 +101,10 @@ ctoken_psaia_decode_simple_claims(struct ctoken_decode_ctx            *me,
         items->item_flags |= CLAIM_PRESENT_BIT(BOOT_SEED_FLAG);
     }
 
-    /* ---- HW VERSION ---- */
+    /* ---- HW VERSION ---- */ // TODO: temp label ???
     if(list[HW_VERSION_FLAG].uDataType != QCBOR_TYPE_NONE) {
         items->hw_version = list[HW_VERSION_FLAG].val.string;
         items->item_flags |= CLAIM_PRESENT_BIT(HW_VERSION_FLAG);
-
     }
 
     /* ----IMPLEMENTATION ID ---- */
@@ -128,11 +127,11 @@ ctoken_psaia_decode_simple_claims(struct ctoken_decode_ctx            *me,
     if(list[SECURITY_LIFECYCLE_FLAG].uDataType != QCBOR_TYPE_NONE) {
         if(list[SECURITY_LIFECYCLE_FLAG].val.int64 < UINT32_MAX) {
             items->security_lifecycle = (uint32_t)list[SECURITY_LIFECYCLE_FLAG].val.int64;
-            items->item_flags |=CLAIM_PRESENT_BIT(SECURITY_LIFECYCLE_FLAG);
+            items->item_flags |= CLAIM_PRESENT_BIT(SECURITY_LIFECYCLE_FLAG);
         }
     }
 
-    /* ---- PROFILE_DEFINITION ---- */
+    /* ---- PROFILE_DEFINITION ---- */ // TODO: temp label, but type of claim is different
     if(list[PROFILE_DEFINITION_FLAG].uDataType != QCBOR_TYPE_NONE) {
         items->profile_definition = list[PROFILE_DEFINITION_FLAG].val.string;
         items->item_flags |= CLAIM_PRESENT_BIT(PROFILE_DEFINITION_FLAG);

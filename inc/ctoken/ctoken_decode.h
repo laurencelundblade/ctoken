@@ -1271,7 +1271,17 @@ static inline enum ctoken_err_t
 ctoken_decode_nonce(struct ctoken_decode_ctx *me,
                     struct q_useful_buf_c    *nonce)
 {
-    return ctoken_decode_get_bstr(me, CTOKEN_EAT_LABEL_NONCE, nonce);
+    enum ctoken_err_t return_value;
+
+    return_value = ctoken_decode_get_bstr(me, CTOKEN_EAT_LABEL_NONCE, nonce);
+
+#ifndef CTOKEN_DISABLE_TEMP_LABELS
+    if(return_value == CTOKEN_ERR_CLAIM_NOT_PRESENT) {
+       return_value = ctoken_decode_get_bstr(me, CTOKEN_TEMP_EAT_LABEL_NONCE, nonce);
+    }
+#endif
+
+    return return_value;
 }
 
 
@@ -1279,7 +1289,16 @@ static inline enum ctoken_err_t
 ctoken_decode_ueid(struct ctoken_decode_ctx *me,
                    struct q_useful_buf_c    *ueid)
 {
-    return ctoken_decode_get_bstr(me, CTOKEN_EAT_LABEL_UEID, ueid);
+    enum ctoken_err_t return_value;
+
+    return_value = ctoken_decode_get_bstr(me, CTOKEN_EAT_LABEL_UEID, ueid);
+
+#ifndef CTOKEN_DISABLE_TEMP_LABELS
+    if(return_value == CTOKEN_ERR_CLAIM_NOT_PRESENT) {
+        return_value = ctoken_decode_get_bstr(me, CTOKEN_TEMP_EAT_LABEL_UEID, ueid);
+    }
+#endif
+    return return_value;
 }
 
 
@@ -1287,7 +1306,16 @@ static inline enum ctoken_err_t
 ctoken_decode_oemid(struct ctoken_decode_ctx *me,
                     struct q_useful_buf_c    *oemid)
 {
-    return ctoken_decode_get_bstr(me, CTOKEN_EAT_LABEL_OEMID, oemid);
+    enum ctoken_err_t return_value;
+
+    return_value = ctoken_decode_get_bstr(me, CTOKEN_EAT_LABEL_OEMID, oemid);
+
+#ifndef CTOKEN_DISABLE_TEMP_LABELS
+    if(return_value == CTOKEN_ERR_CLAIM_NOT_PRESENT) {
+        return_value = ctoken_decode_get_bstr(me, CTOKEN_TEMP_EAT_LABEL_OEMID, oemid);
+    }
+#endif
+    return return_value;
 }
 
 
@@ -1303,11 +1331,24 @@ static inline enum ctoken_err_t
 ctoken_decode_security_level(struct ctoken_decode_ctx         *me,
                              enum ctoken_security_level_t *security_level)
 {
-    return ctoken_decode_get_int_constrained(me,
+    enum ctoken_err_t return_value;
+
+    return_value = ctoken_decode_get_int_constrained(me,
                                              CTOKEN_EAT_LABEL_SECURITY_LEVEL,
                                              EAT_SL_UNRESTRICTED,
                                              EAT_SL_HARDWARE,
                                              (int64_t *)security_level);
+
+#ifndef CTOKEN_DISABLE_TEMP_LABELS
+    if(return_value == CTOKEN_ERR_CLAIM_NOT_PRESENT) {
+        return_value = ctoken_decode_get_int_constrained(me,
+                                             CTOKEN_TEMP_EAT_LABEL_SECURITY_LEVEL,
+                                             EAT_SL_UNRESTRICTED,
+                                             EAT_SL_HARDWARE,
+                                             (int64_t *)security_level);
+    }
+#endif
+    return return_value;
 }
 
 
@@ -1323,7 +1364,20 @@ static inline enum ctoken_err_t
 ctoken_decode_secure_boot(struct ctoken_decode_ctx *me,
                           bool                     *secure_boot_enabled)
 {
-    return ctoken_decode_get_bool(me, CTOKEN_EAT_LABEL_SECURE_BOOT, secure_boot_enabled);
+    enum ctoken_err_t return_value;
+
+    return_value = ctoken_decode_get_bool(me,
+                                          CTOKEN_EAT_LABEL_SECURE_BOOT,
+                                          secure_boot_enabled);
+#ifndef CTOKEN_DISABLE_TEMP_LABELS
+    if(return_value == CTOKEN_ERR_CLAIM_NOT_PRESENT) {
+        return_value = ctoken_decode_get_bool(me,
+                                              CTOKEN_TEMP_EAT_LABEL_SECURE_BOOT,
+                                              secure_boot_enabled);
+    }
+#endif
+
+    return return_value;
 }
 
 
@@ -1331,11 +1385,23 @@ static inline enum ctoken_err_t
 ctoken_decode_debug_state(struct ctoken_decode_ctx  *me,
                           enum ctoken_debug_level_t *debug_level)
 {
-    return ctoken_decode_get_int_constrained(me,
+    enum ctoken_err_t return_value;
+
+    return_value = ctoken_decode_get_int_constrained(me,
+                                             CTOKEN_TEMP_EAT_LABEL_DEBUG_STATE,
+                                             CTOKEN_DEBUG_ENABLED,
+                                             CTOKEN_DEBUG_DISABLED_FULL_PERMANENT,
+                                             (int64_t *)debug_level);
+#ifndef CTOKEN_DISABLE_TEMP_LABELS
+    if(return_value == CTOKEN_ERR_CLAIM_NOT_PRESENT) {
+        return ctoken_decode_get_int_constrained(me,
                                              CTOKEN_EAT_LABEL_DEBUG_STATE,
                                              CTOKEN_DEBUG_ENABLED,
                                              CTOKEN_DEBUG_DISABLED_FULL_PERMANENT,
                                              (int64_t *)debug_level);
+    }
+#endif
+    return return_value;
 }
 
 
