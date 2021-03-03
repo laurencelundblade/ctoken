@@ -37,7 +37,7 @@ int32_t cwt_test()
     ctoken_encode_init(&encode_ctx,
                         T_COSE_OPT_SHORT_CIRCUIT_SIG,
                         0,
-                       CTOKEN_PROTECTION_COSE_SIGN1,
+                        CTOKEN_PROTECTION_COSE_SIGN1,
                         T_COSE_ALGORITHM_ES256);
 
     /* Get started on a particular token by giving an out buffer.
@@ -96,6 +96,81 @@ int32_t cwt_test()
     return 0;
 }
 
+
+#define TOKEN_TEST_NONCE_BYTES \
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, \
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, \
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, \
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, \
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, \
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, \
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, \
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+#define TOKEN_TEST_VALUE_NONCE \
+    (struct q_useful_buf_c) {\
+      (uint8_t[]){TOKEN_TEST_NONCE_BYTES},\
+        64\
+    }
+
+
+/*
+ * Public function. See token_test.h
+ */
+int32_t minimal_get_size_test()
+{
+    int_fast16_t          return_value;
+    struct q_useful_buf_c returned_size;
+    struct ctoken_encode_ctx  encode_ctx;
+    struct q_useful_buf       token_out_buffer;
+    enum ctoken_err_t         result;
+
+    // MakeUsefulBufOnStack(     token_out_buffer, 200);
+
+
+    return_value = 0;
+
+
+
+    /* Set up the encoder to use short-circuit signing. It doesn't require a
+     * key, so it is easy to get going with.  Must tell it a valid algorithm
+     * ID even though it doesn't use it. This context can be used to create
+     * one or more tokens.
+     */
+    ctoken_encode_init(&encode_ctx,
+                       T_COSE_OPT_SHORT_CIRCUIT_SIG,
+                       0,
+                       CTOKEN_PROTECTION_COSE_SIGN1,
+                       T_COSE_ALGORITHM_ES256);
+
+    /* A NULL out buffer in order to compute size only.
+     */
+    token_out_buffer.len = INT32_MAX;
+    token_out_buffer.ptr = NULL;
+    result = ctoken_encode_start(&encode_ctx, token_out_buffer);
+    if(result) {
+        return 100 + (int32_t)result;
+    }
+
+    /* --- Add the claims --- */
+
+    ctoken_encode_expiration(&encode_ctx, 9999);
+
+    /* --- Done adding the claims --- */
+
+    /* Finsh up the token. This is when the signing happens. The pointer
+     * and length of the completed token are returned
+     */
+    result = ctoken_encode_finish(&encode_ctx, &returned_size);
+    if(result) {
+        return 200 + (int32_t)result;
+    }
+
+    if(returned_size.len != 116) {
+        return 300;
+    }
+
+    return return_value;
+}
 
 
 

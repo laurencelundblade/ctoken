@@ -29,6 +29,9 @@ int32_t cwt_test(void);
 int32_t cwt_tags_test(void);
 
 
+int32_t minimal_get_size_test(void);
+
+
 #ifdef __cplusplus
 }
 #endif

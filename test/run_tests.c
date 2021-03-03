@@ -50,6 +50,7 @@ static test_entry2 s_tests2[] = {
 #endif
 
 static test_entry s_tests[] = {
+    TEST_ENTRY(minimal_get_size_test),
     TEST_ENTRY(psaia_basic_test),
     TEST_ENTRY(basic_eat_test),
     TEST_ENTRY(cwt_test),
