@@ -23,37 +23,107 @@ extern "C" {
 #endif
 #endif
 
-/* These are temporary labels until the real ones are assigned by
- * IANA.  This is probably sometime in 2021 or 2022 when the EAT draft
- * becomes an RFC. Some are the same as defined in
- * https://tools.ietf.org/id/draft-tschofenig-rats-psa-token-05.html,
- * which has also defined some temporary labels.
- */
-#define CTOKEN_EAT_LABEL_UEID -75009 // Same as PSA
-#define CTOKEN_EAT_LABEL_NONCE -75008 // Same as PSA
-#define CTOKEN_EAT_LABEL_OEMID  -76001
-#define CTOKEN_EAT_LABEL_ORIGINATION  -75010 // Same as PSA
-#define CTOKEN_EAT_LABEL_SECURITY_LEVEL -76002
-#define CTOKEN_EAT_LABEL_BOOT_STATE -76003
-#define CTOKEN_EAT_LABEL_SECURE_BOOT -76007
-#define CTOKEN_EAT_LABEL_DEBUG_STATE -76008
-#define CTOKEN_EAT_LABEL_LOCATION -76004
-#define CTOKEN_EAT_LABEL_UPTIME -76006
-#define CTOKEN_EAT_LABEL_INTENDED_USE -76009
-
-
-#define CTOKEN_EAT_LABEL_SUBMODS -76000 // Not really a claim, but most have a label
 
 /**
  * File: ctoken_eat_labels.h
  *
  * The EAT standard (Entity Attestation Token) is still in development
  * in the IETF. This code is roughly based on
- * https://tools.ietf.org/html/draft-ietf-rats-eat-02
+ * https://tools.ietf.org/html/draft-ietf-rats-eat-08
  *
- * While the core basis on CWT is unlikely to change, the
- * individual claims are likely to change.
+ * EAT is expected to become a standard some time in 2021 or 2022. At
+ * that point the standard labels for all claims will be permanently assigned
+ * in the IANA CWT registry (https://www.iana.org/assignments/cwt/cwt.xhtml).
+ * These values will be in the standard range (-256 to 256). Until
+ * that happens, EAT implementations have to use temporary labels from
+ * the private use range (less than -65536).
+ *
+ * Ctoken is therefore using temporary labels for the claims both for
+ * encoding and decoding.
+ *
+ * Ctoken also implements the standard CWT claims from RFC 8392. Those
+ * labels are standardized, so there are no temporary labels for them.
+ *
+ * The plan for ctoken label handling when the standard labels get
+ * assigned is as follows. Ctoken will recognize claims by either the
+ * temporary label or by the standard label. Ctoken will generate
+ * claims using the standard label. This will allow interoperability
+ * through the transition from temporary labels to standard
+ * labels. Ctoken will have a #define to disable recognition of the
+ * temporary labels to reduce code size. Eventually, recognition of
+ * the temporary labels will be disabled.
+*
+ * IANA has a process for “early allocation” whereby assignments can
+ * be made before something becomes a standard. This has been pursued
+ * for nine well-established EAT claims and we therefore have the
+ * standard label values for them. This implementation uses the
+ * above-described strategy with them. It encodes using the labels
+ * that have been allocated early. Decoding recognizes both the value
+ * that were allocated early and temporary values used before the
+ * early allocation. (As of March 2021, this early allocation is still
+ * in-process. It is expected to succeed, but in theory could be
+ * rejected.)
+ *
+ * Some of the temporary label values were picked by the Arm’s PSA token
+ * draft (https://tools.ietf.org/id/draft-tschofenig-rats-psa-token-05.html).
+ * These are in the range of -75000 to -75010. Some of these are the
+ * same as EAT claims and some are not. When they are the same as EAT
+ * claims, Arm’s values are used here.
+ *
+ * The temporary label values used here not from Arm’s PSA are in the
+ * range of -76000 to -76100.
+ *
+ * All early EAT implementors are invited to use the temporary label
+ * values used here. That way all the early EAT implementations will
+ * interoperate.
  */
+
+#define CTOKEN_EAT_LABEL_NONCE                10
+#define CTOKEN_TEMP_EAT_LABEL_NONCE          -75008 // Same as EAT_CBOR_ARM_LABEL_CHALLENGE
+
+#define CTOKEN_EAT_LABEL_UEID                 11
+#define CTOKEN_TEMP_EAT_LABEL_UEID           -75009 // EAT_CBOR_ARM_LABEL_UEID
+
+#define CTOKEN_EAT_LABEL_OEMID                13
+#define CTOKEN_TEMP_EAT_LABEL_OEMID          -76001
+
+#define CTOKEN_EAT_LABEL_SECURITY_LEVEL       14
+#define CTOKEN_TEMP_EAT_LABEL_SECURITY_LEVEL -76002
+
+#define CTOKEN_EAT_LABEL_SECURE_BOOT          15
+#define CTOKEN_TEMP_EAT_LABEL_SECURE_BOOT    -76003
+
+#define CTOKEN_EAT_LABEL_DEBUG_STATE          16
+#define CTOKEN_TEMP_EAT_LABEL_DEBUG_STATE    -76008
+
+#define CTOKEN_EAT_LABEL_LOCATION             17
+#define CTOKEN_TEMP_EAT_LABEL_LOCATION       -76004
+
+// TODO: ARM profile label?
+#define CTOKEN_EAT_LABEL_PROFILE              18
+#define CTOKEN_TEMP_EAT_LABEL_PROFILE        -76004
+
+/* Not really a claim, but must have a label */
+#define CTOKEN_EAT_LABEL_SUBMODS              20
+#define CTOKEN_TEMP_EAT_LABEL_SUBMODS        -76000
+
+// Expect this to be removed
+#define CTOKEN_EAT_LABEL_ORIGINATION                 -75010
+
+#define CTOKEN_EAT_LABEL_UPTIME                      -76006
+#define CTOKEN_EAT_LABEL_CHIP_VERSION                -76032
+#define CTOKEN_EAT_LABEL_BOARD_VERSION               -76033
+#define CTOKEN_EAT_LABEL_DEVICE_VERSION              -76034
+#define CTOKEN_EAT_LABEL_CHIP_VERSION_SCHEME         -76035
+#define CTOKEN_EAT_LABEL_BOARD_VERSION_SCHEME        -76036
+#define CTOKEN_EAT_LABEL_DEVICE_VERSION_SCHEME       -76037
+#define CTOKEN_EAT_LABEL_EAN_CHIP_VERSION            -76038
+#define CTOKEN_EAT_LABEL_EAN_BOARD_VERSION           -76039
+#define CTOKEN_EAT_LABEL_EAN_DEVICE_VERSION          -76040
+#define CTOKEN_EAT_LABEL_INTENDED_USE                -76041
+
+
+
 
 /**
  * This gives a rough notion of the security level of the attester.
@@ -140,7 +210,6 @@ enum ctoken_intended_use_t {
     /** Used to prove the device has possesion of a key. */
     CTOKEN_USE_PROOF_OF_POSSSION = 5
 };
-
 
 
 #ifdef __cplusplus

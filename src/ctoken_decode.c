@@ -587,6 +587,14 @@ ctoken_decode_location(struct ctoken_decode_ctx   *me,
                                  CTOKEN_EAT_LABEL_LOCATION);
     return_value = get_and_reset_error(&(me->qcbor_decode_context));
 
+#ifndef CTOKEN_DISABLE_TEMP_LABELS
+    if(return_value == CTOKEN_ERR_CLAIM_NOT_PRESENT) {
+        QCBORDecode_EnterMapFromMapN(&(me->qcbor_decode_context),
+                                     CTOKEN_TEMP_EAT_LABEL_LOCATION);
+        return_value = get_and_reset_error(&(me->qcbor_decode_context));
+    }
+#endif
+
     if(return_value != CTOKEN_ERR_SUCCESS) {
         goto Done;
     }
@@ -637,6 +645,22 @@ Done:
 }
 
 
+static bool is_submod_section(const QCBORItem *claim)
+{
+    if(claim->uLabelType != QCBOR_TYPE_INT64) {
+        return false;
+    }
+    if(claim->label.int64 == CTOKEN_EAT_LABEL_SUBMODS) {
+        return true;
+    }
+#ifndef CTOKEN_DISABLE_TEMP_LABELS
+    if(claim->label.int64 == CTOKEN_TEMP_EAT_LABEL_SUBMODS) {
+        return true;
+    }
+#endif
+    return false;
+}
+
 /*
  * Public function. See ctoken_eat_encode.h
  */
@@ -658,8 +682,7 @@ ctoken_decode_next_claim(struct ctoken_decode_ctx   *me,
             goto Done;
         }
 
-    } while(claim->label.int64 == CTOKEN_EAT_LABEL_SUBMODS &&
-            claim->uLabelType == QCBOR_TYPE_INT64);
+    } while(is_submod_section(claim));
 
     claim->uNestingLevel  = 0;
     claim->uNextNestLevel = 0;
@@ -681,10 +704,20 @@ enter_submod_section(struct ctoken_decode_ctx *me)
                                  CTOKEN_EAT_LABEL_SUBMODS);
 
     return_value = get_and_reset_error(&(me->qcbor_decode_context));
+
+#ifndef CTOKEN_DISABLE_TEMP_LABELS
+    if(return_value == CTOKEN_ERR_CLAIM_NOT_PRESENT) {
+        QCBORDecode_EnterMapFromMapN(&(me->qcbor_decode_context),
+                                     CTOKEN_TEMP_EAT_LABEL_SUBMODS);
+        return_value = get_and_reset_error(&(me->qcbor_decode_context));
+    }
+#endif
+
     if(return_value == CTOKEN_ERR_CLAIM_NOT_PRESENT) {
         return_value = CTOKEN_ERR_SUBMOD_SECTION;
         goto Done;
     }
+
     if(return_value == CTOKEN_ERR_SUCCESS ) {
         me->in_submods++;
     }

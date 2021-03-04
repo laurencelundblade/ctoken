@@ -1,7 +1,7 @@
 /*
  * ctoken_psaia_labels.h (partly derived from attest_eat_defines.h)
  *
- * Copyright (c) 2020 Laurence Lundblade.
+ * Copyright (c) 2020-2021, Laurence Lundblade.
  * Copyright (c) 2019, Arm Limited. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
@@ -40,7 +40,9 @@ extern "C" {
 #define EAT_CBOR_ARM_LABEL_HW_VERSION           (EAT_CBOR_ARM_RANGE_BASE - 5)
 #define EAT_CBOR_ARM_LABEL_SW_COMPONENTS        (EAT_CBOR_ARM_RANGE_BASE - 6)
 #define EAT_CBOR_ARM_LABEL_NO_SW_COMPONENTS     (EAT_CBOR_ARM_RANGE_BASE - 7)
+// Same as CTOKEN_TEMP_EAT_LABEL_NONCE, should standardize as CTOKEN_EAT_LABEL_NONCE
 #define EAT_CBOR_ARM_LABEL_CHALLENGE            (EAT_CBOR_ARM_RANGE_BASE - 8)
+// Same as CTOKEN_TEMP_EAT_LABEL_UEID, should standardize as CTOKEN_EAT_LABEL_UEID
 #define EAT_CBOR_ARM_LABEL_UEID                 (EAT_CBOR_ARM_RANGE_BASE - 9)
 #define EAT_CBOR_ARM_LABEL_ORIGINATION          (EAT_CBOR_ARM_RANGE_BASE - 10)
 
@@ -86,7 +88,15 @@ enum ctoken_psaia_item_index_t {
     SECURITY_LIFECYCLE_FLAG = 6,
     PROFILE_DEFINITION_FLAG = 7,
     ORIGINATION_FLAG =        8,
-    NUMBER_OF_ITEMS =         9
+#ifndef CTOKEN_DISABLE_TEMP_LABELS
+    TEMP_NONCE_FLAG =         9,
+    TEMP_UEID_FLAG  =        10,
+    NUMBER_OF_ITEMS =        11
+#else
+    NUMBER_OF_ITEMS =        9
+#endif
+
+
 };
 
 
