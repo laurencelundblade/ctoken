@@ -1,7 +1,7 @@
 /*
  * ctoken_psaia_decode.c (formerly part of attest_token_decode.c)
  *
- * Copyright (c) 2019-2020, Laurence Lundblade.
+ * Copyright (c) 2019-2021, Laurence Lundblade.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -101,7 +101,7 @@ ctoken_psaia_decode_simple_claims(struct ctoken_decode_ctx            *me,
     } else if(list[TEMP_NONCE_FLAG].uDataType != QCBOR_TYPE_NONE) {
         items->nonce = list[NONCE_FLAG].val.string;
         items->item_flags |= CLAIM_PRESENT_BIT(NONCE_FLAG);
-#endif 
+#endif
     }
 
     /* ---- UEID ---- */ // TODO: temp label

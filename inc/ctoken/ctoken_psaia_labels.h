@@ -1,7 +1,7 @@
 /*
  * ctoken_psaia_labels.h (partly derived from attest_eat_defines.h)
  *
- * Copyright (c) 2020 Laurence Lundblade.
+ * Copyright (c) 2020-2021, Laurence Lundblade.
  * Copyright (c) 2019, Arm Limited. All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
