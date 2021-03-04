@@ -93,7 +93,7 @@ ctoken_psaia_decode_simple_claims(struct ctoken_decode_ctx            *me,
         goto Done;
     }
 
-    /* ---- NONCE ---- */ // TODO: temp label
+    /* ---- NONCE ---- */
     if(list[NONCE_FLAG].uDataType != QCBOR_TYPE_NONE) {
         items->nonce = list[NONCE_FLAG].val.string;
         items->item_flags |= CLAIM_PRESENT_BIT(NONCE_FLAG);
@@ -104,7 +104,7 @@ ctoken_psaia_decode_simple_claims(struct ctoken_decode_ctx            *me,
 #endif
     }
 
-    /* ---- UEID ---- */ // TODO: temp label
+    /* ---- UEID ---- */
     if(list[UEID_FLAG].uDataType != QCBOR_TYPE_NONE) {
         items->ueid = list[UEID_FLAG].val.string;
         items->item_flags |= CLAIM_PRESENT_BIT(UEID_FLAG);
