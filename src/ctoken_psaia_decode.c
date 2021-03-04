@@ -36,11 +36,11 @@ ctoken_psaia_decode_simple_claims(struct ctoken_decode_ctx            *me,
     /* Make the list of labels and types to get. Re use flags as array indexes
      * because it works nicely.
      */
-    list[NONCE_FLAG].label.int64 = EAT_CBOR_ARM_LABEL_CHALLENGE;
+    list[NONCE_FLAG].label.int64 = CTOKEN_EAT_LABEL_NONCE;
     list[NONCE_FLAG].uLabelType  = QCBOR_TYPE_INT64;
     list[NONCE_FLAG].uDataType   = QCBOR_TYPE_BYTE_STRING;
 
-    list[UEID_FLAG].label.int64 = EAT_CBOR_ARM_LABEL_UEID;
+    list[UEID_FLAG].label.int64 = CTOKEN_EAT_LABEL_UEID;
     list[UEID_FLAG].uLabelType  = QCBOR_TYPE_INT64;
     list[UEID_FLAG].uDataType   = QCBOR_TYPE_BYTE_STRING;
 
@@ -72,6 +72,16 @@ ctoken_psaia_decode_simple_claims(struct ctoken_decode_ctx            *me,
     list[ORIGINATION_FLAG].uLabelType  = QCBOR_TYPE_INT64;
     list[ORIGINATION_FLAG].uDataType   = QCBOR_TYPE_TEXT_STRING;
 
+#ifndef CTOKEN_DISABLE_TEMP_LABELS
+    list[TEMP_NONCE_FLAG].label.int64 = EAT_CBOR_ARM_LABEL_CHALLENGE;
+    list[NONCE_FLAG].uLabelType  = QCBOR_TYPE_INT64;
+    list[NONCE_FLAG].uDataType   = QCBOR_TYPE_BYTE_STRING;
+
+    list[TEMP_UEID_FLAG].label.int64 = EAT_CBOR_ARM_LABEL_UEID;
+    list[UEID_FLAG].uLabelType  = QCBOR_TYPE_INT64;
+    list[UEID_FLAG].uDataType   = QCBOR_TYPE_BYTE_STRING;
+#endif
+
     list[NUMBER_OF_ITEMS].uLabelType  = QCBOR_TYPE_NONE;
 
 
@@ -87,12 +97,22 @@ ctoken_psaia_decode_simple_claims(struct ctoken_decode_ctx            *me,
     if(list[NONCE_FLAG].uDataType != QCBOR_TYPE_NONE) {
         items->nonce = list[NONCE_FLAG].val.string;
         items->item_flags |= CLAIM_PRESENT_BIT(NONCE_FLAG);
+#ifndef CTOKEN_DISABLE_TEMP_LABELS
+    } else if(list[TEMP_NONCE_FLAG].uDataType != QCBOR_TYPE_NONE) {
+        items->nonce = list[NONCE_FLAG].val.string;
+        items->item_flags |= CLAIM_PRESENT_BIT(NONCE_FLAG);
+#endif 
     }
 
     /* ---- UEID ---- */ // TODO: temp label
     if(list[UEID_FLAG].uDataType != QCBOR_TYPE_NONE) {
         items->ueid = list[UEID_FLAG].val.string;
         items->item_flags |= CLAIM_PRESENT_BIT(UEID_FLAG);
+#ifndef CTOKEN_DISABLE_TEMP_LABELS
+    } else if(list[TEMP_UEID_FLAG].uDataType != QCBOR_TYPE_NONE) {
+        items->ueid = list[UEID_FLAG].val.string;
+        items->item_flags |= CLAIM_PRESENT_BIT(UEID_FLAG);
+#endif
     }
 
     /* ---- BOOT SEED ---- */
