@@ -749,17 +749,17 @@ int32_t submod_decode_errors_test()
     }
 
     ctoken_result = ctoken_decode_enter_named_submod(&decode_context, "foobar");
-    if(ctoken_result != CTOKEN_ERR_NAMED_SUBMOD_NOT_FOUND) {
+    if(ctoken_result != CTOKEN_ERR_SUBMOD_NOT_FOUND) {
         return 200 + (int32_t)ctoken_result;
     }
 
     ctoken_result = ctoken_decode_enter_nth_submod(&decode_context, 6, &name);
-    if(ctoken_result != CTOKEN_ERR_SUBMOD_INDEX_TOO_LARGE) {
+    if(ctoken_result != CTOKEN_ERR_SUBMOD_NOT_FOUND) {
         return 300 + (int32_t)ctoken_result;
     }
 
     ctoken_result = ctoken_decode_get_nth_nested_token(&decode_context, 6, &type, &name, &token);
-    if(ctoken_result != CTOKEN_ERR_SUBMOD_INDEX_TOO_LARGE) {
+    if(ctoken_result != CTOKEN_ERR_SUBMOD_NOT_FOUND) {
         return 400 + (int32_t)ctoken_result;
     }
 
@@ -767,7 +767,7 @@ int32_t submod_decode_errors_test()
                                                          Q_USEFUL_BUF_FROM_SZ_LITERAL("foobar"),
                                                          &type,
                                                          &token);
-    if(ctoken_result != CTOKEN_ERR_NAMED_SUBMOD_NOT_FOUND) {
+    if(ctoken_result != CTOKEN_ERR_SUBMOD_NOT_FOUND) {
         return 500 + (int32_t)ctoken_result;
     }
 
@@ -791,14 +791,14 @@ int32_t submod_decode_errors_test()
     }
 
     ctoken_result = ctoken_decode_get_num_submods(&decode_context, &uNum);
-    if(ctoken_result != CTOKEN_ERR_SUBMOD_SECTION) {
+    if(ctoken_result != CTOKEN_ERR_SUCCESS || uNum != 0) {
         return 800 + (int32_t)ctoken_result;
     }
 
     ctoken_result = ctoken_decode_get_named_nested_token(&decode_context,
                                                          Q_USEFUL_BUF_FROM_SZ_LITERAL("subsub"),
                                                          &type, &token);
-    if(ctoken_result != CTOKEN_ERR_SUBMOD_SECTION) {
+    if(ctoken_result != CTOKEN_ERR_SUBMOD_NOT_FOUND) {
         return 900 + (int32_t)ctoken_result;
     }
 

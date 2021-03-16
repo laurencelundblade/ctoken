@@ -692,6 +692,20 @@ Done:
 }
 
 
+/**
+
+ @retval CTOKEN_SUCCESS  There is a submods section and it was entered
+
+ @retval CTOKEN_ERR_SUBMOD_NESTING_TOO_DEEP Input is nested to deep to handle
+
+ @retval CTOKEN_ERR_CLAIM_NOT_PRESENT There is no submods section
+
+ @retval CTOKEN_ERR_CBOR_TYPE  There is a item with the correct label, but
+                               it is not of type map
+
+ Other CTOKEN errors are also possible and usualy indicate the
+ input is malformed, invalid or such.
+ */
 static enum ctoken_err_t
 enter_submod_section(struct ctoken_decode_ctx *me)
 {
@@ -712,11 +726,6 @@ enter_submod_section(struct ctoken_decode_ctx *me)
         return_value = get_and_reset_error(&(me->qcbor_decode_context));
     }
 #endif
-
-    if(return_value == CTOKEN_ERR_CLAIM_NOT_PRESENT) {
-        return_value = CTOKEN_ERR_SUBMOD_SECTION;
-        goto Done;
-    }
 
     if(return_value == CTOKEN_ERR_SUCCESS ) {
         me->in_submods++;
@@ -740,7 +749,24 @@ leave_submod_section(struct ctoken_decode_ctx *me)
 }
 
 
-/* exit conditions are: found nth, got to the end, errored out. */
+/**
+
+ @returns CTOKEN_ERR_SUCCESS if got to the nth submod or hit the end of submods
+  section. Other errors indicate malformed or invalid submodules.
+
+ Exit conditions are: found nth, got to the end, errored out.
+
+ Other errors indicate the CBOR is malformed or invalid.
+
+ If num_submods is equal to submod_index on return, then
+ the traversal cursor is at the requested index and the
+ call is a success.
+
+ If num_submods is less than submod_index, then there are
+ less than submod_index in the submod section and the call
+ is not a success unless the objective was to count the
+ number of submods.
+ */
 
 static enum ctoken_err_t
 ctoken_decode_nth_submod(struct ctoken_decode_ctx *me,
@@ -753,13 +779,13 @@ ctoken_decode_nth_submod(struct ctoken_decode_ctx *me,
     enum ctoken_err_t   return_value;
     QCBORDecodeContext *decode_context = &(me->qcbor_decode_context);
 
-    /* Must be entered into submods before calling this */
+    /* Must have entered into submods map before calling this */
     submod_count = 0;
     return_value = CTOKEN_ERR_SUCCESS;
 
     while(submod_index > 0) {
         QCBORDecode_VGetNextConsume(decode_context, &map_item);
-        return_value = get_and_reset_error(&(me->qcbor_decode_context));
+        return_value = get_and_reset_error(decode_context);
         if(return_value != CTOKEN_ERR_SUCCESS) {
             break;
         }
@@ -789,7 +815,8 @@ ctoken_decode_get_num_submods(struct ctoken_decode_ctx *me,
 
     return_value = enter_submod_section(me);
     if(return_value == CTOKEN_ERR_CLAIM_NOT_PRESENT) {
-        return_value = CTOKEN_ERR_SUBMOD_SECTION;
+        *num_submods = 0;
+        return_value = CTOKEN_ERR_SUCCESS;
         goto Done;
     }
     if(return_value != CTOKEN_ERR_SUCCESS) {
@@ -811,17 +838,24 @@ Done:
 /*
  * Public function. See ctoken_decode.h
  */
+// TODO: be clear about error for submods section and  num submods
 enum ctoken_err_t
 ctoken_decode_enter_nth_submod(struct ctoken_decode_ctx *me,
                                uint32_t                  submod_index,
                                struct q_useful_buf_c    *name)
 {
-    QCBORItem         map_item;
+    QCBORItem         item;
     enum ctoken_err_t return_value;
     uint32_t          num_submods;
 
     return_value = enter_submod_section(me);
+    if(return_value == CTOKEN_ERR_NO_MORE_CLAIMS) {
+        /* There is no submods section */
+        return_value = CTOKEN_ERR_SUBMOD_NOT_FOUND;
+        goto Done;
+    }
     if(return_value != CTOKEN_ERR_SUCCESS) {
+        /* The submodules section is malformed or invalid */
         goto Done;
     }
 
@@ -831,30 +865,56 @@ ctoken_decode_enter_nth_submod(struct ctoken_decode_ctx *me,
     }
 
     if(num_submods != submod_index) {
-        return_value = CTOKEN_ERR_SUBMOD_INDEX_TOO_LARGE;
-        leave_submod_section(me);
+        return_value = CTOKEN_ERR_SUBMOD_NOT_FOUND;
         goto Done;
     }
 
-    QCBORDecode_EnterMap(&(me->qcbor_decode_context), &map_item);
+    QCBORDecode_EnterMap(&(me->qcbor_decode_context), &item);
     return_value = get_and_reset_error(&(me->qcbor_decode_context));
-    if(return_value != CTOKEN_ERR_SUCCESS) {
-        leave_submod_section(me);
+    if(return_value == CTOKEN_ERR_CLAIM_NOT_PRESENT) {
+        return_value = CTOKEN_ERR_SUBMOD_NOT_FOUND;
         goto Done;
     }
 
-    if(map_item.uLabelType != QCBOR_TYPE_TEXT_STRING) {
+    if(return_value != CTOKEN_ERR_SUCCESS && return_value != CTOKEN_ERR_CBOR_TYPE) {
+        /* Clearly an error with malformed or invalid input */
+        goto Done;
+    }
+
+    if(return_value == CTOKEN_ERR_CBOR_TYPE) {
+        /* It wasn't a map. If it is a bstr, then it's a nested token */
+        QCBORDecode_VGetNext(&(me->qcbor_decode_context), &item);
+        return_value = get_and_reset_error(&(me->qcbor_decode_context));
+        if(return_value != CTOKEN_ERR_SUCCESS) {
+            /* Clearly an error with malformed or invalid input */
+            goto Done;
+        }
+
+        if(item.uDataType == QCBOR_TYPE_BYTE_STRING) {
+            /* Tell the caller they called the wrong function to get this */
+            return_value = CTOKEN_ERR_SUBMOD_IS_A_TOKEN;
+        } else {
+            return_value = CTOKEN_ERR_CBOR_TYPE;
+        }
+        goto Done;
+    }
+
+    if(item.uLabelType != QCBOR_TYPE_TEXT_STRING) {
         return_value = CTOKEN_ERR_SUBMOD_NAME_NOT_A_TEXT_STRING;
         QCBORDecode_ExitMap(&(me->qcbor_decode_context));
-        leave_submod_section(me);
         goto Done;
     }
 
     if(name != NULL) {
-        *name = map_item.label.string;
+        *name = item.label.string;
     }
 
 Done:
+    if(return_value != CTOKEN_ERR_SUCCESS) {
+        /* try to reset so decoding can continue even on error. */
+        leave_submod_section(me);
+    }
+
     return return_value;
 }
 
@@ -867,23 +927,54 @@ ctoken_decode_enter_named_submod(struct ctoken_decode_ctx *me,
                                  const char               *name)
 {
     enum ctoken_err_t return_value;
+    QCBORItem         item;
 
     return_value = enter_submod_section(me);
-    if(return_value != CTOKEN_ERR_SUCCESS) {
+    if(return_value == CTOKEN_ERR_NO_MORE_CLAIMS) {
+        /* There is no submods section */
+        return_value = CTOKEN_ERR_SUBMOD_NOT_FOUND;
         goto Done;
     }
+    if(return_value != CTOKEN_ERR_SUCCESS) {
+        /* The submodules section is malformed or invalid */
+        goto Done;
+    }
+
 
     QCBORDecode_EnterMapFromMapSZ(&(me->qcbor_decode_context), name);
 
     return_value = get_and_reset_error(&(me->qcbor_decode_context));
+    
     if(return_value == CTOKEN_ERR_CLAIM_NOT_PRESENT) {
-        /* Translate error code for submod */
-        return_value = CTOKEN_ERR_NAMED_SUBMOD_NOT_FOUND;
+        return_value = CTOKEN_ERR_SUBMOD_NOT_FOUND;
+        goto Done;
+    }
+
+    if(return_value != CTOKEN_ERR_SUCCESS && return_value != CTOKEN_ERR_CBOR_TYPE) {
+        /* Clearly an error with malformed or invalid input */
+        goto Done;
+    }
+
+    if(return_value == CTOKEN_ERR_CBOR_TYPE) {
+        /* It wasn't a map. If it is a bstr, then it's a nested token */
+        QCBORDecode_VGetNext(&(me->qcbor_decode_context), &item);
+        return_value = get_and_reset_error(&(me->qcbor_decode_context));
+        if(return_value != CTOKEN_ERR_SUCCESS) {
+            /* Clearly an error with malformed or invalid input */
+            goto Done;
+        }
+
+        if(item.uDataType == QCBOR_TYPE_BYTE_STRING) {
+            /* Tell the caller they called the wrong function to get this */
+            return_value = CTOKEN_ERR_SUBMOD_IS_A_TOKEN;
+        } else {
+            return_value = CTOKEN_ERR_CBOR_TYPE;
+        }
     }
 
 Done:
     if(return_value != CTOKEN_ERR_SUCCESS) {
-        /* try to reset so decoding can continue even on error. */
+        /* Reset so decoding can continue even on error. */
         leave_submod_section(me);
     }
     return return_value;
@@ -925,14 +1016,15 @@ ctoken_decode_nested_token(struct ctoken_decode_ctx  *me,
     return_value = get_and_reset_error(&(me->qcbor_decode_context));
 
     if(return_value == CTOKEN_ERR_CLAIM_NOT_PRESENT) {
-        return_value = CTOKEN_ERR_NAMED_SUBMOD_NOT_FOUND;
+        return_value = CTOKEN_ERR_SUBMOD_NOT_FOUND;
         goto Done;
-    } else if(return_value != CTOKEN_ERR_SUCCESS) {
+    }
+    if(return_value != CTOKEN_ERR_SUCCESS) {
         goto Done;
     }
 
     if(item->uDataType == QCBOR_TYPE_NONE) {
-        return_value = CTOKEN_ERR_NAMED_SUBMOD_NOT_FOUND;
+        return_value = CTOKEN_ERR_SUBMOD_NOT_FOUND;
         goto Done;
     }
 
@@ -972,17 +1064,22 @@ ctoken_decode_get_named_nested_token(struct ctoken_decode_ctx *me,
 
 
     return_value = enter_submod_section(me);
+    if(return_value == CTOKEN_ERR_CLAIM_NOT_PRESENT) {
+        return_value = CTOKEN_ERR_SUBMOD_NOT_FOUND;
+        goto Done;
+    }
     if(return_value != CTOKEN_ERR_SUCCESS) {
         goto Done;
     }
 
+
      search[0].uLabelType   = QCBOR_TYPE_TEXT_STRING;
      search[0].label.string = submod_name;
      search[0].uDataType    = QCBOR_TYPE_ANY;
-     search[1].uLabelType   = QCBOR_TYPE_NONE; // Indicates end of array
+     search[1].uLabelType   = QCBOR_TYPE_NONE; /* Indicates end of array */
 
      QCBORDecode_GetItemsInMap(&(me->qcbor_decode_context), search);
-    /* last QCBOR checked in next call to ctoken_decode_submod_token */
+    /*  QCBOR error checked in ctoken_decode_submod_token() */
 
     return_value = ctoken_decode_nested_token(me, &search[0], type, token);
 
@@ -1011,9 +1108,14 @@ ctoken_decode_get_nth_nested_token(struct ctoken_decode_ctx *me,
     uint32_t          returned_index;
 
     return_value = enter_submod_section(me);
+    if(return_value == CTOKEN_ERR_CLAIM_NOT_PRESENT) {
+        return_value = CTOKEN_ERR_SUBMOD_NOT_FOUND;
+        goto Done;
+    }
     if(return_value != CTOKEN_ERR_SUCCESS) {
         goto Done;
     }
+
 
     return_value = ctoken_decode_nth_submod(me, submod_index, &returned_index);
     if(return_value != CTOKEN_ERR_SUCCESS) {
@@ -1022,13 +1124,13 @@ ctoken_decode_get_nth_nested_token(struct ctoken_decode_ctx *me,
     }
 
     if(returned_index != submod_index) {
-        return_value = CTOKEN_ERR_SUBMOD_INDEX_TOO_LARGE;
+        return_value = CTOKEN_ERR_SUBMOD_NOT_FOUND;
         leave_submod_section(me);
         goto Done;
     }
 
     QCBORDecode_VGetNext(&(me->qcbor_decode_context), &item);
-    /* Errors are checked in following call to ctoken_decode_submod_token */
+    /* Errors are checked in ctoken_decode_submod_token() */
 
     return_value = ctoken_decode_nested_token(me, &item, type, token);
     if(return_value != CTOKEN_ERR_SUCCESS) {

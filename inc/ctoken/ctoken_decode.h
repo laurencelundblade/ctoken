@@ -1069,10 +1069,12 @@ ctoken_decode_rewind(struct ctoken_decode_ctx   *context);
  * \param[in] context         The decoding context.
  * \param[out] num_submods     The returned number of submodules.
  *
- * \returns A ctoken error code
+ * \returns A ctoken error code in malformed or invalid input.
  *
  * This returns the number of submodules at the current submodule
- * nesting level.
+ * nesting level. If there is no submodules section or it is
+ * empty the error code returned is CTOKEN_ERR_SUCCESS and the
+ * num_submods returned is 0.
  */
 enum ctoken_err_t
 ctoken_decode_get_num_submods(struct ctoken_decode_ctx *context,
@@ -1086,11 +1088,30 @@ ctoken_decode_get_num_submods(struct ctoken_decode_ctx *context,
  * \param[in] submod_index   Index of the submodule to enter.
  * \param[out] submod_name   The returned string name of the submodule.
  *
- * \returns A ctoken error code
+ * \retval CTOKEN_ERR_SUCCESS  The submodule exists and was entered.
+ *
+ * \retval CTOKEN_ERR_SUBMOD_NOT_FOUND  The submodule does not exist because
+ *                                      there is no submodule section, the
+ *                                      submodule section is empty, or
+ *                                      the index was too large.
+ *
+ * \retval CTOKEN_ERR_SUBMOD_IS_A_TOKEN The submodule exists, but it is a
+ *                                      nested token.
+ *
+ * \retval CTOKEN_ERR_SUBMOD_NAME_NOT_A_TEXT_STRING The submodule exists, is a map
+ *                                                  but the name is not a text string.
+ * \retval CTOKEN_ERR_DUPLICATE_LABEL Either there are two submodule sections
+ *                                    or two submodules with the same name.
+ *
+ * \retval CTOKEN_ERR_XXX   Other errors usually indicate the submodule or
+ *                          submodules sections are malformed or invalid.
  *
  * After this call, all claims fetched will be from the submodule that
  * was entered.  This, and the other functions to enter submodules,
  * may be called multiple times to enter nested submodules.
+ *
+ * If the submodule at the index is a nested token, then it is
+ * not entered and \ref CTOKEN_ERR_SUBMOD_IS_A_TOKEN is returned.
  *
  * The \c name parameter may be NULL if the submodule name is not of
  * interest.
@@ -1112,6 +1133,9 @@ ctoken_decode_enter_nth_submod(struct ctoken_decode_ctx *context,
  * After this call, all claims fetched will be from the submodule that
  * was entered.  This, and the other functions to enter submodules,
  * may be called multiple times to enter nested submodules.
+ *
+ * If the submodule at the index is a nested token, then it is
+ * not entered and \ref CTOKEN_ERR_SUBMOD_IS_A_TOKEN is returned.
  */
 enum ctoken_err_t
 ctoken_decode_enter_named_submod(struct ctoken_decode_ctx *context,
