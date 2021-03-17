@@ -379,6 +379,15 @@ int32_t submods_test(void)
         return 550;
     }
 
+    ctoken_result = ctoken_decode_enter_named_submod(&decode_context, "json");
+    if(ctoken_result != CTOKEN_ERR_SUBMOD_IS_A_TOKEN) {
+        return 555;
+    }
+
+    ctoken_result = ctoken_decode_enter_nth_submod(&decode_context, 0, &submod_name);
+    if(ctoken_result != CTOKEN_ERR_SUBMOD_IS_A_TOKEN) {
+        return 556;
+    }
 
     uint32_t num_submods;
     ctoken_decode_get_num_submods(&decode_context, &num_submods);
@@ -1311,11 +1320,14 @@ int32_t debug_and_boot_test()
   16: 3,
   6: 1(1526542894),
   14: 3,
-  -76000: {"Android App Foo":
-         {14: 1},
-       "Secure Element Eat": h'420123',
-       "Linux Android":
-          {14: 1}}}
+  -76000: {
+      "Android App Foo":
+          {14: 1},
+      "Secure Element Eat": h'420123',
+      "Linux Android":
+          {14: 1}
+    }
+  }
 
  */
 static const uint8_t submods_uccs[] = {
@@ -1452,7 +1464,7 @@ int32_t get_next_test()
      }
 
      result = ctoken_decode_enter_nth_submod(&decode_context, 1, &submod_name);
-     if(result != CTOKEN_ERR_CBOR_TYPE) {
+     if(result != CTOKEN_ERR_SUBMOD_IS_A_TOKEN) {
          return test_result_code(15, 0, result);
      }
 
