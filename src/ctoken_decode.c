@@ -905,7 +905,6 @@ ctoken_decode_enter_nth_submod(struct ctoken_decode_ctx *me,
     /* At this point the data item is known to be a map */
 
     QCBORDecode_EnterMap(&(me->qcbor_decode_context), &item);
-    // TODO: document in QCBOR that EnterMap advances the cursor in QCBOR
     return_value = get_and_reset_error(&(me->qcbor_decode_context));
     if(return_value == CTOKEN_ERR_CLAIM_NOT_PRESENT) {
         return_value = CTOKEN_ERR_SUBMOD_NOT_FOUND;
