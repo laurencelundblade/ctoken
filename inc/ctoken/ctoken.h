@@ -139,7 +139,7 @@ enum ctoken_err_t {
     /** Claim is not present in the token */
     CTOKEN_ERR_CLAIM_NOT_PRESENT = 28,
 
-    /** The named submodule was not found. */
+    /** The requested submodule was not found. */
     CTOKEN_ERR_SUBMOD_NOT_FOUND = 29,
 
     /** Submodule is the wrong CBOR type */

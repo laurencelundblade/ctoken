@@ -29,7 +29,7 @@ int32_t basic_eat_test(void);
 int32_t submods_test(void);
 
 
-int32_t submods_errors_test(void);
+int32_t submods_encode_errors_test(void);
 
 
 int32_t submod_decode_errors_test(void);

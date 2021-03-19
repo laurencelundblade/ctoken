@@ -709,7 +709,7 @@ Done:
 static enum ctoken_err_t
 enter_submod_section(struct ctoken_decode_ctx *me)
 {
-    static enum ctoken_err_t return_value;
+    enum ctoken_err_t return_value;
 
     if(me->in_submods >= CTOKEN_MAX_SUBMOD_NESTING) {
         return CTOKEN_ERR_SUBMOD_NESTING_TOO_DEEP;
@@ -838,7 +838,6 @@ Done:
 /*
  * Public function. See ctoken_decode.h
  */
-// TODO: be clear about error for submods section and  num submods
 enum ctoken_err_t
 ctoken_decode_enter_nth_submod(struct ctoken_decode_ctx *me,
                                uint32_t                  submod_index,
@@ -851,7 +850,7 @@ ctoken_decode_enter_nth_submod(struct ctoken_decode_ctx *me,
 
 
     return_value = enter_submod_section(me);
-    if(return_value == CTOKEN_ERR_NO_MORE_CLAIMS) {
+    if(return_value == CTOKEN_ERR_CLAIM_NOT_PRESENT) {
         /* There is no submods section */
         return_value = CTOKEN_ERR_SUBMOD_NOT_FOUND;
         goto Done;
@@ -942,7 +941,7 @@ ctoken_decode_enter_named_submod(struct ctoken_decode_ctx *me,
     QCBORItem             item;
 
     return_value = enter_submod_section(me);
-    if(return_value == CTOKEN_ERR_NO_MORE_CLAIMS) {
+    if(return_value == CTOKEN_ERR_CLAIM_NOT_PRESENT) {
         /* There is no submods section */
         return_value = CTOKEN_ERR_SUBMOD_NOT_FOUND;
         goto Done;
@@ -1086,12 +1085,12 @@ ctoken_decode_get_named_nested_token(struct ctoken_decode_ctx *me,
     }
 
 
-     search[0].uLabelType   = QCBOR_TYPE_TEXT_STRING;
-     search[0].label.string = submod_name;
-     search[0].uDataType    = QCBOR_TYPE_ANY;
-     search[1].uLabelType   = QCBOR_TYPE_NONE; /* Indicates end of array */
+    search[0].uLabelType   = QCBOR_TYPE_TEXT_STRING;
+    search[0].label.string = submod_name;
+    search[0].uDataType    = QCBOR_TYPE_ANY;
+    search[1].uLabelType   = QCBOR_TYPE_NONE; /* Indicates end of array */
 
-     QCBORDecode_GetItemsInMap(&(me->qcbor_decode_context), search);
+    QCBORDecode_GetItemsInMap(&(me->qcbor_decode_context), search);
     /*  QCBOR error checked in ctoken_decode_submod_token() */
 
     return_value = ctoken_decode_nested_token(me, &search[0], type, token);
@@ -1118,27 +1117,26 @@ ctoken_decode_get_nth_nested_token(struct ctoken_decode_ctx *me,
 {
     QCBORItem         item;
     enum ctoken_err_t return_value;
+    enum ctoken_err_t return_value2;
     uint32_t          returned_index;
 
     return_value = enter_submod_section(me);
     if(return_value == CTOKEN_ERR_CLAIM_NOT_PRESENT) {
         return_value = CTOKEN_ERR_SUBMOD_NOT_FOUND;
-        goto Done;
+        goto Done2;
     }
     if(return_value != CTOKEN_ERR_SUCCESS) {
-        goto Done;
+        goto Done2;
     }
 
 
     return_value = ctoken_decode_to_nth_submod(me, submod_index, &returned_index);
     if(return_value != CTOKEN_ERR_SUCCESS) {
-        leave_submod_section(me);
         goto Done;
     }
 
     if(returned_index != submod_index) {
         return_value = CTOKEN_ERR_SUBMOD_NOT_FOUND;
-        leave_submod_section(me);
         goto Done;
     }
 
@@ -1153,9 +1151,13 @@ ctoken_decode_get_nth_nested_token(struct ctoken_decode_ctx *me,
     /* label type was checked in ctoken_decode_nested_token(). */
     *name = item.label.string;
 
-    return_value = leave_submod_section(me);
-
 Done:
+    return_value2 = leave_submod_section(me);
+    if(return_value == CTOKEN_ERR_SUCCESS) {
+        return_value = return_value2;
+    }
+
+Done2:
     return return_value;
 }
 
