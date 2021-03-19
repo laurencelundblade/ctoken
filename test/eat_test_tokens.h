@@ -8,6 +8,11 @@ extern const char completely_empty_token[];
 #define completely_empty_SIZE 1
 
 
+/* Ten levels of submodules with a distinct nonce at each level */
+extern const char deeply_nested_submods_token[];
+#define deeply_nested_submods_SIZE 126
+
+
 /* This has a submod section with two simple submodules */
 /* One is empty and the other is a nested JSON token */
 extern const char minimal_submod_token[];

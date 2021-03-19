@@ -596,7 +596,7 @@ int32_t submods_encode_errors_test(void)
      }
 
      result = ctoken_encode_finish(&encode_ctx, &completed_token);
-     if(result != CTOKEN_ERR_SUBMOD_NESTING_TOO_DEEP) {
+     if(result != CTOKEN_ERR_NESTING_TOO_DEEP) {
          return 1400 + (int32_t)result;
      }
 
@@ -886,6 +886,9 @@ int32_t submod_decode_errors_test()
     const struct decode_submod_test_config *test_case = tt;
 
     while(!q_useful_buf_c_is_null(test_case->token)) {
+        if(test_case->test_number == 2) {
+            test_result = 44; // just for a break point
+        }
         test_result = one_decode_errors_test_case(test_case);
         if(test_result) {
             return test_result;
@@ -893,11 +896,47 @@ int32_t submod_decode_errors_test()
         test_case++;
     }
 
-
     ctoken_decode_init(&decode_context,
                        T_COSE_OPT_ALLOW_SHORT_CIRCUIT,
                        0,
                        CTOKEN_PROTECTION_NONE);
+
+    ctoken_result = ctoken_decode_validate_token(&decode_context, TUB(deeply_nested_submods));
+    if(ctoken_result) {
+        return 100 + (int32_t)ctoken_result;
+    }
+
+    struct q_useful_buf_c nonce;
+    ctoken_result = ctoken_decode_nonce(&decode_context, &nonce);
+
+    if(ctoken_result != CTOKEN_ERR_NESTING_TOO_DEEP) {
+        return 888;
+    }
+
+#if 0
+    // Need better strategy to test this without triggering QCBOR's max nest dept
+    int i;
+    for(i = 0; i < 20; i++) {
+        struct q_useful_buf_c nonce;
+        struct q_useful_buf_c name;
+        ctoken_result = ctoken_decode_nonce(&decode_context, &nonce);
+        if(ctoken_result) {
+            break;
+        }
+        if(*(uint8_t *)nonce.ptr != 0) {
+            return 2;
+        }
+        ctoken_result = ctoken_decode_enter_nth_submod(&decode_context, 0, &name);
+        if(ctoken_result) {
+            break;
+        }
+    }
+
+    if(i != 5) {
+        return 77;
+    }
+#endif
+
 
     ctoken_result = ctoken_decode_validate_token(&decode_context, TUB(some_submods));
     if(ctoken_result) {

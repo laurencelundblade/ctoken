@@ -102,8 +102,10 @@ enum ctoken_err_t {
     /** SW Compoments absence not correctly indicated. */
     CTOKEN_ERR_SW_COMPONENTS_MISSING = 17,
 
-    /** Trying to nest more than \ref CTOKEN_MAX_SUBMOD_NESTING. */
-    CTOKEN_ERR_SUBMOD_NESTING_TOO_DEEP = 18,
+    /** Trying to nest more than \ref CTOKEN_MAX_SUBMOD_NESTING or the
+     * nesting of some claim is deeper than \c QCBOR_MAX_ARRAY_NESTING.
+     */
+    CTOKEN_ERR_NESTING_TOO_DEEP = 18,
 
     /** Trying to close a submod with no submods open. */
     CTOKEN_ERR_NO_SUBMOD_OPEN = 19,

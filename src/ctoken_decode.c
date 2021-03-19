@@ -82,6 +82,8 @@ static enum ctoken_err_t get_and_reset_error(QCBORDecodeContext *decode_context)
         return CTOKEN_ERR_CBOR_TYPE;
     } else if(cbor_error == QCBOR_ERR_DUPLICATE_LABEL) {
         return CTOKEN_ERR_DUPLICATE_LABEL;
+    } else if(cbor_error == QCBOR_ERR_ARRAY_DECODE_NESTING_TOO_DEEP) {
+        return CTOKEN_ERR_NESTING_TOO_DEEP;
     } else if(cbor_error) {
         return CTOKEN_ERR_CBOR_DECODE;
     } else {
@@ -712,7 +714,7 @@ enter_submod_section(struct ctoken_decode_ctx *me)
     enum ctoken_err_t return_value;
 
     if(me->in_submods >= CTOKEN_MAX_SUBMOD_NESTING) {
-        return CTOKEN_ERR_SUBMOD_NESTING_TOO_DEEP;
+        return CTOKEN_ERR_NESTING_TOO_DEEP;
     }
     QCBORDecode_EnterMapFromMapN(&(me->qcbor_decode_context),
                                  CTOKEN_EAT_LABEL_SUBMODS);
