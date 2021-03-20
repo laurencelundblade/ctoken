@@ -712,6 +712,8 @@ struct decode_submod_test_config {
     enum ctoken_err_t expected_enter_1st;
     enum ctoken_err_t expected_exit_1st;
     enum ctoken_err_t expected_nested_1st;
+    enum ctoken_err_t expected_enter_2nd;
+    enum ctoken_err_t expected_nested_2nd;
 };
 
 static const struct decode_submod_test_config tt[] = {
@@ -728,6 +730,8 @@ static const struct decode_submod_test_config tt[] = {
         CTOKEN_ERR_SUBMOD_NOT_FOUND, /* expected_enter_1st */
         0, /* expected_exit_1st */
         CTOKEN_ERR_SUBMOD_NOT_FOUND, /* expected_nested_1st */
+        CTOKEN_ERR_SUBMOD_NOT_FOUND, /* expected_enter_2nd */
+        CTOKEN_ERR_SUBMOD_NOT_FOUND, /* expected_nested_2nd */
    },
 
     {
@@ -743,6 +747,8 @@ static const struct decode_submod_test_config tt[] = {
         CTOKEN_ERR_CBOR_NOT_WELL_FORMED, /* expected_enter_1st */
         0, /* expected_exit_1st */
         CTOKEN_ERR_CBOR_NOT_WELL_FORMED, /* expected_nested_1st */
+        CTOKEN_ERR_CBOR_NOT_WELL_FORMED, /* expected_enter_2nd */
+        CTOKEN_ERR_CBOR_NOT_WELL_FORMED, /* expected_nested_2nd */
     },
 
     {
@@ -758,10 +764,30 @@ static const struct decode_submod_test_config tt[] = {
         CTOKEN_ERR_SUBMOD_IS_A_TOKEN, /* expected_enter_1st */
         CTOKEN_ERR_SUCCESS, /* expected_exit_1st */
         CTOKEN_ERR_SUCCESS, /* expected_nested_1st */
+        CTOKEN_ERR_SUBMOD_NOT_FOUND, /* expected_enter_2nd */
+        CTOKEN_ERR_SUBMOD_NOT_FOUND, /* expected_nested_2nd */
     },
 
     {
-        1,
+        4,
+        {non_string_label_submod_token, non_string_label_submod_SIZE},
+        CTOKEN_ERR_SUBMOD_NAME_NOT_A_TEXT_STRING, /* expected_enter_0th */
+        0, /* expected_exit_0th */
+        CTOKEN_ERR_SUBMOD_NAME_NOT_A_TEXT_STRING, /* expected_nested_0th */
+        CTOKEN_ERR_SUBMOD_NOT_FOUND, /* expected_enter_named */
+        0, /* expected_exit_named */
+        CTOKEN_ERR_SUBMOD_NOT_FOUND, /* expected_named_nested */
+        CTOKEN_ERR_SUCCESS, /* expected_validate */
+        CTOKEN_ERR_SUBMOD_NAME_NOT_A_TEXT_STRING, /* expected_enter_1st */
+        0, /* expected_exit_1st */
+        CTOKEN_ERR_SUBMOD_NAME_NOT_A_TEXT_STRING, /* expected_nested_1st */
+        CTOKEN_ERR_SUBMOD_NOT_FOUND, /* expected_enter_2nd */
+        CTOKEN_ERR_SUBMOD_NOT_FOUND, /* expected_nested_2nd */
+    },
+
+
+    {
+        UINT32_MAX,
         NULL_Q_USEFUL_BUF_C,
         0, /* expected_enter_0th */
         0, /* expected_exit_0th */
@@ -862,6 +888,18 @@ int32_t one_decode_errors_test_case(const struct decode_submod_test_config *t)
         return test_result_code(9, t->test_number, ctoken_result);
     }
 
+    /* Never more than two submodules, so this always fails */
+    ctoken_result = ctoken_decode_enter_nth_submod(&decode_context, 2, &name);
+    if(ctoken_result != t->expected_enter_2nd) {
+        return test_result_code(10, t->test_number, ctoken_result);
+    }
+
+    /* Never more than two submodules, so this always fails */
+    ctoken_result = ctoken_decode_get_nth_nested_token(&decode_context, 2, &nested_token_type, &name, &token);
+    if(ctoken_result != t->expected_nested_2nd) {
+        return test_result_code(11, t->test_number, ctoken_result);
+    }
+
     return 0;
 }
 
@@ -876,7 +914,6 @@ int32_t submod_decode_errors_test()
     enum ctoken_err_t         ctoken_result;
     enum ctoken_type_t        type;
     struct q_useful_buf_c     token;
-    struct q_useful_buf_c     name;
     UsefulBuf_MAKE_STACK_UB(  out, 400);
     uint32_t                  num_submods;
     uint64_t                  uptime;
@@ -886,7 +923,7 @@ int32_t submod_decode_errors_test()
     const struct decode_submod_test_config *test_case = tt;
 
     while(!q_useful_buf_c_is_null(test_case->token)) {
-        if(test_case->test_number == 2) {
+        if(test_case->test_number == 3) {
             test_result = 44; // just for a break point
         }
         test_result = one_decode_errors_test_case(test_case);
@@ -943,34 +980,6 @@ int32_t submod_decode_errors_test()
         return 100 + (int32_t)ctoken_result;
     }
 
-    /* Try to enter a named submod that doesn't exist */
-    ctoken_result = ctoken_decode_enter_named_submod(&decode_context, "foobar");
-    if(ctoken_result != CTOKEN_ERR_SUBMOD_NOT_FOUND) {
-        return 200 + (int32_t)ctoken_result;
-    }
-
-    /* Try to enter a submod by index that doesn't exist */
-    ctoken_result = ctoken_decode_enter_nth_submod(&decode_context, 6, &name);
-    if(ctoken_result != CTOKEN_ERR_SUBMOD_NOT_FOUND) {
-        return 300 + (int32_t)ctoken_result;
-    }
-
-    /* Try to get a nested token by index that doesn't exist */
-    ctoken_result = ctoken_decode_get_nth_nested_token(&decode_context, 6, &type, &name, &token);
-    if(ctoken_result != CTOKEN_ERR_SUBMOD_NOT_FOUND) {
-        return 400 + (int32_t)ctoken_result;
-    }
-
-    /* Try to get a named nested token that doesn't exist */
-    ctoken_result = ctoken_decode_get_named_nested_token(&decode_context,
-                                                         Q_USEFUL_BUF_FROM_SZ_LITERAL("foobar"),
-                                                         &type,
-                                                         &token);
-    if(ctoken_result != CTOKEN_ERR_SUBMOD_NOT_FOUND) {
-        return 500 + (int32_t)ctoken_result;
-    }
-
-
     /* Make a token with some bad submodules for tests below and validate it */
     sign_cbor(UsefulBuf_FROM_BYTE_ARRAY_LITERAL(some_bad_submods), out, &token);
     ctoken_decode_init(&decode_context,
@@ -1007,12 +1016,6 @@ int32_t submod_decode_errors_test()
     ctoken_result = ctoken_decode_exit_submod(&decode_context);
     if(ctoken_result != CTOKEN_ERR_SUCCESS) {
         return 1000 + (int32_t)ctoken_result;
-    }
-
-    /* Try to enter submodule with an integer name and fail */
-    ctoken_result = ctoken_decode_enter_nth_submod(&decode_context, 1, &name);
-    if(ctoken_result != CTOKEN_ERR_SUBMOD_NAME_NOT_A_TEXT_STRING) {
-        return 1100 + (int32_t)ctoken_result;
     }
 
     /* Enter a submodule with some more bad stuff and succeed */

@@ -19,6 +19,12 @@ extern const char minimal_submod_token[];
 #define minimal_submod_SIZE 34
 
 
+/* This has a submod section with two simple submodules */
+/* One is empty and the other is a nested JSON token */
+extern const char non_string_label_submod_token[];
+#define non_string_label_submod_SIZE 28
+
+
 extern const char not_well_formed_submod[] ;
 #define not_well_formed_submod_SIZE       36
 

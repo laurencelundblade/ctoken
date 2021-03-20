@@ -54,7 +54,7 @@ void ctoken_decode_init(struct ctoken_decode_ctx *me,
     me->actual_protection_type = CTOKEN_PROTECTION_UNKNOWN;
 
 
-    /* Always initialize, even if we turn out not to use COSE */
+    /* It is simpler to always initialize, even if t_cose is not needed */
     t_cose_sign1_verify_init(&(me->verify_context), t_cose_options);
 }
 
@@ -877,12 +877,21 @@ ctoken_decode_enter_nth_submod(struct ctoken_decode_ctx *me,
      * cursor forward. Rewind is another possibility.
      */
     cbor_error = QCBORDecode_PeekNext(&(me->qcbor_decode_context), &item);
+    if(cbor_error == QCBOR_ERR_NO_MORE_ITEMS) {
+        return_value = CTOKEN_ERR_SUBMOD_NOT_FOUND;
+        goto Done;
+    }
     if(cbor_error != QCBOR_SUCCESS) {
         /* Because QCBORDecode_PeekNext() does not set the last
          * error, get_and_reset_error() can't be used here. For
          * now error mapping is more crude than it should be.
          */
          return_value = CTOKEN_ERR_CBOR_DECODE;
+        goto Done;
+    }
+
+    if(item.uLabelType != QCBOR_TYPE_TEXT_STRING) {
+        return_value = CTOKEN_ERR_SUBMOD_NAME_NOT_A_TEXT_STRING;
         goto Done;
     }
 
@@ -912,13 +921,8 @@ ctoken_decode_enter_nth_submod(struct ctoken_decode_ctx *me,
         goto Done;
     }
 
-    if(item.uLabelType != QCBOR_TYPE_TEXT_STRING) {
-        return_value = CTOKEN_ERR_SUBMOD_NAME_NOT_A_TEXT_STRING;
-        QCBORDecode_ExitMap(&(me->qcbor_decode_context));
-        goto Done;
-    }
-
     if(name != NULL) {
+        /* Label type was checked above */
         *name = item.label.string;
     }
 
@@ -1029,7 +1033,8 @@ ctoken_decode_nested_token(struct ctoken_decode_ctx  *me,
 
     return_value = get_and_reset_error(&(me->qcbor_decode_context));
 
-    if(return_value == CTOKEN_ERR_CLAIM_NOT_PRESENT) {
+    if(return_value == CTOKEN_ERR_CLAIM_NOT_PRESENT ||
+       return_value == CTOKEN_ERR_NO_MORE_CLAIMS) {
         return_value = CTOKEN_ERR_SUBMOD_NOT_FOUND;
         goto Done;
     }
@@ -1043,7 +1048,7 @@ ctoken_decode_nested_token(struct ctoken_decode_ctx  *me,
     }
 
     if(item->uLabelType != QCBOR_TYPE_TEXT_STRING) {
-        return_value = CTOKEN_ERR_SUBMOD_TYPE;
+        return_value = CTOKEN_ERR_SUBMOD_NAME_NOT_A_TEXT_STRING;
         goto Done;
     }
 
