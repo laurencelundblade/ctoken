@@ -908,7 +908,7 @@ ctoken_decode_enter_nth_submod(struct ctoken_decode_ctx *me,
         /* It's not a map type (and not a string) so it is an
          * error of the wrong CBOR type
          */
-        return_value = CTOKEN_ERR_CBOR_TYPE;
+        return_value = CTOKEN_ERR_SUBMOD_TYPE;
         goto Done;
     }
 
@@ -986,7 +986,7 @@ ctoken_decode_enter_named_submod(struct ctoken_decode_ctx *me,
             /* Tell the caller they called the wrong function to get this */
             return_value = CTOKEN_ERR_SUBMOD_IS_A_TOKEN;
         } else {
-            return_value = CTOKEN_ERR_CBOR_TYPE;
+            return_value = CTOKEN_ERR_SUBMOD_TYPE;
         }
     }
 

@@ -13,6 +13,11 @@ extern const char deeply_nested_submods_token[];
 #define deeply_nested_submods_SIZE 126
 
 
+/* An empty submodule (which is of course legal) */
+extern const char empty_submod_token[];
+#define empty_submod_SIZE 11
+
+
 /* This has a submod section with two simple submodules */
 /* One is empty and the other is a nested JSON token */
 extern const char minimal_submod_token[];
@@ -35,5 +40,10 @@ extern const char not_well_formed_submod_section[] ;
 
 extern const char some_submods_token[];
 #define some_submods_SIZE 82
+
+
+/* A submod is incorrectly an array, rather than a map */
+extern const char submod_is_array_token[];
+#define submod_is_array_SIZE 11
 
 
