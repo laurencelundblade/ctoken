@@ -59,7 +59,8 @@ C_OPTS=-Os -fPIC
 
 # ---- T_COSE Config and test options ----
 TEST_CONFIG_OPTS=
-TEST_OBJ=test/eat_test.o test/cwt_test.o test/psaia_test.o test/run_tests.o
+TEST_OBJ=test/eat_test.o test/cwt_test.o test/psaia_test.o test/run_tests.o \
+            test/eat_test_tokens.o
 
 
 # ---- the main body that is invariant ----

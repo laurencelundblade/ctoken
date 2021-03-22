@@ -13,6 +13,10 @@ extern const char deeply_nested_submods_token[];
 #define deeply_nested_submods_SIZE 126
 
 
+extern const unsigned char dup_sumods_token[] ;
+#define dup_submods_SIZE       69
+
+
 /* An empty submodule (which is of course legal) */
 extern const char empty_submod_token[];
 #define empty_submod_SIZE 11
@@ -42,8 +46,8 @@ extern const char some_submods_token[];
 #define some_submods_SIZE 82
 
 
-/* A submod is incorrectly an array, rather than a map */
+/* Both types of submod is incorrectly an array, rather than a map and string */
 extern const char submod_is_array_token[];
-#define submod_is_array_SIZE 11
+#define submod_is_array_SIZE 19
 
 

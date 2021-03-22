@@ -768,6 +768,9 @@ leave_submod_section(struct ctoken_decode_ctx *me)
  less than submod_index in the submod section and the call
  is not a success unless the objective was to count the
  number of submods.
+
+ This does not check for duplicate labels. It should to validate the
+ CBOR thoroughly. Improvement: check for duplicate labels.
  */
 
 static enum ctoken_err_t
@@ -912,11 +915,17 @@ ctoken_decode_enter_nth_submod(struct ctoken_decode_ctx *me,
         goto Done;
     }
 
-    /* At this point the data item is known to be a map */
+    /* At this point the data item is known to be a map and
+     * that the rest will succeed. */
 
     QCBORDecode_EnterMap(&(me->qcbor_decode_context), &item);
     return_value = get_and_reset_error(&(me->qcbor_decode_context));
     if(return_value == CTOKEN_ERR_CLAIM_NOT_PRESENT) {
+        /* This should never happen because the QCBORDecode_PeekNext()
+         * succeeded.
+         */
+        // TODO: set a break point here and see it never is hit when
+        // all tests are implemented.
         return_value = CTOKEN_ERR_SUBMOD_NOT_FOUND;
         goto Done;
     }
