@@ -1066,10 +1066,20 @@ ctoken_decode_rewind(struct ctoken_decode_ctx   *context);
 /**
  * \brief Get the number of submodules.
  *
- * \param[in] context         The decoding context.
- * \param[out] num_submods     The returned number of submodules.
+ * \param[in] context        The decoding context.
+ * \param[out] num_submods   The returned number of submodules.
  *
- * \returns A ctoken error code in malformed or invalid input.
+ * \retval CTOKEN_ERR_SUCCESS           The submodule section exists and its
+ *                                      content was counted.
+ *
+ * \retval CTOKEN_ERR_NESTING_TOO_DEEP  The submodule and claim nesting
+ *                                      is deeper than either QCBOR or
+ *                                      ctoken can handle.
+ *
+ * \retval CTOKEN_ERR_XXX               Other errors usually indicate
+ *                                      the submodule or submodules
+ *                                      sections are malformed or
+ *                                      invalid.
  *
  * This returns the number of submodules at the current submodule
  * nesting level. If there is no submodules section or it is

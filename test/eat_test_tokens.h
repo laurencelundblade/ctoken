@@ -14,7 +14,7 @@ extern const char deeply_nested_submods_token[];
 
 
 extern const unsigned char dup_sumods_token[] ;
-#define dup_submods_SIZE       69
+#define dup_submods_SIZE       73
 
 
 /* An empty submodule (which is of course legal) */
@@ -25,7 +25,7 @@ extern const char empty_submod_token[];
 /* This has a submod section with two simple submodules */
 /* One is empty and the other is a nested JSON token */
 extern const char minimal_submod_token[];
-#define minimal_submod_SIZE 34
+#define minimal_submod_SIZE 40
 
 
 /* This has a submod section with two simple submodules */
