@@ -936,11 +936,17 @@ int32_t submod_decode_errors_test()
     struct ctoken_decode_ctx  decode_context;
     enum ctoken_err_t         ctoken_result;
     int32_t                   test_result;
+    const struct decode_submod_test_config *test_case;
+    int                       nest_level;
+    struct q_useful_buf_c     nonce;
+    struct q_useful_buf_c     name;
+    struct q_useful_buf_c     token;
+    enum ctoken_type_t        type;
+    uint32_t                  num;
 
-    const struct decode_submod_test_config *test_case = tt;
 
-
-    while(!q_useful_buf_c_is_null(test_case->token)) {
+    /* Big test over a set of input tests cases */
+    for(test_case =tt; !q_useful_buf_c_is_null(test_case->token); test_case++) {
         if(test_case->test_number == 8) {
             test_result = 99;
         }
@@ -948,9 +954,9 @@ int32_t submod_decode_errors_test()
         if(test_result) {
             return test_result;
         }
-        test_case++;
     }
 
+    /* Test decoding of a deeply nested token */
     ctoken_decode_init(&decode_context,
                        T_COSE_OPT_ALLOW_SHORT_CIRCUIT,
                        0,
@@ -961,22 +967,14 @@ int32_t submod_decode_errors_test()
         return test_result_code(20, 0, ctoken_result);
     }
 
-    int i;
-    for(i = 0; i < 20; i++) {
-        struct q_useful_buf_c nonce;
-        struct q_useful_buf_c name;
-        struct q_useful_buf_c token;
-        enum ctoken_type_t    type;
-        uint32_t              num;
-
-
+    for(nest_level = 0; nest_level < 20; nest_level++) {
         ctoken_result = ctoken_decode_nonce(&decode_context, &nonce);
         if(ctoken_result) {
             break;
         }
         /* The token was made so the first byte of the nonce matched the level */
-        if(*(uint8_t *)nonce.ptr != i) {
-            return test_result_code(21, i, 0);
+        if(*(uint8_t *)nonce.ptr != nest_level) {
+            return test_result_code(21, nest_level, 0);
 
         }
 
@@ -987,16 +985,17 @@ int32_t submod_decode_errors_test()
 
         ctoken_result = ctoken_decode_get_nth_nested_token(&decode_context, 1, &type, &name, &token);
         if(ctoken_result) {
-            return test_result_code(22, i, ctoken_result);
+            return test_result_code(22, nest_level, ctoken_result);
         }
 
         ctoken_result = ctoken_decode_enter_nth_submod(&decode_context, 0, &name);
         if(ctoken_result) {
-            return test_result_code(23, i, ctoken_result);
+            return test_result_code(23, nest_level, ctoken_result);
         }
     }
 
 
+    /* Try calling exit without entering */
     ctoken_result = ctoken_decode_validate_token(&decode_context, TUB(deeply_nested_submods));
     if(ctoken_result) {
         return test_result_code(25, 0, ctoken_result);
@@ -1005,6 +1004,27 @@ int32_t submod_decode_errors_test()
     if(ctoken_result != CTOKEN_ERR_NO_SUBMOD_OPEN) {
         return test_result_code(25, 0, ctoken_result);
     }
+
+
+    /* Trigger an unusual error ctoken_decode_exit_submod */
+    ctoken_result = ctoken_decode_validate_token(&decode_context, TUB(deeply_nested_submods));
+    if(ctoken_result) {
+        return test_result_code(25, 0, ctoken_result);
+    }
+    ctoken_result = ctoken_decode_enter_nth_submod(&decode_context, 0, &name);
+    /* Exit map prematurely to cause error condition inside
+     * ctoken_decode_exit_submod(). These three all succeed and undo
+     * entry into the submod, the submod section and the UCCS.
+     */
+    QCBORDecode_ExitMap(&(decode_context.qcbor_decode_context));
+    QCBORDecode_ExitMap(&(decode_context.qcbor_decode_context));
+    QCBORDecode_ExitMap(&(decode_context.qcbor_decode_context));
+
+    ctoken_result = ctoken_decode_exit_submod(&decode_context);
+    if(ctoken_result != CTOKEN_ERR_CBOR_DECODE) {
+        return test_result_code(25, 0, ctoken_result);
+    }
+
     return 0;
 }
 

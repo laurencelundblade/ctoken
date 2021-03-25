@@ -971,15 +971,13 @@ ctoken_decode_enter_named_submod(struct ctoken_decode_ctx *me,
     }
 
 
+    /* Try to enter has a map */
     QCBORDecode_EnterMapFromMapSZ(&(me->qcbor_decode_context), name);
-
     return_value = get_and_reset_error(&(me->qcbor_decode_context));
-    
     if(return_value == CTOKEN_ERR_CLAIM_NOT_PRESENT) {
         return_value = CTOKEN_ERR_SUBMOD_NOT_FOUND;
         goto Done;
     }
-
     if(return_value != CTOKEN_ERR_SUCCESS && return_value != CTOKEN_ERR_CBOR_TYPE) {
         /* Clearly an error with malformed or invalid input */
         goto Done;
@@ -990,8 +988,9 @@ ctoken_decode_enter_named_submod(struct ctoken_decode_ctx *me,
         QCBORDecode_GetItemInMapSZ(&(me->qcbor_decode_context), name, QCBOR_TYPE_ANY, &item);
         return_value = get_and_reset_error(&(me->qcbor_decode_context));
         if(return_value != CTOKEN_ERR_SUCCESS) {
-            /* Clearly an error with malformed or invalid input */
-            // TODO: create a test that errors our here
+            /* An error with malformed or invalid input. Error probably
+             * always occurs in attempt to enter as a map above rather
+             * than here. */
             goto Done;
         }
 
@@ -1024,7 +1023,6 @@ ctoken_decode_exit_submod(struct ctoken_decode_ctx *me)
     QCBORDecode_ExitMap(&(me->qcbor_decode_context));
     return_value = get_and_reset_error(&(me->qcbor_decode_context));
     if(return_value != CTOKEN_ERR_SUCCESS) {
-        // TODO: create a test case that fails here
         goto Done;
     }
 
