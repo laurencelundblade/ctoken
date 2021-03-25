@@ -928,8 +928,6 @@ ctoken_decode_enter_nth_submod(struct ctoken_decode_ctx *me,
         /* This should never happen because the QCBORDecode_PeekNext()
          * succeeded.
          */
-        // TODO: set a break point here and see it never is hit when
-        // all tests are implemented.
         return_value = CTOKEN_ERR_SUBMOD_NOT_FOUND;
         goto Done;
     }

@@ -645,7 +645,7 @@ struct decode_submod_test_config {
     uint32_t expected_num_submods; // UINT32_MAX means don't check
 };
 
-static const struct decode_submod_test_config tt[] = {
+static const struct decode_submod_test_config submod_test_inputs[] = {
     {
         1,
         {completely_empty_token, completely_empty_SIZE},
@@ -936,17 +936,17 @@ int32_t submod_decode_errors_test()
     struct ctoken_decode_ctx  decode_context;
     enum ctoken_err_t         ctoken_result;
     int32_t                   test_result;
-    const struct decode_submod_test_config *test_case;
     int                       nest_level;
     struct q_useful_buf_c     nonce;
     struct q_useful_buf_c     name;
     struct q_useful_buf_c     token;
     enum ctoken_type_t        type;
     uint32_t                  num;
+    const struct decode_submod_test_config *test_case;
 
 
     /* Big test over a set of input tests cases */
-    for(test_case =tt; !q_useful_buf_c_is_null(test_case->token); test_case++) {
+    for(test_case =submod_test_inputs; !q_useful_buf_c_is_null(test_case->token); test_case++) {
         if(test_case->test_number == 8) {
             test_result = 99;
         }
@@ -975,7 +975,6 @@ int32_t submod_decode_errors_test()
         /* The token was made so the first byte of the nonce matched the level */
         if(*(uint8_t *)nonce.ptr != nest_level) {
             return test_result_code(21, nest_level, 0);
-
         }
 
         ctoken_result = ctoken_decode_get_num_submods(&decode_context, &num);
