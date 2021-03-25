@@ -347,7 +347,7 @@ ctoken_decode_validate_token(struct ctoken_decode_ctx *me,
         goto Done;
     }
 
-    /* Copy the tags not processed so they are available to caller and do
+    /* Copy the tags not processed so they are available to caller and do a
      * check on innermost tag */
     item_tag_index = 0;
     for(returned_tag_index = 0; returned_tag_index < CTOKEN_MAX_TAGS_TO_RETURN; returned_tag_index++) {
@@ -378,6 +378,8 @@ ctoken_decode_validate_token(struct ctoken_decode_ctx *me,
        that holds all the claims */
     QCBORDecode_EnterMap(&(me->qcbor_decode_context), NULL);
     return_value = get_and_reset_error(&(me->qcbor_decode_context));
+
+    me->in_submods = 0;
 
 Done:
     me->last_error = return_value;
@@ -817,6 +819,7 @@ ctoken_decode_get_num_submods(struct ctoken_decode_ctx *me,
                               uint32_t                 *num_submods)
 {
     enum ctoken_err_t return_value;
+    enum ctoken_err_t return_value2;
 
     return_value = enter_submod_section(me);
     if(return_value == CTOKEN_ERR_CLAIM_NOT_PRESENT) {
@@ -829,11 +832,11 @@ ctoken_decode_get_num_submods(struct ctoken_decode_ctx *me,
     }
 
     return_value = ctoken_decode_to_nth_submod(me, UINT32_MAX, num_submods);
-    if(return_value != CTOKEN_ERR_SUCCESS) {
-        goto Done;
-    }
 
-    return_value = leave_submod_section(me);
+    return_value2 = leave_submod_section(me);
+    if(return_value == CTOKEN_ERR_SUCCESS) {
+        return_value = return_value2;
+    }
 
 Done:
     return return_value;
@@ -877,7 +880,8 @@ ctoken_decode_enter_nth_submod(struct ctoken_decode_ctx *me,
 
     /* Peek uses a lot of stack space, but is necessary
      * because attempting to get the next item will move the
-     * cursor forward. Rewind is another possibility.
+     * cursor forward. Maybe this could be rewritten using rewind
+     * to avoid the stack use.
      */
     cbor_error = QCBORDecode_PeekNext(&(me->qcbor_decode_context), &item);
     if(cbor_error == QCBOR_ERR_NO_MORE_ITEMS) {
@@ -987,6 +991,7 @@ ctoken_decode_enter_named_submod(struct ctoken_decode_ctx *me,
         return_value = get_and_reset_error(&(me->qcbor_decode_context));
         if(return_value != CTOKEN_ERR_SUCCESS) {
             /* Clearly an error with malformed or invalid input */
+            // TODO: create a test that errors our here
             goto Done;
         }
 
@@ -1019,6 +1024,7 @@ ctoken_decode_exit_submod(struct ctoken_decode_ctx *me)
     QCBORDecode_ExitMap(&(me->qcbor_decode_context));
     return_value = get_and_reset_error(&(me->qcbor_decode_context));
     if(return_value != CTOKEN_ERR_SUCCESS) {
+        // TODO: create a test case that fails here
         goto Done;
     }
 

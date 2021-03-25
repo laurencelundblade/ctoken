@@ -8,9 +8,15 @@ extern const char completely_empty_token[];
 #define completely_empty_SIZE 1
 
 
-/* Ten levels of submodules with a distinct nonce at each level */
+/* Five nested levels of submodules with a distinct nonce at each level. */
+/* Each level also has a nested token. TODO: make the nested tokens real */
+/* A good test to perform on this is to traverse the whole tree getting */
+/* the nonces and the nested tokens and validating their values. */
+/* Note that nested tokens must be signed. They can't be UCCS per */
+/* the EAT standard, so when this is filled in they will be larger */
+/* and not so straight forward to validate */
 extern const char deeply_nested_submods_token[];
-#define deeply_nested_submods_SIZE 126
+#define deeply_nested_submods_SIZE 130
 
 
 extern const unsigned char dup_sumods_token[] ;
@@ -35,7 +41,7 @@ extern const char non_string_label_submod_token[];
 
 
 extern const char not_well_formed_submod[] ;
-#define not_well_formed_submod_SIZE       36
+#define not_well_formed_submod_SIZE       11
 
 
 extern const char not_well_formed_submod_section[] ;

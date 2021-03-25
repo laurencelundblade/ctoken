@@ -780,6 +780,25 @@ static const struct decode_submod_test_config tt[] = {
     },
 
     {
+        8,
+        {not_well_formed_submod, not_well_formed_submod_SIZE},
+        CTOKEN_ERR_CBOR_NOT_WELL_FORMED,     /* expected_call_num_submods */
+        CTOKEN_ERR_CBOR_DECODE, /* expected_enter_0th */
+        CTOKEN_ERR_SUCCESS, /* expected_decode_nonce */
+        CTOKEN_ERR_SUCCESS, /* expected_exit_0th */
+        CTOKEN_ERR_CBOR_NOT_WELL_FORMED, /* expected_nested_0th */
+        CTOKEN_ERR_CBOR_NOT_WELL_FORMED, /* expected_enter_named */
+        0, /* expected_exit_named */
+        CTOKEN_ERR_SUBMOD_NOT_FOUND, /* expected_named_nested */
+        CTOKEN_ERR_CBOR_NOT_WELL_FORMED, /* expected_enter_1st */
+        0, /* expected_exit_1st */
+        CTOKEN_ERR_CBOR_NOT_WELL_FORMED, /* expected_nested_1st */
+        CTOKEN_ERR_CBOR_NOT_WELL_FORMED, /* expected_enter_2nd */
+        CTOKEN_ERR_CBOR_NOT_WELL_FORMED, /* expected_nested_2nd */
+        4
+    },
+
+    {
         UINT32_MAX,
         NULL_Q_USEFUL_BUF_C,
         0, /* expected_call_num_submods */
@@ -920,7 +939,11 @@ int32_t submod_decode_errors_test()
 
     const struct decode_submod_test_config *test_case = tt;
 
+
     while(!q_useful_buf_c_is_null(test_case->token)) {
+        if(test_case->test_number == 8) {
+            test_result = 99;
+        }
         test_result = one_decode_errors_test_case(test_case);
         if(test_result) {
             return test_result;
@@ -935,40 +958,53 @@ int32_t submod_decode_errors_test()
 
     ctoken_result = ctoken_decode_validate_token(&decode_context, TUB(deeply_nested_submods));
     if(ctoken_result) {
-        return 100 + (int32_t)ctoken_result;
+        return test_result_code(20, 0, ctoken_result);
     }
 
-    struct q_useful_buf_c nonce;
-    ctoken_result = ctoken_decode_nonce(&decode_context, &nonce);
-
-    if(ctoken_result != CTOKEN_ERR_NESTING_TOO_DEEP) {
-        return 888;
-    }
-
-#if 0
-    // Need better strategy to test this without triggering QCBOR's max nest dept
     int i;
     for(i = 0; i < 20; i++) {
         struct q_useful_buf_c nonce;
         struct q_useful_buf_c name;
+        struct q_useful_buf_c token;
+        enum ctoken_type_t    type;
+        uint32_t              num;
+
+
         ctoken_result = ctoken_decode_nonce(&decode_context, &nonce);
         if(ctoken_result) {
             break;
         }
-        if(*(uint8_t *)nonce.ptr != 0) {
-            return 2;
+        /* The token was made so the first byte of the nonce matched the level */
+        if(*(uint8_t *)nonce.ptr != i) {
+            return test_result_code(21, i, 0);
+
         }
-        ctoken_result = ctoken_decode_enter_nth_submod(&decode_context, 0, &name);
-        if(ctoken_result) {
+
+        ctoken_result = ctoken_decode_get_num_submods(&decode_context, &num);
+        if(num == 0) {
             break;
         }
+
+        ctoken_result = ctoken_decode_get_nth_nested_token(&decode_context, 1, &type, &name, &token);
+        if(ctoken_result) {
+            return test_result_code(22, i, ctoken_result);
+        }
+
+        ctoken_result = ctoken_decode_enter_nth_submod(&decode_context, 0, &name);
+        if(ctoken_result) {
+            return test_result_code(23, i, ctoken_result);
+        }
     }
 
-    if(i != 5) {
-        return 77;
-    }
-#endif
 
+    ctoken_result = ctoken_decode_validate_token(&decode_context, TUB(deeply_nested_submods));
+    if(ctoken_result) {
+        return test_result_code(25, 0, ctoken_result);
+    }
+    ctoken_result = ctoken_decode_exit_submod(&decode_context);
+    if(ctoken_result != CTOKEN_ERR_NO_SUBMOD_OPEN) {
+        return test_result_code(25, 0, ctoken_result);
+    }
     return 0;
 }
 
@@ -1229,7 +1265,7 @@ static const uint8_t expected_boot_and_debug[] = {
     0xD7, 0xA0, 0x68, 0x61};
 
 static const uint8_t bad_debug1[] = {
-0xa1, 0x3a, 0x00, 0x01, 0x28, 0xe7, 0x62, 0x68, 0x69
+    0xa1, 0x3a, 0x00, 0x01, 0x28, 0xe7, 0x62, 0x68, 0x69
 };
 
 static const uint8_t bad_debug2[] = {
@@ -1241,7 +1277,7 @@ static const uint8_t bad_debug3[] = {
 };
 
 static const uint8_t bad_secure_boot1[] = {
-    0xa1, 0x3a, 0x00, 0x01, 0x28, 0xe6, 0xf6
+    0xa1, 0x3a, 0x00, 0x01, 0x28, 0xe2, 0xf6
 };
 
 static const uint8_t bad_secure_boot2[] = {
