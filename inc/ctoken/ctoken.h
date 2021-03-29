@@ -135,8 +135,7 @@ enum ctoken_err_t {
     /** The submodule is a nested token and can't be entered. */
     CTOKEN_ERR_SUBMOD_IS_A_TOKEN = 26,
 
-    /** No submodule of the given name as found. */
-    //CTOKEN_NAMED_SUBMOD_NOT_FOUND = 27, // TODO: renumber around
+    // TODO: renumber so 27 is not skipped
 
     /** Claim is not present in the token */
     CTOKEN_ERR_CLAIM_NOT_PRESENT = 28,

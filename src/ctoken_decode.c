@@ -379,7 +379,7 @@ ctoken_decode_validate_token(struct ctoken_decode_ctx *me,
     QCBORDecode_EnterMap(&(me->qcbor_decode_context), NULL);
     return_value = get_and_reset_error(&(me->qcbor_decode_context));
 
-    me->in_submods = 0;
+    me->submod_nest_level = 0;
 
 Done:
     me->last_error = return_value;
@@ -697,36 +697,39 @@ Done:
 
 
 /**
- @brief Enter the map that is the submod section.
-
- @retval CTOKEN_SUCCESS  There is a submods section and it was entered
-
- @retval CTOKEN_ERR_SUBMOD_NESTING_TOO_DEEP Input is nested to deep to handle
-
- @retval CTOKEN_ERR_CLAIM_NOT_PRESENT There is no submods section
-
- @retval CTOKEN_ERR_CBOR_TYPE  There is a item with the correct label, but
-                               it is not of type map
-
- Other CTOKEN errors are also possible and usualy indicate the
- input is malformed, invalid or such.
-
- CToken decoding hides the existance of the submod section from the
- caller. The caller of the public API doesn't need to manage entering
- and exiting the submod section map.
-
- When the caller enters a submod that is not a nested token,
- the submod section map is entered and the map holding the submod
- claims is also entered. The QCBOR bounded decoding stays at that
- level until either the submod is exited or a deeper level submod
- is entered.
-
- When the caller fetches a nested token, the submod section map
- is entered, the nested token fetched and then the submod section
- map is exited.
-
- The nest-level tracker counts submod levels not map levels,
- so it doesn't count the submod section map.
+ * @brief Enter the map that is the submod section.
+ *
+ * @param[in] me            The token decode context
+ *
+ * @retval CTOKEN_SUCCESS        There is a submods section and it was entered.
+ *
+ * @retval CTOKEN_ERR_CBOR_TYPE  There is a item with the correct label, but
+ *                               it is not of type map.
+ *
+ * @retval CTOKEN_ERR_SUBMOD_NESTING_TOO_DEEP  Input is nested to deep to 
+ *                                             handle.
+ *
+ * @retval CTOKEN_ERR_CLAIM_NOT_PRESENT        There is no submods section.
+ *
+ * Other CTOKEN errors are also possible and usualy indicate the input
+ * is malformed, invalid or such.
+ *
+ * CToken decoding hides the existance of the submod section from the
+ * caller. The caller of the public API doesn't need to manage
+ * entering and exiting the submod section map.
+ *
+ * When the caller enters a submod that is not a nested token, the
+ * submod section map is entered and the map holding the submod claims
+ * is also entered. The QCBOR bounded decoding stays at that level
+ * until either the submod is exited or a deeper level submod is
+ * entered.
+ *
+ * When the caller fetches a nested token, the submod section map is
+ * entered, the nested token fetched and then the submod section map
+ * is exited.
+ *
+ * The nest-level tracker counts submod levels not map levels, so it
+ * doesn't count the submod section map.
  */
 static enum ctoken_err_t
 enter_submod_section(struct ctoken_decode_ctx *me)
@@ -756,32 +759,36 @@ leave_submod_section(struct ctoken_decode_ctx *me)
 {
     QCBORDecode_ExitMap(&(me->qcbor_decode_context));
 
-    return CTOKEN_ERR_SUCCESS;
+    return get_and_reset_error(&(me->qcbor_decode_context));
 }
 
 
 /**
-
- @returns CTOKEN_ERR_SUCCESS if got to the nth submod or hit the end of submods
-  section. Other errors indicate malformed or invalid submodules.
-
- Exit conditions are: found nth, got to the end, errored out.
-
- Other errors indicate the CBOR is malformed or invalid.
-
- If num_submods is equal to submod_index on return, then
- the traversal cursor is at the requested index and the
- call is a success.
-
- If num_submods is less than submod_index, then there are
- less than submod_index in the submod section and the call
- is not a success unless the objective was to count the
- number of submods.
-
- This does not check for duplicate labels. It should to validate the
- CBOR thoroughly. Improvement: check for duplicate labels.
+ * @brief Consume submodules to nth to get to nth or to count submodules
+ *
+ * @param[in] me            The token decode context
+ * @param[in] submod_index  Number to consume or UINT32_MAX to count
+ * @param[in] num_submods   Number of submods consumed
+ *
+ * @return  CTOKEN_ERR_SUCCESS if got to the nth submod or hit
+ *          the end of submods section. Other errors indicate
+ *          malformed or invalid submodules.
+ *
+ * Exit conditions are: found nth, got to the end, errored out.
+ *
+ * Other errors indicate the CBOR is malformed or invalid.
+ *
+ * If num_submods is equal to submod_index on return, then the
+ * traversal cursor is at the requested index and the call is a
+ * success.
+ *
+ * If num_submods is less than submod_index, then there are less than
+ * submod_index in the submod section and the call is not a success
+ * unless the objective was to count the number of submods.
+ *
+ * This does not check for duplicate labels. It should to validate the
+ * CBOR thoroughly. Improvement: check for duplicate labels.
  */
-
 static enum ctoken_err_t
 ctoken_decode_to_nth_submod(struct ctoken_decode_ctx *me,
                             uint32_t                  submod_index,
@@ -939,7 +946,7 @@ ctoken_decode_enter_nth_submod(struct ctoken_decode_ctx *me,
         goto Done;
     }
 
-    me->in_submods++;
+    me->submod_nest_level++;
 
     if(name != NULL) {
         /* Label type was checked above */
@@ -1012,7 +1019,7 @@ ctoken_decode_enter_named_submod(struct ctoken_decode_ctx *me,
     }
 
     /* Successfully entered the submod */
-    me->in_submods++;
+    me->submod_nest_level++;
 
 Done:
     if(return_value != CTOKEN_ERR_SUCCESS) {
@@ -1032,7 +1039,7 @@ ctoken_decode_exit_submod(struct ctoken_decode_ctx *me)
 {
     enum ctoken_err_t return_value;
 
-    if(me->in_submods == 0) {
+    if(me->submod_nest_level == 0) {
         return_value = CTOKEN_ERR_NO_SUBMOD_OPEN;
         goto Done;
     }
@@ -1043,7 +1050,7 @@ ctoken_decode_exit_submod(struct ctoken_decode_ctx *me)
         goto Done;
     }
 
-    me->in_submods--;
+    me->submod_nest_level--;
 
     return_value = leave_submod_section(me);
     if(return_value != CTOKEN_ERR_SUCCESS) {

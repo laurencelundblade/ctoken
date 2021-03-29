@@ -111,7 +111,7 @@ struct ctoken_decode_ctx {
     uint32_t                       ctoken_options;
     enum ctoken_err_t              last_error;
     QCBORDecodeContext             qcbor_decode_context;
-    uint8_t                        in_submods;
+    uint8_t                        submod_nest_level;
     uint64_t                       auTags[CTOKEN_MAX_TAGS_TO_RETURN];
     enum ctoken_protection_t       protection_type;
     enum ctoken_protection_t       actual_protection_type;
