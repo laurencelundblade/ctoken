@@ -697,6 +697,7 @@ Done:
 
 
 /**
+ @brief Enter the map that is the submod section.
 
  @retval CTOKEN_SUCCESS  There is a submods section and it was entered
 
@@ -709,15 +710,29 @@ Done:
 
  Other CTOKEN errors are also possible and usualy indicate the
  input is malformed, invalid or such.
+
+ CToken decoding hides the existance of the submod section from the
+ caller. The caller of the public API doesn't need to manage entering
+ and exiting the submod section map.
+
+ When the caller enters a submod that is not a nested token,
+ the submod section map is entered and the map holding the submod
+ claims is also entered. The QCBOR bounded decoding stays at that
+ level until either the submod is exited or a deeper level submod
+ is entered.
+
+ When the caller fetches a nested token, the submod section map
+ is entered, the nested token fetched and then the submod section
+ map is exited.
+
+ The nest-level tracker counts submod levels not map levels,
+ so it doesn't count the submod section map.
  */
 static enum ctoken_err_t
 enter_submod_section(struct ctoken_decode_ctx *me)
 {
     enum ctoken_err_t return_value;
 
-    if(me->in_submods >= CTOKEN_MAX_SUBMOD_NESTING) {
-        return CTOKEN_ERR_NESTING_TOO_DEEP;
-    }
     QCBORDecode_EnterMapFromMapN(&(me->qcbor_decode_context),
                                  CTOKEN_EAT_LABEL_SUBMODS);
 
@@ -731,22 +746,14 @@ enter_submod_section(struct ctoken_decode_ctx *me)
     }
 #endif
 
-    if(return_value == CTOKEN_ERR_SUCCESS ) {
-        me->in_submods++;
-    }
-
 Done:
     return return_value;
 }
 
 
-static enum ctoken_err_t
+static inline enum ctoken_err_t
 leave_submod_section(struct ctoken_decode_ctx *me)
 {
-    if(me->in_submods == 0) {
-        return CTOKEN_ERR_NO_SUBMOD_OPEN;
-    }
-    me->in_submods--;
     QCBORDecode_ExitMap(&(me->qcbor_decode_context));
 
     return CTOKEN_ERR_SUCCESS;
@@ -861,11 +868,11 @@ ctoken_decode_enter_nth_submod(struct ctoken_decode_ctx *me,
     if(return_value == CTOKEN_ERR_CLAIM_NOT_PRESENT) {
         /* There is no submods section */
         return_value = CTOKEN_ERR_SUBMOD_NOT_FOUND;
-        goto Done;
+        goto Done2;
     }
     if(return_value != CTOKEN_ERR_SUCCESS) {
         /* The submodules section is malformed or invalid */
-        goto Done;
+        goto Done2;
     }
 
     return_value = ctoken_decode_to_nth_submod(me, submod_index, &num_submods);
@@ -932,6 +939,8 @@ ctoken_decode_enter_nth_submod(struct ctoken_decode_ctx *me,
         goto Done;
     }
 
+    me->in_submods++;
+
     if(name != NULL) {
         /* Label type was checked above */
         *name = item.label.string;
@@ -943,6 +952,7 @@ Done:
         leave_submod_section(me);
     }
 
+Done2:
     return return_value;
 }
 
@@ -961,11 +971,11 @@ ctoken_decode_enter_named_submod(struct ctoken_decode_ctx *me,
     if(return_value == CTOKEN_ERR_CLAIM_NOT_PRESENT) {
         /* There is no submods section */
         return_value = CTOKEN_ERR_SUBMOD_NOT_FOUND;
-        goto Done;
+        goto Done2;
     }
     if(return_value != CTOKEN_ERR_SUCCESS) {
         /* The submodules section is malformed or invalid */
-        goto Done;
+        goto Done2;
     }
 
 
@@ -1001,11 +1011,15 @@ ctoken_decode_enter_named_submod(struct ctoken_decode_ctx *me,
         }
     }
 
+    /* Successfully entered the submod */
+    me->in_submods++;
+
 Done:
     if(return_value != CTOKEN_ERR_SUCCESS) {
         /* Reset so decoding can continue even on error. */
         leave_submod_section(me);
     }
+Done2:
     return return_value;
 }
 
@@ -1018,11 +1032,18 @@ ctoken_decode_exit_submod(struct ctoken_decode_ctx *me)
 {
     enum ctoken_err_t return_value;
 
+    if(me->in_submods == 0) {
+        return_value = CTOKEN_ERR_NO_SUBMOD_OPEN;
+        goto Done;
+    }
+
     QCBORDecode_ExitMap(&(me->qcbor_decode_context));
     return_value = get_and_reset_error(&(me->qcbor_decode_context));
     if(return_value != CTOKEN_ERR_SUCCESS) {
         goto Done;
     }
+
+    me->in_submods--;
 
     return_value = leave_submod_section(me);
     if(return_value != CTOKEN_ERR_SUCCESS) {

@@ -17,7 +17,7 @@
 #include "eat_test_tokens.h"
 
 
-#define TUB(xxx) ((struct q_useful_buf_c){xxx##_token, xxx##_SIZE})
+#define TUB(xxx) ((struct q_useful_buf_c){xxx##_token, xxx##_token_size})
 
 
 /* Return code is
@@ -648,7 +648,7 @@ struct decode_submod_test_config {
 static const struct decode_submod_test_config submod_test_inputs[] = {
     {
         1,
-        {completely_empty_token, completely_empty_SIZE},
+        {completely_empty_token, completely_empty_token_size},
         CTOKEN_ERR_SUCCESS,          /* expected_call_num_submods */
         CTOKEN_ERR_SUBMOD_NOT_FOUND, /* expected_enter_0th */
         0, /* expected_decode_nonce */
@@ -663,11 +663,10 @@ static const struct decode_submod_test_config submod_test_inputs[] = {
         CTOKEN_ERR_SUBMOD_NOT_FOUND, /* expected_enter_2nd */
         CTOKEN_ERR_SUBMOD_NOT_FOUND, /* expected_nested_2nd */
         0
-   },
-
+    },
     {
         2,
-        {not_well_formed_submod_section, not_well_formed_submod_section_SIZE},
+        {submods_nwf_section_token, submods_nwf_section_token_size},
         CTOKEN_ERR_CBOR_NOT_WELL_FORMED, /* expected_call_num_submods */
         CTOKEN_ERR_CBOR_NOT_WELL_FORMED, /* expected_enter_0th */
         0, /* expected_decode_nonce */
@@ -686,7 +685,7 @@ static const struct decode_submod_test_config submod_test_inputs[] = {
 
     {
         3,
-        {minimal_submod_token, minimal_submod_SIZE},
+        {submods_minimal_token, submods_minimal_token_size},
         CTOKEN_ERR_SUCCESS,          /* expected_call_num_submods */
         CTOKEN_ERR_SUCCESS, /* expected_enter_0th */
         CTOKEN_ERR_SUCCESS, /* expected_decode_nonce */
@@ -705,7 +704,7 @@ static const struct decode_submod_test_config submod_test_inputs[] = {
 
     {
         4,
-        {non_string_label_submod_token, non_string_label_submod_SIZE},
+        {submods_non_string_label_token, submods_non_string_label_token_size},
         CTOKEN_ERR_SUCCESS,          /* expected_call_num_submods */
         CTOKEN_ERR_SUBMOD_NAME_NOT_A_TEXT_STRING, /* expected_enter_0th */
         0, /* expected_decode_nonce */
@@ -724,7 +723,7 @@ static const struct decode_submod_test_config submod_test_inputs[] = {
 
     {
         5,
-        {empty_submod_token, empty_submod_SIZE},
+        {submods_empty_token, submods_empty_token_size},
         CTOKEN_ERR_SUCCESS,          /* expected_call_num_submods */
         CTOKEN_ERR_SUCCESS, /* expected_enter_0th */
         CTOKEN_ERR_CLAIM_NOT_PRESENT, /* expected_decode_nonce */
@@ -743,7 +742,7 @@ static const struct decode_submod_test_config submod_test_inputs[] = {
 
     {
         6,
-        {submod_is_array_token, submod_is_array_SIZE},
+        {submods_is_array_token, submods_is_array_token_size},
         CTOKEN_ERR_SUCCESS,          /* expected_call_num_submods */
         CTOKEN_ERR_SUBMOD_TYPE, /* expected_enter_0th */
         0, /* expected_decode_nonce */
@@ -762,7 +761,7 @@ static const struct decode_submod_test_config submod_test_inputs[] = {
 
     {
         7,
-        {dup_sumods_token, dup_submods_SIZE},
+        {submods_duplicate_token, submods_duplicate_token_size},
         CTOKEN_ERR_SUCCESS,     /* expected_call_num_submods */
         CTOKEN_ERR_SUCCESS, /* expected_enter_0th */
         CTOKEN_ERR_SUCCESS, /* expected_decode_nonce */
@@ -781,7 +780,7 @@ static const struct decode_submod_test_config submod_test_inputs[] = {
 
     {
         8,
-        {not_well_formed_submod, not_well_formed_submod_SIZE},
+        {submods_nwf_submod_token, submods_nwf_submod_token_size},
         CTOKEN_ERR_CBOR_NOT_WELL_FORMED,     /* expected_call_num_submods */
         CTOKEN_ERR_CBOR_DECODE, /* expected_enter_0th */
         CTOKEN_ERR_SUCCESS, /* expected_decode_nonce */
@@ -947,7 +946,7 @@ int32_t submod_decode_errors_test()
 
     /* Big test over a set of input tests cases */
     for(test_case =submod_test_inputs; !q_useful_buf_c_is_null(test_case->token); test_case++) {
-        if(test_case->test_number == 8) {
+        if(test_case->test_number == 2) {
             test_result = 99;
         }
         test_result = one_decode_errors_test_case(test_case);
@@ -962,7 +961,7 @@ int32_t submod_decode_errors_test()
                        0,
                        CTOKEN_PROTECTION_NONE);
 
-    ctoken_result = ctoken_decode_validate_token(&decode_context, TUB(deeply_nested_submods));
+    ctoken_result = ctoken_decode_validate_token(&decode_context, TUB(submods_deeply_nested));
     if(ctoken_result) {
         return test_result_code(20, 0, ctoken_result);
     }
@@ -995,7 +994,7 @@ int32_t submod_decode_errors_test()
 
 
     /* Try calling exit without entering */
-    ctoken_result = ctoken_decode_validate_token(&decode_context, TUB(deeply_nested_submods));
+    ctoken_result = ctoken_decode_validate_token(&decode_context, TUB(submods_deeply_nested));
     if(ctoken_result) {
         return test_result_code(25, 0, ctoken_result);
     }
@@ -1006,7 +1005,7 @@ int32_t submod_decode_errors_test()
 
 
     /* Trigger an unusual error ctoken_decode_exit_submod */
-    ctoken_result = ctoken_decode_validate_token(&decode_context, TUB(deeply_nested_submods));
+    ctoken_result = ctoken_decode_validate_token(&decode_context, TUB(submods_deeply_nested));
     if(ctoken_result) {
         return test_result_code(25, 0, ctoken_result);
     }
