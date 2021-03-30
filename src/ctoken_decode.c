@@ -706,7 +706,7 @@ Done:
  * @retval CTOKEN_ERR_CBOR_TYPE  There is a item with the correct label, but
  *                               it is not of type map.
  *
- * @retval CTOKEN_ERR_SUBMOD_NESTING_TOO_DEEP  Input is nested to deep to 
+ * @retval CTOKEN_ERR_SUBMOD_NESTING_TOO_DEEP  Input is nested to deep to
  *                                             handle.
  *
  * @retval CTOKEN_ERR_CLAIM_NOT_PRESENT        There is no submods section.
