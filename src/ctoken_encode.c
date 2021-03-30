@@ -21,7 +21,7 @@
 
 
 /*
- * TODO: make this whole thing disablaabl.
+ * TODO: make this whole thing disablable
  *
  * The Submodule Encoding State Tracker
  *
@@ -31,7 +31,7 @@
  * unnecessary in run time code that is known to be correct, but
  * getting the calling sequence right is not perfectly easy so there
  * is this facility.
- * 
+ *
  * This starts out with the top level in the state SUBMODS_NONE.
  * There is no submodules section in the top level claim set.  The
  * only thing possible in this state is the opening of the submodules
@@ -262,7 +262,6 @@ ctoken_encode_start(struct ctoken_encode_ctx  *me,
     return return_value;
 }
 
-#include <stdio.h>
 
 static enum ctoken_err_t
 ctoken_encode_finish2(struct ctoken_encode_ctx *me,
