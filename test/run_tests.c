@@ -54,7 +54,7 @@ static test_entry s_tests[] = {
     TEST_ENTRY(basic_eat_test),
     TEST_ENTRY(cwt_test),
     TEST_ENTRY(submods_test),
-    TEST_ENTRY(submods_errors_test),
+    TEST_ENTRY(submods_encode_errors_test),
     TEST_ENTRY(submod_decode_errors_test),
     TEST_ENTRY(location_test),
     TEST_ENTRY(debug_and_boot_test),

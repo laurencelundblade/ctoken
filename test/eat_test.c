@@ -14,6 +14,10 @@
 #include "eat_test.h"
 #include "ctoken/ctoken_encode.h"
 #include "ctoken/ctoken_decode.h"
+#include "eat_test_tokens.h"
+
+
+#define TUB(xxx) ((struct q_useful_buf_c){xxx##_token, xxx##_token_size})
 
 
 /* Return code is
@@ -270,6 +274,11 @@ int32_t submods_test(void)
     struct q_useful_buf_c        ueid;
     struct q_useful_buf_c        oemid;
 
+    enum ctoken_type_t           type;
+    struct q_useful_buf_c        submod_token;
+    struct q_useful_buf_c        submod_name;
+    uint32_t                     num_submods;
+
     struct ctoken_decode_ctx     decode_context;
 
 
@@ -282,21 +291,21 @@ int32_t submods_test(void)
     uint8_t test_oemid_bytes[] = {0x14, 0x18, 0x13, 0x19, 0x10, 0x01};
     const struct q_useful_buf_c test_oemid = Q_USEFUL_BUF_FROM_BYTE_ARRAY_LITERAL(test_oemid_bytes);
 
+
+    /* --- Make a token with submods --- */
     ctoken_encode_init(&encode_ctx,
                        T_COSE_OPT_SHORT_CIRCUIT_SIG,
                        0,
                        CTOKEN_PROTECTION_COSE_SIGN1,
                        T_COSE_ALGORITHM_ES256);
 
-    /* Get started on a particular token by giving an out buffer.
-     */
+
     result = ctoken_encode_start(&encode_ctx, token_out_buffer);
-    if(result) {
+    if(result != CTOKEN_ERR_SUCCESS) {
         return 100 + (int32_t)result;
     }
 
-    /* --- Add the claims --- */
-    /* Values are just made up for test */
+    /* Add some claim values that are just made up for test */
 
     ctoken_encode_nonce(&encode_ctx, test_nonce);
 
@@ -329,7 +338,7 @@ int32_t submods_test(void)
     ctoken_result = ctoken_encode_finish(&encode_ctx, &completed_token);
 
 
-     /* Set up to verify and decode the token */
+     /* --- Validate and decode the token and all the claims in it --- */
 
      /* Initialize the decoder / verifier context. No options are set
       * so two 0's are passed
@@ -339,9 +348,6 @@ int32_t submods_test(void)
                         CTOKEN_PROTECTION_BY_TAG,
                         0);
 
-     /* Pass in the token and have it validated. If the token was corrupt
-      * or the signature check failed, it will be returned here
-      */
      result = ctoken_decode_validate_token(&decode_context, completed_token);
      if(result) {
          return 300 + (int32_t)result;
@@ -365,22 +371,26 @@ int32_t submods_test(void)
         return 599;
     }
 
-    enum ctoken_type_t type;
-    struct q_useful_buf_c token;
-    struct q_useful_buf_c submod_name;
-
     ctoken_result = ctoken_decode_get_named_nested_token(&decode_context,
                                                          Q_USEFUL_BUF_FROM_SZ_LITERAL("json"),
                                                          &type,
-                                                         &token);
+                                                         &submod_token);
     if(ctoken_result != CTOKEN_ERR_SUCCESS ||
-       ub_compare_sz("{ \"ueid\", \"xyz\"}", token) ||
+       ub_compare_sz("{ \"ueid\", \"xyz\"}", submod_token) ||
        type != CTOKEN_TYPE_JSON) {
         return 550;
     }
 
+    ctoken_result = ctoken_decode_enter_named_submod(&decode_context, "json");
+    if(ctoken_result != CTOKEN_ERR_SUBMOD_IS_A_TOKEN) {
+        return 555;
+    }
 
-    uint32_t num_submods;
+    ctoken_result = ctoken_decode_enter_nth_submod(&decode_context, 0, &submod_name);
+    if(ctoken_result != CTOKEN_ERR_SUBMOD_IS_A_TOKEN) {
+        return 556;
+    }
+
     ctoken_decode_get_num_submods(&decode_context, &num_submods);
     if(num_submods != 2) {
         return 560;
@@ -418,7 +428,7 @@ int32_t submods_test(void)
 
 
 
-int32_t submods_errors_test(void)
+int32_t submods_encode_errors_test(void)
 {
     struct ctoken_encode_ctx     encode_ctx;
     MakeUsefulBufOnStack(        token_out_buffer, 400);
@@ -586,7 +596,7 @@ int32_t submods_errors_test(void)
      }
 
      result = ctoken_encode_finish(&encode_ctx, &completed_token);
-     if(result != CTOKEN_ERR_SUBMOD_NESTING_TOO_DEEP) {
+     if(result != CTOKEN_ERR_NESTING_TOO_DEEP) {
          return 1400 + (int32_t)result;
      }
 
@@ -614,278 +624,403 @@ int32_t sign_cbor(struct q_useful_buf_c  cbor_input,
 }
 
 
-/*
- {
-  -76000: {         / The submodules section /
-       "empty": { }, / An empty submodule (this is legal) /
-       6: {          / A submodule with an integer name (not allowed) /
-           -75000: 10
+struct decode_submod_test_config {
+    uint32_t              test_number;
+    struct q_useful_buf_c token;
 
-       },
-       "bad-sub-mod": {
-            -76000: {
-                0: 0, / Integer label and content, both of which are illegal /
-                "s": 0("November 11"), / content is date tag, which is illegal /
-                "notmap" : [ 0 ],  / content is an array which is illegal /
-                "notbs" : 0("hi"), / content is a date string which is illegal /
-                "nest1": {
-                     -76000: {
-                         "nest2": {
-                             -76000: {
-                                 "nest3": {
-                                     -76000: {
-                                         -76006: 0
-                                     }
-                                  }
-                               }
-                            }
-                         }
-                      }
-                   }
-                }
-  }
-}
- */
-static const char some_bad_submods[] = {
-    0xa1, 0x3a, 0x00, 0x01, 0x28, 0xdf, 0xa3, 0x65,
-    0x65, 0x6d, 0x70, 0x74, 0x79, 0xa0, 0x06, 0xa1,
-    0x3a, 0x00, 0x01, 0x24, 0xf7, 0x0a, 0x6b, 0x62,
-    0x61, 0x64, 0x2d, 0x73, 0x75, 0x62, 0x2d, 0x6d,
-    0x6f, 0x64, 0xa1, 0x3a, 0x00, 0x01, 0x28, 0xdf,
-    0xa5, 0x00, 0x00, 0x61, 0x73, 0xc0, 0x6b, 0x4e,
-    0x6f, 0x76, 0x65, 0x6d, 0x62, 0x65, 0x72, 0x20,
-    0x31, 0x31, 0x66, 0x6e, 0x6f, 0x74, 0x6d, 0x61,
-    0x70, 0x81, 0x00, 0x65, 0x6e, 0x6f, 0x74, 0x62,
-    0x73, 0xc0, 0x62, 0x68, 0x69, 0x65, 0x6e, 0x65, 0x73,
-    0x74, 0x31, 0xa1, 0x3a, 0x00, 0x01, 0x28, 0xdf,
-    0xa1, 0x65, 0x6e, 0x65, 0x73, 0x74, 0x32, 0xa1,
-    0x3a, 0x00, 0x01, 0x28, 0xdf, 0xa1, 0x65, 0x6e,
-    0x65, 0x73, 0x74, 0x33, 0xa1, 0x3a, 0x00, 0x01,
-    0x28, 0xdf, 0xa1, 0x3a, 0x00, 0x01, 0x28, 0xe5,
-    0x00};
+    enum ctoken_err_t expected_call_num_submods;
+    enum ctoken_err_t expected_enter_0th;
+    enum ctoken_err_t expected_decode_nonce;
+    enum ctoken_err_t expected_exit_0th;
+    enum ctoken_err_t expected_nested_0th;
+    enum ctoken_err_t expected_enter_named;
+    enum ctoken_err_t expected_exit_named;
+    enum ctoken_err_t expected_named_nested;
+    enum ctoken_err_t expected_enter_1st;
+    enum ctoken_err_t expected_exit_1st;
+    enum ctoken_err_t expected_nested_1st;
+    enum ctoken_err_t expected_enter_2nd;
+    enum ctoken_err_t expected_nested_2nd;
 
+    uint32_t expected_num_submods; // UINT32_MAX means don't check
+};
 
+static const struct decode_submod_test_config submod_test_inputs[] = {
+    {
+        1,
+        {completely_empty_token, completely_empty_token_size},
+        CTOKEN_ERR_SUCCESS,          /* expected_call_num_submods */
+        CTOKEN_ERR_SUBMOD_NOT_FOUND, /* expected_enter_0th */
+        0, /* expected_decode_nonce */
+        0, /* expected_exit_0th */
+        CTOKEN_ERR_SUBMOD_NOT_FOUND, /* expected_nested_0th */
+        CTOKEN_ERR_SUBMOD_NOT_FOUND, /* expected_enter_named */
+        0, /* expected_exit_named */
+        CTOKEN_ERR_SUBMOD_NOT_FOUND, /* expected_named_nested */
+        CTOKEN_ERR_SUBMOD_NOT_FOUND, /* expected_enter_1st */
+        0, /* expected_exit_1st */
+        CTOKEN_ERR_SUBMOD_NOT_FOUND, /* expected_nested_1st */
+        CTOKEN_ERR_SUBMOD_NOT_FOUND, /* expected_enter_2nd */
+        CTOKEN_ERR_SUBMOD_NOT_FOUND, /* expected_nested_2nd */
+        0
+    },
+    {
+        2,
+        {submods_nwf_section_token, submods_nwf_section_token_size},
+        CTOKEN_ERR_CBOR_NOT_WELL_FORMED, /* expected_call_num_submods */
+        CTOKEN_ERR_CBOR_NOT_WELL_FORMED, /* expected_enter_0th */
+        0, /* expected_decode_nonce */
+        0, /* expected_exit_0th */
+        CTOKEN_ERR_CBOR_NOT_WELL_FORMED, /* expected_nested_0th */
+        CTOKEN_ERR_CBOR_NOT_WELL_FORMED, /* expected_enter_named */
+        0, /* expected_exit_named */
+        CTOKEN_ERR_CBOR_NOT_WELL_FORMED, /* expected_named_nested */
+        CTOKEN_ERR_CBOR_NOT_WELL_FORMED, /* expected_enter_1st */
+        0, /* expected_exit_1st */
+        CTOKEN_ERR_CBOR_NOT_WELL_FORMED, /* expected_nested_1st */
+        CTOKEN_ERR_CBOR_NOT_WELL_FORMED, /* expected_enter_2nd */
+        CTOKEN_ERR_CBOR_NOT_WELL_FORMED, /* expected_nested_2nd */
+        UINT32_MAX
+    },
 
-/*
-This a fully signed token with the following payload
-{
-    -75008: h'05083399',
-    -76000: {
-        "sub1": {
-            -75009: h'A46823990001',
-            -76000: {
-                "json": "{ \"ueid\", \"xyz\"",
-                "subsub": {
-                    -76001: h'141813191001'
-                }
-             }
-         }
+    {
+        3,
+        {submods_minimal_token, submods_minimal_token_size},
+        CTOKEN_ERR_SUCCESS,          /* expected_call_num_submods */
+        CTOKEN_ERR_SUCCESS, /* expected_enter_0th */
+        CTOKEN_ERR_SUCCESS, /* expected_decode_nonce */
+        CTOKEN_ERR_SUCCESS, /* expected_exit_0th */
+        CTOKEN_ERR_SUBMOD_TYPE, /* expected_nested_0th */
+        CTOKEN_ERR_SUCCESS, /* expected_enter_named */
+        CTOKEN_ERR_SUCCESS, /* expected_exit_named */
+        CTOKEN_ERR_SUCCESS, /* expected_named_nested */
+        CTOKEN_ERR_SUBMOD_IS_A_TOKEN, /* expected_enter_1st */
+        CTOKEN_ERR_SUCCESS, /* expected_exit_1st */
+        CTOKEN_ERR_SUCCESS, /* expected_nested_1st */
+        CTOKEN_ERR_SUBMOD_NOT_FOUND, /* expected_enter_2nd */
+        CTOKEN_ERR_SUBMOD_NOT_FOUND, /* expected_nested_2nd */
+        2
+    },
+
+    {
+        4,
+        {submods_non_string_label_token, submods_non_string_label_token_size},
+        CTOKEN_ERR_SUCCESS,          /* expected_call_num_submods */
+        CTOKEN_ERR_SUBMOD_NAME_NOT_A_TEXT_STRING, /* expected_enter_0th */
+        0, /* expected_decode_nonce */
+        0, /* expected_exit_0th */
+        CTOKEN_ERR_SUBMOD_NAME_NOT_A_TEXT_STRING, /* expected_nested_0th */
+        CTOKEN_ERR_SUBMOD_NOT_FOUND, /* expected_enter_named */
+        0, /* expected_exit_named */
+        CTOKEN_ERR_SUBMOD_NOT_FOUND, /* expected_named_nested */
+        CTOKEN_ERR_SUBMOD_NAME_NOT_A_TEXT_STRING, /* expected_enter_1st */
+        0, /* expected_exit_1st */
+        CTOKEN_ERR_SUBMOD_NAME_NOT_A_TEXT_STRING, /* expected_nested_1st */
+        CTOKEN_ERR_SUBMOD_NOT_FOUND, /* expected_enter_2nd */
+        CTOKEN_ERR_SUBMOD_NOT_FOUND, /* expected_nested_2nd */
+        2
+    },
+
+    {
+        5,
+        {submods_empty_token, submods_empty_token_size},
+        CTOKEN_ERR_SUCCESS,          /* expected_call_num_submods */
+        CTOKEN_ERR_SUCCESS, /* expected_enter_0th */
+        CTOKEN_ERR_CLAIM_NOT_PRESENT, /* expected_decode_nonce */
+        CTOKEN_ERR_SUCCESS, /* expected_exit_0th */
+        CTOKEN_ERR_SUBMOD_TYPE, /* expected_nested_0th */
+        CTOKEN_ERR_SUCCESS, /* expected_enter_named */
+        CTOKEN_ERR_SUCCESS, /* expected_exit_named */
+        CTOKEN_ERR_SUBMOD_NOT_FOUND, /* expected_named_nested */
+        CTOKEN_ERR_SUBMOD_NOT_FOUND, /* expected_enter_1st */
+        0, /* expected_exit_1st */
+        CTOKEN_ERR_SUBMOD_NOT_FOUND, /* expected_nested_1st */
+        CTOKEN_ERR_SUBMOD_NOT_FOUND, /* expected_enter_2nd */
+        CTOKEN_ERR_SUBMOD_NOT_FOUND, /* expected_nested_2nd */
+        1
+    },
+
+    {
+        6,
+        {submods_is_array_token, submods_is_array_token_size},
+        CTOKEN_ERR_SUCCESS,          /* expected_call_num_submods */
+        CTOKEN_ERR_SUBMOD_TYPE, /* expected_enter_0th */
+        0, /* expected_decode_nonce */
+        CTOKEN_ERR_SUCCESS, /* expected_exit_0th */
+        CTOKEN_ERR_SUBMOD_TYPE, /* expected_nested_0th */
+        CTOKEN_ERR_SUBMOD_TYPE, /* expected_enter_named */
+        0, /* expected_exit_named */
+        CTOKEN_ERR_SUBMOD_TYPE, /* expected_named_nested */
+        CTOKEN_ERR_SUBMOD_TYPE, /* expected_enter_1st */
+        0, /* expected_exit_1st */
+        CTOKEN_ERR_SUBMOD_TYPE, /* expected_nested_1st */
+        CTOKEN_ERR_SUBMOD_NOT_FOUND, /* expected_enter_2nd */
+        CTOKEN_ERR_SUBMOD_NOT_FOUND, /* expected_nested_2nd */
+        2
+    },
+
+    {
+        7,
+        {submods_duplicate_token, submods_duplicate_token_size},
+        CTOKEN_ERR_SUCCESS,     /* expected_call_num_submods */
+        CTOKEN_ERR_SUCCESS, /* expected_enter_0th */
+        CTOKEN_ERR_SUCCESS, /* expected_decode_nonce */
+        CTOKEN_ERR_SUCCESS, /* expected_exit_0th */
+        CTOKEN_ERR_SUBMOD_TYPE, /* expected_nested_0th */
+        CTOKEN_ERR_DUPLICATE_LABEL, /* expected_enter_named */
+        0, /* expected_exit_named */
+        CTOKEN_ERR_DUPLICATE_LABEL, /* expected_named_nested */
+        CTOKEN_ERR_SUBMOD_IS_A_TOKEN, /* expected_enter_1st */
+        0, /* expected_exit_1st */
+        CTOKEN_ERR_SUCCESS, /* expected_nested_1st */
+        CTOKEN_ERR_SUCCESS, /* expected_enter_2nd */
+        CTOKEN_ERR_SUBMOD_TYPE, /* expected_nested_2nd */
+        4
+    },
+
+    {
+        8,
+        {submods_nwf_submod_token, submods_nwf_submod_token_size},
+        CTOKEN_ERR_CBOR_NOT_WELL_FORMED,     /* expected_call_num_submods */
+        CTOKEN_ERR_CBOR_DECODE, /* expected_enter_0th */
+        CTOKEN_ERR_SUCCESS, /* expected_decode_nonce */
+        CTOKEN_ERR_SUCCESS, /* expected_exit_0th */
+        CTOKEN_ERR_CBOR_NOT_WELL_FORMED, /* expected_nested_0th */
+        CTOKEN_ERR_CBOR_NOT_WELL_FORMED, /* expected_enter_named */
+        0, /* expected_exit_named */
+        CTOKEN_ERR_SUBMOD_NOT_FOUND, /* expected_named_nested */
+        CTOKEN_ERR_CBOR_NOT_WELL_FORMED, /* expected_enter_1st */
+        0, /* expected_exit_1st */
+        CTOKEN_ERR_CBOR_NOT_WELL_FORMED, /* expected_nested_1st */
+        CTOKEN_ERR_CBOR_NOT_WELL_FORMED, /* expected_enter_2nd */
+        CTOKEN_ERR_CBOR_NOT_WELL_FORMED, /* expected_nested_2nd */
+        4
+    },
+
+    {
+        UINT32_MAX,
+        NULL_Q_USEFUL_BUF_C,
+        0, /* expected_call_num_submods */
+        0, /* expected_enter_0th */
+        0, /* expected_exit_0th */
+        0, /* expected_nested_0th */
+        0, /* expected_enter_named */
+        0, /* expected_exit_named */
+        0, /* expected_named_nested */
+        0, /* expected_enter_1st */
+        0, /* expected_exit_1st */
+        0, /* expected_nested_1st */
     }
-}
- */
-static const char some_good_submods[] = {
-    0xD2, 0x84, 0x43, 0xA1, 0x01, 0x26, 0xA1, 0x04, 0x58,
-    0x20, 0xEF, 0x95, 0x4B, 0x4B, 0xD9, 0xBD, 0xF6, 0x70,
-    0xD0, 0x33, 0x60, 0x82, 0xF5, 0xEF, 0x15, 0x2A, 0xF8,
-    0xF3, 0x5B, 0x6A, 0x6C, 0x00, 0xEF, 0xA6, 0xA9, 0xA7,
-    0x1F, 0x49, 0x51, 0x7E, 0x18, 0xC6, 0x58, 0x52, 0xA2,
-    0x3A, 0x00, 0x01, 0x24, 0xFF, 0x44, 0x05, 0x08, 0x33,
-    0x99, 0x3A, 0x00, 0x01, 0x28, 0xDF, 0xA1, 0x64, 0x73,
-    0x75, 0x62, 0x31, 0xA2, 0x3A, 0x00, 0x01, 0x25, 0x00,
-    0x46, 0xA4, 0x68, 0x23, 0x99, 0x00, 0x01, 0x3A, 0x00,
-    0x01, 0x28, 0xDF, 0xA2, 0x64, 0x6A, 0x73, 0x6F, 0x6E,
-    0x6F, 0x7B, 0x20, 0x22, 0x75, 0x65, 0x69, 0x64, 0x22,
-    0x2C, 0x20, 0x22, 0x78, 0x79, 0x7A, 0x22, 0x66, 0x73,
-    0x75, 0x62, 0x73, 0x75, 0x62, 0xA1, 0x3A, 0x00, 0x01,
-    0x28, 0xE0, 0x46, 0x14, 0x18, 0x13, 0x19, 0x10, 0x01,
-    0x58, 0x40, 0xF9, 0x43, 0xB7, 0xB3, 0x33, 0x29, 0x3A,
-    0x15, 0xEB, 0x87, 0x8E, 0x5F, 0xC1, 0x05, 0x17, 0xEA,
-    0x64, 0x0D, 0xA9, 0x5A, 0x40, 0xD4, 0x47, 0x8F, 0xE8,
-    0xF1, 0x0E, 0x63, 0x40, 0xEF, 0x6F, 0x10, 0xF9, 0x43,
-    0xB7, 0xB3, 0x33, 0x29, 0x3A, 0x15, 0xEB, 0x87, 0x8E,
-    0x5F, 0xC1, 0x05, 0x17, 0xEA, 0x64, 0x0D, 0xA9, 0x5A,
-    0x40, 0xD4, 0x47, 0x8F, 0xE8, 0xF1, 0x0E, 0x63, 0x40,
-    0xEF, 0x6F, 0x10};
+
+};
 
 
 /*
+ This tries to decode a token with one submod called "submod" that
+ is a non-token and one called "nested" that is a nested token. It
+ also tries to get the non-token as a token and vice versa. It tries
+ to get a 3rd submod that doesn't exist. Call it with tokens that
+ will be processed successfully and those that won't and see that
+ the error codes are correct in all cases.
+ */
+int32_t one_decode_errors_test_case(const struct decode_submod_test_config *t)
 {
-    -76006: 10,
-    -76000: {
-        "jj": "{ uptime: 40}",
-        "bad": {
-            -76006: NOT-WELL FORMED simple(01)
+    struct ctoken_decode_ctx  decode_context;
+    enum ctoken_err_t         ctoken_result;
+    struct q_useful_buf_c     name;
+    struct q_useful_buf_c     token;
+    struct q_useful_buf_c     nonce;
+    enum ctoken_type_t        nested_token_type;
+    uint32_t                  num_submods;
+
+
+    ctoken_decode_init(&decode_context,
+                       T_COSE_OPT_ALLOW_SHORT_CIRCUIT,
+                       0,
+                       CTOKEN_PROTECTION_NONE);
+
+    ctoken_result = ctoken_decode_validate_token(&decode_context, t->token);
+    if(ctoken_result) {
+        return test_result_code(1, t->test_number, ctoken_result);
+    }
+
+    ctoken_result = ctoken_decode_get_num_submods(&decode_context, &num_submods);
+    if(ctoken_result != t->expected_call_num_submods) {
+        return test_result_code(2, t->test_number, ctoken_result);
+    }
+
+    if(ctoken_result == CTOKEN_ERR_SUCCESS && num_submods != t->expected_num_submods) {
+        return test_result_code(3, t->test_number, ctoken_result);
+    }
+
+    ctoken_result = ctoken_decode_enter_nth_submod(&decode_context, 0, &name);
+    if(ctoken_result != t->expected_enter_0th) {
+        return test_result_code(4, t->test_number, ctoken_result);
+    }
+
+    if(ctoken_result == CTOKEN_ERR_SUCCESS) {
+        ctoken_result = ctoken_decode_nonce(&decode_context, &nonce);
+        if(ctoken_result != t->expected_decode_nonce) {
+            return test_result_code(5, t->test_number, ctoken_result);
+        }
+
+        ctoken_result = ctoken_decode_exit_submod(&decode_context);
+        if(ctoken_result != t->expected_exit_0th) {
+            return test_result_code(6, t->test_number, ctoken_result);
         }
     }
+
+    ctoken_result = ctoken_decode_get_nth_nested_token(&decode_context, 0, &nested_token_type, &name, &token);
+    if(ctoken_result != t->expected_nested_0th) {
+        return test_result_code(7, t->test_number, ctoken_result);
+    }
+
+    ctoken_result = ctoken_decode_enter_named_submod(&decode_context, "submod");
+    if(ctoken_result != t->expected_enter_named) {
+        return test_result_code(8, t->test_number, ctoken_result);
+    }
+
+    if(ctoken_result == CTOKEN_ERR_SUCCESS) {
+        ctoken_result = ctoken_decode_exit_submod(&decode_context);
+        if(ctoken_result != t->expected_exit_named) {
+            return test_result_code(9, t->test_number, ctoken_result);
+        }
+    }
+
+    ctoken_result = ctoken_decode_get_named_nested_token(&decode_context,
+                                                         Q_USEFUL_BUF_FROM_SZ_LITERAL("nested"),
+                                                         &nested_token_type,
+                                                         &token);
+    if(ctoken_result != t->expected_named_nested) {
+        return test_result_code(10, t->test_number, ctoken_result);
+    }
+
+    ctoken_result = ctoken_decode_enter_nth_submod(&decode_context, 1, &name);
+    if(ctoken_result != t->expected_enter_1st) {
+        return test_result_code(11, t->test_number, ctoken_result);
+    }
+
+    if(ctoken_result == CTOKEN_ERR_SUCCESS) {
+        ctoken_result = ctoken_decode_exit_submod(&decode_context);
+        if(ctoken_result != t->expected_exit_1st) {
+            return test_result_code(12, t->test_number, ctoken_result);
+        }
+    }
+
+    ctoken_result = ctoken_decode_get_nth_nested_token(&decode_context, 1, &nested_token_type, &name, &token);
+    if(ctoken_result != t->expected_nested_1st) {
+        return test_result_code(13, t->test_number, ctoken_result);
+    }
+
+    ctoken_result = ctoken_decode_enter_nth_submod(&decode_context, 2, &name);
+    if(ctoken_result != t->expected_enter_2nd) {
+        return test_result_code(14, t->test_number, ctoken_result);
+    }
+    if(ctoken_result == CTOKEN_ERR_SUCCESS) {
+        ctoken_result = ctoken_decode_exit_submod(&decode_context);
+        /* Don't bother with error check here */
+    }
+
+    ctoken_result = ctoken_decode_get_nth_nested_token(&decode_context, 2, &nested_token_type, &name, &token);
+    if(ctoken_result != t->expected_nested_2nd) {
+        return test_result_code(15, t->test_number, ctoken_result);
+    }
+
+    return 0;
 }
- */
-static const char nwf_submod[] = {
-    0xa2, 0x3a, 0x00, 0x01, 0x28, 0xe5, 0x0a, 0x3a,
-    0x00, 0x01, 0x28, 0xdf, 0xa2, 0x62, 0x6a, 0x6a,
-    0x6d, 0x7b, 0x20, 0x75, 0x70, 0x74, 0x69, 0x6d,
-    0x65, 0x3a, 0x20, 0x34, 0x30, 0x7d, 0x63, 0x62,
-    0x61, 0x64, 0xf8, 0x01};
 
 
 int32_t submod_decode_errors_test()
 {
     struct ctoken_decode_ctx  decode_context;
     enum ctoken_err_t         ctoken_result;
-    enum ctoken_type_t        type;
-    struct q_useful_buf_c     token;
+    int32_t                   test_result;
+    int                       nest_level;
+    struct q_useful_buf_c     nonce;
     struct q_useful_buf_c     name;
-    UsefulBuf_MAKE_STACK_UB(  out, 400);
-    uint32_t uNum;
+    struct q_useful_buf_c     token;
+    enum ctoken_type_t        type;
+    uint32_t                  num;
+    const struct decode_submod_test_config *test_case;
 
 
+    /* Big test over a set of input tests cases */
+    for(test_case =submod_test_inputs; !q_useful_buf_c_is_null(test_case->token); test_case++) {
+        if(test_case->test_number == 2) {
+            test_result = 99;
+        }
+        test_result = one_decode_errors_test_case(test_case);
+        if(test_result) {
+            return test_result;
+        }
+    }
+
+    /* Test decoding of a deeply nested token */
     ctoken_decode_init(&decode_context,
                        T_COSE_OPT_ALLOW_SHORT_CIRCUIT,
-                       CTOKEN_PROTECTION_BY_TAG,
-                       0);
+                       0,
+                       CTOKEN_PROTECTION_NONE);
 
-    ctoken_result = ctoken_decode_validate_token(&decode_context, UsefulBuf_FROM_BYTE_ARRAY_LITERAL(some_good_submods));
+    ctoken_result = ctoken_decode_validate_token(&decode_context, TUB(submods_deeply_nested));
     if(ctoken_result) {
-        return 100 + (int32_t)ctoken_result;
+        return test_result_code(20, 0, ctoken_result);
     }
 
-    ctoken_result = ctoken_decode_enter_named_submod(&decode_context, "foobar");
-    if(ctoken_result != CTOKEN_ERR_NAMED_SUBMOD_NOT_FOUND) {
-        return 200 + (int32_t)ctoken_result;
+    for(nest_level = 0; nest_level < 20; nest_level++) {
+        ctoken_result = ctoken_decode_nonce(&decode_context, &nonce);
+        if(ctoken_result) {
+            break;
+        }
+        /* The token was made so the first byte of the nonce matched the level */
+        if(*(uint8_t *)nonce.ptr != nest_level) {
+            return test_result_code(21, nest_level, 0);
+        }
+
+        ctoken_result = ctoken_decode_get_num_submods(&decode_context, &num);
+        if(num == 0) {
+            break;
+        }
+
+        ctoken_result = ctoken_decode_get_nth_nested_token(&decode_context, 1, &type, &name, &token);
+        if(ctoken_result) {
+            return test_result_code(22, nest_level, ctoken_result);
+        }
+
+        ctoken_result = ctoken_decode_enter_nth_submod(&decode_context, 0, &name);
+        if(ctoken_result) {
+            return test_result_code(23, nest_level, ctoken_result);
+        }
     }
 
-    ctoken_result = ctoken_decode_enter_nth_submod(&decode_context, 6, &name);
-    if(ctoken_result != CTOKEN_ERR_SUBMOD_INDEX_TOO_LARGE) {
-        return 300 + (int32_t)ctoken_result;
-    }
 
-    ctoken_result = ctoken_decode_get_nth_nested_token(&decode_context, 6, &type, &name, &token);
-    if(ctoken_result != CTOKEN_ERR_SUBMOD_INDEX_TOO_LARGE) {
-        return 400 + (int32_t)ctoken_result;
-    }
-
-    ctoken_result = ctoken_decode_get_named_nested_token(&decode_context,
-                                                         Q_USEFUL_BUF_FROM_SZ_LITERAL("foobar"),
-                                                         &type,
-                                                         &token);
-    if(ctoken_result != CTOKEN_ERR_NAMED_SUBMOD_NOT_FOUND) {
-        return 500 + (int32_t)ctoken_result;
-    }
-
-
-    sign_cbor(UsefulBuf_FROM_BYTE_ARRAY_LITERAL(some_bad_submods), out, &token);
-
-    ctoken_decode_init(&decode_context,
-                       T_COSE_OPT_ALLOW_SHORT_CIRCUIT,
-                       CTOKEN_PROTECTION_BY_TAG,
-                       0);
-
-    ctoken_result = ctoken_decode_validate_token(&decode_context, token);
+    /* Try calling exit without entering */
+    ctoken_result = ctoken_decode_validate_token(&decode_context, TUB(submods_deeply_nested));
     if(ctoken_result) {
-        return 600 + (int32_t)ctoken_result;
+        return test_result_code(25, 0, ctoken_result);
+    }
+    ctoken_result = ctoken_decode_exit_submod(&decode_context);
+    if(ctoken_result != CTOKEN_ERR_NO_SUBMOD_OPEN) {
+        return test_result_code(25, 0, ctoken_result);
     }
 
-    /* An empty submodule */
-    ctoken_result = ctoken_decode_enter_named_submod(&decode_context, "empty");
-    if(ctoken_result != CTOKEN_ERR_SUCCESS) {
-        return 700 + (int32_t)ctoken_result;
-    }
 
-    ctoken_result = ctoken_decode_get_num_submods(&decode_context, &uNum);
-    if(ctoken_result != CTOKEN_ERR_SUBMOD_SECTION) {
-        return 800 + (int32_t)ctoken_result;
+    /* Trigger an unusual error ctoken_decode_exit_submod */
+    ctoken_result = ctoken_decode_validate_token(&decode_context, TUB(submods_deeply_nested));
+    if(ctoken_result) {
+        return test_result_code(25, 0, ctoken_result);
     }
-
-    ctoken_result = ctoken_decode_get_named_nested_token(&decode_context,
-                                                         Q_USEFUL_BUF_FROM_SZ_LITERAL("subsub"),
-                                                         &type, &token);
-    if(ctoken_result != CTOKEN_ERR_SUBMOD_SECTION) {
-        return 900 + (int32_t)ctoken_result;
-    }
+    ctoken_result = ctoken_decode_enter_nth_submod(&decode_context, 0, &name);
+    /* Exit map prematurely to cause error condition inside
+     * ctoken_decode_exit_submod(). These three all succeed and undo
+     * entry into the submod, the submod section and the UCCS.
+     */
+    QCBORDecode_ExitMap(&(decode_context.qcbor_decode_context));
+    QCBORDecode_ExitMap(&(decode_context.qcbor_decode_context));
+    QCBORDecode_ExitMap(&(decode_context.qcbor_decode_context));
 
     ctoken_result = ctoken_decode_exit_submod(&decode_context);
-    if(ctoken_result != CTOKEN_ERR_SUCCESS) {
-        return 1000 + (int32_t)ctoken_result;
-    }
-
-    /* A submodule with an integer name */
-    ctoken_result = ctoken_decode_enter_nth_submod(&decode_context, 1, &name);
-    if(ctoken_result != CTOKEN_ERR_SUBMOD_NAME_NOT_A_TEXT_STRING) {
-        return 1100 + (int32_t)ctoken_result;
-    }
-
-    ctoken_result = ctoken_decode_enter_named_submod(&decode_context, "bad-sub-mod");
-    if(ctoken_result != CTOKEN_ERR_SUCCESS) {
-        return 1200 + (int32_t)ctoken_result;
-    }
-
-    /* submodule is a array and should have been a map */
-    ctoken_result = ctoken_decode_enter_named_submod(&decode_context, "notmap");
-    if(ctoken_result != CTOKEN_ERR_CBOR_TYPE) {
-        return 1300 + (int32_t)ctoken_result;
-    }
-
-    /* submodule is time string and should have been a map */
-    ctoken_result = ctoken_decode_enter_named_submod(&decode_context, "notbs");
-    if(ctoken_result != CTOKEN_ERR_CBOR_TYPE) {
-        return 1350 + (int32_t)ctoken_result;
-    }
-
-    /* Try to get a submod token that is not of the right type */
-    ctoken_result = ctoken_decode_get_named_nested_token(&decode_context,
-                                                         Q_USEFUL_BUF_FROM_SZ_LITERAL("notmap"),
-                                                         &type, &token);
-    if(ctoken_result != CTOKEN_ERR_SUBMOD_TYPE) {
-        return 1400 + (int32_t)ctoken_result;
-    }
-
-    /* Try to get a submod token that is not of the right type */
-    ctoken_result = ctoken_decode_get_named_nested_token(&decode_context,
-                                                         Q_USEFUL_BUF_FROM_SZ_LITERAL("notbs"),
-                                                         &type, &token);
-    if(ctoken_result != CTOKEN_ERR_SUBMOD_TYPE) {
-        return 1400 + (int32_t)ctoken_result;
-    }
-
-    /* Try to get a submod token that is not of the right type */
-    ctoken_result = ctoken_decode_get_named_nested_token(&decode_context,
-                                                         Q_USEFUL_BUF_FROM_SZ_LITERAL("nest1"),
-                                                         &type, &token);
-    if(ctoken_result != CTOKEN_ERR_SUBMOD_TYPE) {
-        return 1400 + (int32_t)ctoken_result;
-    }
-
-
-    /* A not-well-formed submodule */
-    sign_cbor(UsefulBuf_FROM_BYTE_ARRAY_LITERAL(nwf_submod), out, &token);
-
-    ctoken_decode_init(&decode_context,
-                       T_COSE_OPT_ALLOW_SHORT_CIRCUIT,
-                       CTOKEN_PROTECTION_BY_TAG,
-                       0);
-
-    ctoken_result = ctoken_decode_validate_token(&decode_context, token);
-    if(ctoken_result) {
-        return 1500 + (int32_t)ctoken_result;
-    }
-
-    uint64_t x;
-    ctoken_result = ctoken_decode_uptime(&decode_context, &x);
-    if(ctoken_result != CTOKEN_ERR_SUCCESS) {
-        return 1600 + (int32_t)ctoken_result;
-    }
-
-    ctoken_result = ctoken_decode_get_named_nested_token(&decode_context,
-                                                         Q_USEFUL_BUF_FROM_SZ_LITERAL("jj"),
-                                                         &type, &token);
-    if(ctoken_result != CTOKEN_ERR_SUCCESS) {
-        return 1700 + (int32_t)ctoken_result;
-    }
-
-    ctoken_result = ctoken_decode_get_named_nested_token(&decode_context,
-                                                         Q_USEFUL_BUF_FROM_SZ_LITERAL("bad"),
-                                                         &type, &token);
-    if(ctoken_result != CTOKEN_ERR_CBOR_NOT_WELL_FORMED) {
-        return 1800 + (int32_t)ctoken_result;
+    if(ctoken_result != CTOKEN_ERR_CBOR_DECODE) {
+        return test_result_code(25, 0, ctoken_result);
     }
 
     return 0;
@@ -1148,7 +1283,7 @@ static const uint8_t expected_boot_and_debug[] = {
     0xD7, 0xA0, 0x68, 0x61};
 
 static const uint8_t bad_debug1[] = {
-0xa1, 0x3a, 0x00, 0x01, 0x28, 0xe7, 0x62, 0x68, 0x69
+    0xa1, 0x3a, 0x00, 0x01, 0x28, 0xe7, 0x62, 0x68, 0x69
 };
 
 static const uint8_t bad_debug2[] = {
@@ -1160,7 +1295,7 @@ static const uint8_t bad_debug3[] = {
 };
 
 static const uint8_t bad_secure_boot1[] = {
-    0xa1, 0x3a, 0x00, 0x01, 0x28, 0xe6, 0xf6
+    0xa1, 0x3a, 0x00, 0x01, 0x28, 0xe2, 0xf6
 };
 
 static const uint8_t bad_secure_boot2[] = {
@@ -1311,11 +1446,14 @@ int32_t debug_and_boot_test()
   16: 3,
   6: 1(1526542894),
   14: 3,
-  -76000: {"Android App Foo":
-         {14: 1},
-       "Secure Element Eat": h'420123',
-       "Linux Android":
-          {14: 1}}}
+  -76000: {
+      "Android App Foo":
+          {14: 1},
+      "Secure Element Eat": h'420123',
+      "Linux Android":
+          {14: 1}
+    }
+  }
 
  */
 static const uint8_t submods_uccs[] = {
@@ -1452,7 +1590,7 @@ int32_t get_next_test()
      }
 
      result = ctoken_decode_enter_nth_submod(&decode_context, 1, &submod_name);
-     if(result != CTOKEN_ERR_CBOR_TYPE) {
+     if(result != CTOKEN_ERR_SUBMOD_IS_A_TOKEN) {
          return test_result_code(15, 0, result);
      }
 

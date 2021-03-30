@@ -104,7 +104,7 @@ submod_state_open_submod(struct ctoken_submod_state_t *me)
 
     const enum ctoken_encode_nest_state * const array_end = &(me->level_state[CTOKEN_MAX_SUBMOD_NESTING-1]);
     if(me->current_level >= array_end) {
-        return CTOKEN_ERR_SUBMOD_NESTING_TOO_DEEP;
+        return CTOKEN_ERR_NESTING_TOO_DEEP;
     }
 
     *(me->current_level) = SUBMODS_IN_SECTION_AND_SUBMOD;

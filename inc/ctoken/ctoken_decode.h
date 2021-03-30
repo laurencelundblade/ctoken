@@ -111,7 +111,7 @@ struct ctoken_decode_ctx {
     uint32_t                       ctoken_options;
     enum ctoken_err_t              last_error;
     QCBORDecodeContext             qcbor_decode_context;
-    uint8_t                        in_submods;
+    uint8_t                        submod_nest_level;
     uint64_t                       auTags[CTOKEN_MAX_TAGS_TO_RETURN];
     enum ctoken_protection_t       protection_type;
     enum ctoken_protection_t       actual_protection_type;
@@ -1066,13 +1066,25 @@ ctoken_decode_rewind(struct ctoken_decode_ctx   *context);
 /**
  * \brief Get the number of submodules.
  *
- * \param[in] context         The decoding context.
- * \param[out] num_submods     The returned number of submodules.
+ * \param[in] context        The decoding context.
+ * \param[out] num_submods   The returned number of submodules.
  *
- * \returns A ctoken error code
+ * \retval CTOKEN_ERR_SUCCESS           The submodule section exists and its
+ *                                      content was counted.
+ *
+ * \retval CTOKEN_ERR_NESTING_TOO_DEEP  The submodule and claim nesting
+ *                                      is deeper than either QCBOR or
+ *                                      ctoken can handle.
+ *
+ * \retval CTOKEN_ERR_XXX               Other errors usually indicate
+ *                                      the submodule or submodules
+ *                                      sections are malformed or
+ *                                      invalid.
  *
  * This returns the number of submodules at the current submodule
- * nesting level.
+ * nesting level. If there is no submodules section or it is
+ * empty the error code returned is CTOKEN_ERR_SUCCESS and the
+ * num_submods returned is 0.
  */
 enum ctoken_err_t
 ctoken_decode_get_num_submods(struct ctoken_decode_ctx *context,
@@ -1086,11 +1098,44 @@ ctoken_decode_get_num_submods(struct ctoken_decode_ctx *context,
  * \param[in] submod_index   Index of the submodule to enter.
  * \param[out] submod_name   The returned string name of the submodule.
  *
- * \returns A ctoken error code
+ * \retval CTOKEN_ERR_SUCCESS           The submodule exists and was entered.
+ *
+ * \retval CTOKEN_ERR_SUBMOD_NOT_FOUND  The submodule does not exist
+ *                                      because there is no submodule
+ *                                      section, the submodule section
+ *                                      is empty, or the index was too
+ *                                      large.
+ *
+ * \retval CTOKEN_ERR_SUBMOD_IS_A_TOKEN The submodule exists, but it
+ *                                      is a nested token.
+ *
+ * \retval CTOKEN_ERR_SUBMOD_NAME_NOT_A_TEXT_STRING  The submodule
+ *                                                   exists, is a map
+ *                                                   but the name is
+ *                                                   not a text
+ *                                                   string.
+ *
+ * \retval CTOKEN_ERR_NESTING_TOO_DEEP  The submodule and claim nesting
+ *                                      is deeper than either QCBOR or
+ *                                      ctoken can handle.
+ *
+ * \retval CTOKEN_ERR_SUBMOD_TYPE       The CBOR type of the submodule
+ *                                      is not a map.
+ *
+ * \retval CTOKEN_ERR_XXX               Other errors usually indicate
+ *                                      the submodule or submodules
+ *                                      sections are malformed or
+ *                                      invalid.
  *
  * After this call, all claims fetched will be from the submodule that
  * was entered.  This, and the other functions to enter submodules,
  * may be called multiple times to enter nested submodules.
+ *
+ * If the submodule at the index is a nested token, then it is not
+ * entered and \ref CTOKEN_ERR_SUBMOD_IS_A_TOKEN is returned.
+ *
+ * This does NOT check for duplicate labels. See
+ * ctoken_decode_enter_named_submod()
  *
  * The \c name parameter may be NULL if the submodule name is not of
  * interest.
@@ -1107,11 +1152,35 @@ ctoken_decode_enter_nth_submod(struct ctoken_decode_ctx *context,
  * \param[in] context      The decoding context.
  * \param[in] submod_name  The name of the submodule to enter.
  *
- * \returns A ctoken error code
+ * \retval CTOKEN_ERR_SUCCESS           The submodule exists and was entered.
+ *
+ * \retval CTOKEN_ERR_DUPLICATE_LABEL   Either there are two submodule sections
+ *                                      or two submodules with the same name.
+ *
+ * \retval CTOKEN_ERR_SUBMOD_NOT_FOUND  The submodule does not exist because
+ *                                      there is no submodule section or no
+ *                                      submod with the given name was found.
+ *
+ * \retval CTOKEN_ERR_SUBMOD_IS_A_TOKEN The submodule exists, but it is a
+ *                                      nested token.
+ *
+ * \retval CTOKEN_ERR_NESTING_TOO_DEEP  The submodule and claim nesting is deeper
+ *                                      than either QCBOR or ctoken can handle.
+ *
+ * \retval CTOKEN_ERR_SUBMOD_TYPE       The CBOR type of the submodule
+ *                                      is not a map.
+ *
+ * \retval CTOKEN_ERR_XXX               Other errors usually indicate
+ *                                      the submodule or submodules
+ *                                      sections are malformed or
+ *                                      invalid.
  *
  * After this call, all claims fetched will be from the submodule that
  * was entered.  This, and the other functions to enter submodules,
  * may be called multiple times to enter nested submodules.
+ *
+ * If the submodule with the given name is a nested token, then it is
+ * not entered and \ref CTOKEN_ERR_SUBMOD_IS_A_TOKEN is returned.
  */
 enum ctoken_err_t
 ctoken_decode_enter_named_submod(struct ctoken_decode_ctx *context,
@@ -1140,7 +1209,30 @@ ctoken_decode_exit_submod(struct ctoken_decode_ctx *context);
  * \param[out] submod_name   The name of the submodule.
  * \param[out] token         Pointer and length of the token returned.
  *
- * \returns A ctoken error code.
+ * \retval CTOKEN_ERR_SUCCESS           The nested token was returned.
+ *
+ * \retval CTOKEN_ERR_SUBMOD_NOT_FOUND  The nested token does not exist
+ *                                      because there is no submodule
+ *                                      section, the submodule section
+ *                                      is empty, or the index was too
+ *                                      large.
+ *
+ * \retval CTOKEN_ERR_SUBMOD_NAME_NOT_A_TEXT_STRING  The submodule
+ *                                                   exists, but the
+ *                                                   name is not a text
+ *                                                   string.
+ *
+ * \retval CTOKEN_ERR_NESTING_TOO_DEEP  The submodule and claim nesting
+ *                                      is deeper than either QCBOR or
+ *                                      ctoken can handle.
+ *
+ * \retval CTOKEN_ERR_SUBMOD_TYPE       The CBOR type of the nested token
+ *                                      is not a string.
+ *
+ * \retval CTOKEN_ERR_XXX               Other errors usually indicate
+ *                                      the nested token or submodules
+ *                                      sections are malformed or
+ *                                      invalid.
  *
  * A submodule may be a signed and secured token. Such submodules are
  * returned as a byte or text string. To process these that are in CWT
@@ -1164,8 +1256,26 @@ ctoken_decode_get_nth_nested_token(struct ctoken_decode_ctx *context,
  * \param[out] type        The type of the nested token returned.
  * \param[out] token       Pointer and length of the token returned.
  *
- * \returns A ctoken error code
+ * \retval CTOKEN_ERR_SUCCESS           The submodule exists and was entered.
  *
+ * \retval CTOKEN_ERR_DUPLICATE_LABEL   Either there are two submodule sections
+ *                                      or two nested token with the same name.
+ *
+ * \retval CTOKEN_ERR_SUBMOD_NOT_FOUND  The nested token does not exist because
+ *                                      there is no nested token section or no
+ *                                      submod with the given name was found.
+ *
+ * \retval CTOKEN_ERR_NESTING_TOO_DEEP  The submodule and claim nesting is deeper
+ *                                      than either QCBOR or ctoken can handle.
+ *
+ * \retval CTOKEN_ERR_SUBMOD_TYPE       The CBOR type of the nested token
+ *                                      is not a string.
+ *
+ * \retval CTOKEN_ERR_XXX               Other errors usually indicate
+ *                                      the nested token or submodules
+ *                                      sections are malformed or
+ *                                      invalid.
+ * *
  * See ctoken_decode_get_nth_nested_token() for discussion on the
  * token returned.
  */
