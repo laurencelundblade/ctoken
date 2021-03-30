@@ -17,56 +17,56 @@
  * \file ctoken_encode.c
  *
  * \brief Attestation token creation implementation
-
  */
 
 
 /*
- TODO: run this through the spelling checker.
- TODO: make this whole thing disablaable.
-
- The following collection of functions and the ctoken_submod_state
- structure tracking nesting of submodules to report errors in
- the calling sequence for creating submodules. This whole
- facility is unnecessary in run time code that is known to be
- correct, but getting the calling sequence right is not perfectly
- easy so there is this facility.
-
- This starts out with the top level in the state SUBMODS_NONE.
- There is no submodules section in the top level claim set.
- The only thing possible in this state is the opening of the
- submodules section, a transition from SUBMODS_NONE to
- SUBMODS_IN_SECTION. This is taken care of submod_state_start_section().
-
- From the SUBMODS_IN_SECTION state 3 things can happen as described
- in the three following paragraphs.
-
- First from the SUBMODS_IN_SECTION state, a submodule can be opened and
- claims added to it. This puts the current level in the
- SUBMODS_IN_SECTION_AND_SUBMOD state and opens up a new level
- that is in the SUBMODS_NONE state. This is handled by
- submod_state_open_submod().
-
- Second from the SUBMODS_IN_SECTION state, a whole formatted
- and secured token can be added. This happens in one go and doesn't
- change the state. This is handled by submod_state_ok_for_token().
-
- Third from the SUBMODS_IN_SECTION state, the submods section may
- be closed off. To produce a correct token it must be closed off
- when all submodules are added. When closed off it goes into the
- SUBMODS_SECTION_DONE state. This is handled by submod_state_end_section().
-
- From the SUBMODS_IN_SECTION_AND_SUBMOD state, the only thing that
- can happen is the closing of the submodule. This is handled by
- submod_state_close_submod().
-
- Finally, from the SUBMODS_SECTION_DONE state, the only thing that
- can happen is the closing out of the submodule the section is in
- unless it is at the top level in which nothing can happen.
- This hs handled by submod_state_close_submod().
-
- To confirm all submodules and submodule sections are closed
- out call submod_state_all_finished().
+ * TODO: make this whole thing disablable
+ *
+ * The Submodule Encoding State Tracker
+ *
+ * The following collection of functions and the ctoken_submod_state
+ * structure tracking nesting of submodules to report errors in the
+ * calling sequence for creating submodules. This whole facility is
+ * unnecessary in run time code that is known to be correct, but
+ * getting the calling sequence right is not perfectly easy so there
+ * is this facility.
+ *
+ * This starts out with the top level in the state SUBMODS_NONE.
+ * There is no submodules section in the top level claim set.  The
+ * only thing possible in this state is the opening of the submodules
+ * section, a transition from SUBMODS_NONE to SUBMODS_IN_SECTION. This
+ * is taken care of submod_state_start_section().
+ *
+ * From the SUBMODS_IN_SECTION state 3 things can happen as described
+ * in the three following paragraphs.
+ *
+ * First from the SUBMODS_IN_SECTION state, a submodule can be opened
+ * and claims added to it. This puts the current level in the
+ * SUBMODS_IN_SECTION_AND_SUBMOD state and opens up a new level that
+ * is in the SUBMODS_NONE state. This is handled by
+ * submod_state_open_submod().
+ *
+ * Second from the SUBMODS_IN_SECTION state, a whole formatted and
+ * secured token can be added. This happens in one go and doesn't
+ * change the state. This is handled by submod_state_ok_for_token().
+ *
+ * Third from the SUBMODS_IN_SECTION state, the submods section may
+ * be closed off. To produce a correct token it must be closed off
+ * when all submodules are added. When closed off it goes into the
+ * SUBMODS_SECTION_DONE state. This is handled by submod_state_end_section().
+ *
+ * From the SUBMODS_IN_SECTION_AND_SUBMOD state, the only thing that
+ * can happen is the closing of the submodule. This is handled by
+ * submod_state_close_submod().
+ *
+ * Finally, from the SUBMODS_SECTION_DONE state, the only thing that
+ * can happen is the closing out of the submodule the section is in
+ * unless it is at the top level in which case nothing can happen.
+ * This hs handled by submod_state_close_submod().
+ *
+ * To confirm all submodules and submodule sections are closed out
+ * call submod_state_all_finished().
  */
 static inline void
 submodstate_init(struct ctoken_submod_state_t *me)
@@ -102,7 +102,8 @@ submod_state_open_submod(struct ctoken_submod_state_t *me)
         return CTOKEN_ERR_NO_SUBMOD_SECTION_STARTED;
     }
 
-    const enum ctoken_encode_nest_state * const array_end = &(me->level_state[CTOKEN_MAX_SUBMOD_NESTING-1]);
+    const enum ctoken_encode_nest_state * const array_end =
+        &(me->level_state[CTOKEN_MAX_SUBMOD_NESTING-1]);
     if(me->current_level >= array_end) {
         return CTOKEN_ERR_NESTING_TOO_DEEP;
     }
@@ -171,6 +172,8 @@ submod_state_all_finished(struct ctoken_submod_state_t *me)
  */
 static enum ctoken_err_t t_cose_err_to_attest_err(enum t_cose_err_t err)
 {
+    // TODO: greatly improve this. Probably combine with decode
+    // error mapper
     switch(err) {
 
     case T_COSE_SUCCESS:
