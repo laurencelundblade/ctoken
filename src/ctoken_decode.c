@@ -619,7 +619,7 @@ ctoken_decode_location(struct ctoken_decode_ctx   *me,
 
     if(!ctoken_location_is_item_present(location, CTOKEN_EAT_LABEL_LATITUDE) ||
         !ctoken_location_is_item_present(location, CTOKEN_EAT_LABEL_LONGITUDE)) {
-        /* Per EAT and W3C specs, the lattitude and longitude must be present */
+        /* Per EAT and W3C specs, the latitude and longitude must be present */
         return_value = CTOKEN_ERR_CLAIM_FORMAT;
         goto Done;
     }
