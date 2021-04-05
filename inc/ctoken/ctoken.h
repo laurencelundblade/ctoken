@@ -222,7 +222,7 @@ enum ctoken_err_t {
 
 
 
-/*
+/**
  @anchor TagsAndProtection
 
  EAT tokens can be one of these three: CWT (RFC8392), JWT (RFC7519) or
@@ -231,14 +231,19 @@ enum ctoken_err_t {
  created. It is purely a CWT with no protection. The discussion below
  is just for CWT and UCCS as this implementation doesn’t support JWT.
 
- TODO: explain the confusing use of "tag" in CBOR.
-
  This describes the configuration parameters for encoding and decoding
- that control what sort of CBOR tag and protection type
- handling. Here, protection type refers to whether a token has no
- protection (it is a UCCS) or has COSE protection (it is a CWT) and
- when it has protection, the type of protection (COSE signing, COSE
- Mac, COSE encryption…).
+ that control the protection type handling. Here, protection type
+ refers to whether a token has no protection (it is a UCCS) or has
+ COSE protection (it is a CWT) and when it has protection, the type of
+ protection (COSE signing, COSE Mac, COSE encryption…).
+
+ CBOR has a "tag" mechanism that can be used to indicate the data type
+ and thus the protection type.  The use of the word "tag" in CBOR is a
+ bit confusing. A "tag" is made up of both a tag number and tag
+ content. Intuitively, the tag number would seem to be the "tag", but
+ that is not the way CBOR use the word "tag". So a "UCCS tag" is the
+ tag number 601 AND the map with all the UCCS claims, not just the tag
+ number 601.
 
  When encoding, some indication of the protection type is typically
  put in the encoded token, so the decoder can determine the protection

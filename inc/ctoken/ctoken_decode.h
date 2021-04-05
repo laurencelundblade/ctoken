@@ -115,7 +115,6 @@ struct ctoken_decode_ctx {
     uint64_t                       auTags[CTOKEN_MAX_TAGS_TO_RETURN];
     enum ctoken_protection_t       protection_type;
     enum ctoken_protection_t       actual_protection_type;
-
 };
 
 
@@ -179,20 +178,29 @@ void ctoken_decode_init(struct ctoken_decode_ctx *context,
  * \brief Set specific public key to use for verification.
  *
  * \param[in] context           The token decoder context to configure.
- * \param[in] verification_key  TODO: reference to t_cose.
+ * \param[in] verification_key  The key used for verification.
  *
- * The key type must work with the signing algorithm in the token
- * being verified.
+ * The \c verification_key is a structure defined in t_cose to
+ * generically hold a key for different algorithms and different
+ * cryptographic libraries. See its definition in
+ * t_cose_common.h. This is left abstract like this so ctoken (and
+ * t_cose) can work with multiple cryptographic libraries and still
+ * have small code size.
  *
- * The \c kid in the \c COSE_Key must match the one in the token.
- *
- * If there is no kid in the \c COSE_Key it will be used no matter
- * what kid is indicated in the token.
+ * The key given here must be for the one your particular instance of
+ * ctoken is integrated with. Openssl is the most likely.
  *
  * Once set, a key can be used for multiple verifications.
  *
  * Calling this again will replace the previous key that was
  * configured.
+ *
+ * How to find the verification key? That depends on the particular
+ * profile of EAT. In many cases the verifier must get the key
+ * out-of-band. The key may or may not be identified by the kid.
+ * Another possible scenario is the key is in a certificate in the EAT
+ * in a COSE header parameter. An API to extract it is not yet
+ * provided here.
  */
 static inline void
 ctoken_decode_set_verification_key(struct ctoken_decode_ctx *context,
