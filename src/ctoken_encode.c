@@ -11,6 +11,7 @@
 #include "ctoken/ctoken_encode.h"
 #include "qcbor/qcbor_encode.h"
 #include "t_cose/t_cose_sign1_sign.h"
+#include "ctoken_common.h"
 
 
 /**
@@ -163,35 +164,6 @@ submod_state_all_finished(struct ctoken_submod_state_t *me)
 
 
 
-/**
- * \brief Map t_cose error to attestation token error.
- *
- * \param[in] err   The t_cose error to map.
- *
- * \return the attestation token error.
- */
-static enum ctoken_err_t t_cose_err_to_attest_err(enum t_cose_err_t err)
-{
-    // TODO: greatly improve this. Probably combine with decode
-    // error mapper
-    switch(err) {
-
-    case T_COSE_SUCCESS:
-        return CTOKEN_ERR_SUCCESS;
-
-    case T_COSE_ERR_UNSUPPORTED_HASH:
-        return CTOKEN_ERR_HASH_UNAVAILABLE;
-
-    default:
-        /* A lot of the errors are not mapped because they are
-         * primarily internal errors that should never happen. They
-         * end up here.
-         */
-        return CTOKEN_ERR_GENERAL;
-    }
-}
-
-
 static enum ctoken_err_t
 ctoken_encode_start2(struct ctoken_encode_ctx *me,
                      const struct q_useful_buf out_buf)
@@ -221,7 +193,7 @@ ctoken_encode_start2(struct ctoken_encode_ctx *me,
          */
         cose_return_value = t_cose_sign1_encode_parameters(&(me->signer_ctx),
                                                            &(me->cbor_encode_context));
-        return_value = t_cose_err_to_attest_err(cose_return_value);
+        return_value = map_t_cose_errors(cose_return_value);
         if(return_value != CTOKEN_ERR_SUCCESS) {
             goto Done;
         }
@@ -280,7 +252,7 @@ ctoken_encode_finish2(struct ctoken_encode_ctx *me,
         cose_return_value = t_cose_sign1_encode_signature(&(me->signer_ctx), &(me->cbor_encode_context));
         if(cose_return_value) {
             /* Main errors are invoking the hash or signature */
-            return_value = t_cose_err_to_attest_err(cose_return_value);
+            return_value = map_t_cose_errors(cose_return_value);
             goto Done;
         }
     }

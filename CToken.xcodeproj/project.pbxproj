@@ -33,6 +33,7 @@
 		0FBE2DA123FA14A000A31C46 /* eat_example_psa.c in Sources */ = {isa = PBXBuildFile; fileRef = 0FBE2D9F23FA149200A31C46 /* eat_example_psa.c */; };
 		0FBE2DA423FA17B200A31C46 /* libmbedcrypto.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0FBE2DA223FA17A700A31C46 /* libmbedcrypto.a */; };
 		E72FC2402603E0E800D07153 /* eat_test_tokens.c in Sources */ = {isa = PBXBuildFile; fileRef = E72FC23E2603E0E800D07153 /* eat_test_tokens.c */; };
+		E7697236261B2D6600F77CDF /* ctoken_common.c in Sources */ = {isa = PBXBuildFile; fileRef = E7697235261B2D6600F77CDF /* ctoken_common.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -102,6 +103,8 @@
 		E769723125EA3B8D00F77CDF /* ctoken_cwt_labels.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ctoken_cwt_labels.h; path = inc/ctoken/ctoken_cwt_labels.h; sourceTree = "<group>"; };
 		E769723225EA3B8D00F77CDF /* ctoken.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ctoken.h; path = inc/ctoken/ctoken.h; sourceTree = "<group>"; };
 		E769723325EA3B8D00F77CDF /* ctoken_psaia_labels.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ctoken_psaia_labels.h; path = inc/ctoken/ctoken_psaia_labels.h; sourceTree = "<group>"; };
+		E7697234261B2D6600F77CDF /* ctoken_common.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = ctoken_common.h; path = src/ctoken_common.h; sourceTree = SOURCE_ROOT; };
+		E7697235261B2D6600F77CDF /* ctoken_common.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = ctoken_common.c; path = src/ctoken_common.c; sourceTree = SOURCE_ROOT; };
 		E7FDBF1725787DD1007138A8 /* t_cose */ = {isa = PBXFileReference; lastKnownFileType = folder; name = t_cose; path = ../../t_cose/master/inc/t_cose; sourceTree = "<group>"; };
 		E7FDBF3225C2BB55007138A8 /* qcbor_decode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = qcbor_decode.h; path = ../../QCBOR/master/inc/qcbor/qcbor_decode.h; sourceTree = "<group>"; };
 		E7FDBF3325C2BB55007138A8 /* UsefulBuf.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = UsefulBuf.h; path = ../../QCBOR/master/inc/qcbor/UsefulBuf.h; sourceTree = "<group>"; };
@@ -196,6 +199,8 @@
 				0F3AF32E23E4FD6C00A60561 /* ctoken_decode.c */,
 				0F3AF35123E5463300A60561 /* ctoken_psaia_encode.c */,
 				0F3AF34B23E53BCF00A60561 /* ctoken_psaia_decode.c */,
+				E7697234261B2D6600F77CDF /* ctoken_common.h */,
+				E7697235261B2D6600F77CDF /* ctoken_common.c */,
 			);
 			name = src;
 			path = "New Group";
@@ -361,6 +366,7 @@
 			files = (
 				0F3AF37123EF5C4700A60561 /* cwt_test.c in Sources */,
 				0F3AF35223E5463300A60561 /* ctoken_psaia_encode.c in Sources */,
+				E7697236261B2D6600F77CDF /* ctoken_common.c in Sources */,
 				E72FC2402603E0E800D07153 /* eat_test_tokens.c in Sources */,
 				0F3AF34823E5008200A60561 /* run_tests.c in Sources */,
 				0FBE2D8923F976BF00A31C46 /* psaia_test.c in Sources */,
