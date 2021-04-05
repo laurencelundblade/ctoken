@@ -68,7 +68,7 @@ INC=-I inc -I test  -I src
 ALL_INC=$(CRYPTO_INC) $(QCBOR_INC) $(T_COSE_INC) $(INC) 
 CFLAGS=$(ALL_INC) $(C_OPTS) $(TEST_CONFIG_OPTS) $(CRYPTO_CONFIG_OPTS)
 
-SRC_OBJ=src/ctoken_encode.o src/ctoken_decode.o \
+SRC_OBJ=src/ctoken_encode.o src/ctoken_decode.o src/ctoken_common.o\
         src/ctoken_psaia_encode.o src/ctoken_psaia_decode.o
 
 
@@ -96,10 +96,11 @@ PUBLIC_INTERFACE=inc/ctoken/ctoken.h inc/ctoken/ctoken_encode.h inc/ctoken/ctoke
                   inc/ctoken/ctoken_psaia_decode.h inc/ctoken/ctoken_psaia_encode.h inc/ctoken/ctoken_psaia_labels.h
 
 # ---- source dependecies -----
-src/ctoken_encode.o:	inc/ctoken/ctoken_encode.h inc/ctoken/ctoken.h inc/ctoken/ctoken_cwt_labels.h inc/ctoken/ctoken_eat_labels.h
-src/ctoken_decode.o:	inc/ctoken/ctoken_decode.h inc/ctoken/ctoken.h inc/ctoken/ctoken_cwt_labels.h inc/ctoken/ctoken_eat_labels.h
+src/ctoken_encode.o:	inc/ctoken/ctoken_encode.h inc/ctoken/ctoken.h inc/ctoken/ctoken_cwt_labels.h inc/ctoken/ctoken_eat_labels.h src/ctoken_common.h
+src/ctoken_decode.o:	inc/ctoken/ctoken_decode.h inc/ctoken/ctoken.h inc/ctoken/ctoken_cwt_labels.h inc/ctoken/ctoken_eat_labels.h src/ctoken_common.h
 src/ctoken_psaia_encode.o:	inc/ctoken/ctoken_psaia_encode.h inc/ctoken/ctoken.h inc/ctoken/ctoken_psaia_labels.h  inc/ctoken/ctoken_cwt_labels.h inc/ctoken/ctoken_eat_labels.h
 src/ctoken_psaia_decode.o:	inc/ctoken/ctoken_psaia_decode.h inc/ctoken/ctoken.h inc/ctoken/ctoken_psaia_labels.h  inc/ctoken/ctoken_cwt_labels.h inc/ctoken/ctoken_eat_labels.h
+src/ctoken_common.o:	src/ctoken_common.h
 
 
 # ---- test dependencies -----
