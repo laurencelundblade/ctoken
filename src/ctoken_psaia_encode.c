@@ -17,7 +17,7 @@
 void ctoken_psaia_encode_simple_claims(struct ctoken_encode_ctx *me,
                                        const struct ctoken_psaia_simple_claims_t *claims)
 {
-    if(IS_ITEM_FLAG_SET(NONCE_FLAG, claims->item_flags)) {
+    if(IS_ITEM_FLAG_SET(CTOKEN_PSAIA_NONCE_FLAG, claims->item_flags)) {
         ctoken_encode_nonce(me, claims->nonce);
     }
 

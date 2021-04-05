@@ -79,7 +79,7 @@ struct ctoken_psaia_simple_claims_t {
  ctoken_psaia_simple_claims_t */
 // TODO: prefix these names
 enum ctoken_psaia_item_index_t {
-    NONCE_FLAG =              0,
+    CTOKEN_PSAIA_NONCE_FLAG =              0,
     UEID_FLAG  =              1,
     BOOT_SEED_FLAG =          2,
     HW_VERSION_FLAG =         3,

@@ -59,7 +59,7 @@ int32_t psaia_basic_test()
     psaia_claims.nonce       = test_nonce;
     psaia_claims.ueid        = test_ueid;
     psaia_claims.origination = test_origination;
-    psaia_claims.item_flags  = ITEM_FLAG(NONCE_FLAG) |
+    psaia_claims.item_flags  = ITEM_FLAG(CTOKEN_PSAIA_NONCE_FLAG) |
                                ITEM_FLAG(UEID_FLAG) |
                                ITEM_FLAG(ORIGINATION_FLAG);
 
@@ -102,7 +102,7 @@ int32_t psaia_basic_test()
         return result;
     }
 
-    if(psaia_claims.item_flags != (ITEM_FLAG(NONCE_FLAG) |
+    if(psaia_claims.item_flags != (ITEM_FLAG(CTOKEN_PSAIA_NONCE_FLAG) |
                                    ITEM_FLAG(UEID_FLAG) |
                                    ITEM_FLAG(ORIGINATION_FLAG))) {
         return 400;
