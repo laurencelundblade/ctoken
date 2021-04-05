@@ -14,7 +14,7 @@
 #define ctoken_common_h
 
 #include "t_cose/t_cose_common.h"
-#include "ctoken.h"
+#include "ctoken/ctoken.h"
 
 enum ctoken_err_t
 map_t_cose_errors(enum t_cose_err_t t_cose_error);

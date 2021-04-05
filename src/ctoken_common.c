@@ -12,6 +12,8 @@
 
 
 #include "ctoken_common.h"
+#include <stdint.h>
+#include <stddef.h>
 
 
 /* Use uint8_t instead of enum so map will be 4x smaller. Compilers usually
