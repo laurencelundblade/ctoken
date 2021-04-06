@@ -2,15 +2,65 @@
  * files by the script t2c.sh. 
  */
 
-/* Five nested levels of submodules with a distinct nonce at each level. */
-/* Each level also has a nested token. TODO: make the nested tokens real */
-/* A good test to perform on this is to traverse the whole tree getting */
-/* the nonces and the nested tokens and validating their values. */
-/* Note that nested tokens must be signed. They can't be UCCS per */
-/* the EAT standard, so when this is filled in they will be larger */
-/* and not so straight forward to validate */
-extern const unsigned char submods_deeply_nested_token[];
-#define submods_deeply_nested_token_size 130
+
+/* Useful macro to convert test to a UsefulBuf */
+#define TEST2UB(test_name) ((struct q_useful_buf_c){test_name##_bytes, test_name##_size})
+
+/* A completely empty UCCS token. */
+/* It has no tags and no claims. */
+extern const unsigned char completely_empty_bytes[];
+#define completely_empty_size 1
+
+
+extern const unsigned char some_submods_bytes[];
+#define some_submods_size 82
+
+
+/* The secboot claim with a value of null which is not allowed. There are */
+/*  many ways secboot can be invalid. This is just one. It is picked because */
+/* it is very similar to the value of true and false, but still invalid. */
+extern const unsigned char secboot_invalid1_bytes[];
+#define secboot_invalid1_size 3
+
+
+/* A secboot claim with a value that is an integer which is not allowed. */
+/* There are  many ways secboot can be invalid. This is just one. */
+/* It is picked because some might consider the integer 0 to be false. */
+extern const unsigned char secboot_invalid2_bytes[];
+#define secboot_invalid2_size 3
+
+
+/* The value of secboot is 0x1f an integer with an indefinite */
+/* length. This not-well-formed CBOR that should be caught at the lowest */
+/* layer in the decoder and bubbled up to some top-level error. This is */
+/* to test that path of bubbling up errors. There are lots of other ways */
+/* that CBOR can be invalid here. This is just one to test the error */
+/* propagation. */
+extern const unsigned char secboot_invalid3_bytes[];
+#define secboot_invalid3_size        3
+
+/* A secboot claim with value the text "false". It is supposed to be a */
+/* true Boolean value, not a text string. */
+extern const unsigned char secboot_invalid4_bytes[];
+#define secboot_invalid4_size 8
+
+
+/* A secboot claim with value the text "truee". It is supposed to be a */
+/* true Boolean value, not a text string. */
+extern const unsigned char secboot_invalid5_bytes[];
+#define secboot_invalid5_size 7
+
+
+/* A valid secboot claim with a value of true */
+/* The expected result from decoding this the value true */
+extern const unsigned char secboot_valid1_bytes[];
+#define secboot_valid1_size 3
+
+
+/* A valid secboot claim with a value of false */
+/* The expected results from decoding this is the value false */
+extern const unsigned char secboot_valid2_bytes[];
+#define secboot_valid2_size 3
 
 
 /* This has two submods labeled "submod" and two nested tokens labeled */
@@ -21,93 +71,51 @@ extern const unsigned char submods_deeply_nested_token[];
 /* The first occurance of "nested" */
 /* The second occurance of "submod" */
 /* The second occurance of "nested" */
-extern const unsigned char submods_duplicate_token[];
-#define submods_duplicate_token_size       73
-
-/* An empty submodule (which is of course legal) */
-extern const unsigned char submods_empty_token[];
-#define submods_empty_token_size 11
-
+extern const unsigned char submods_invalid_duplicate_bytes[];
+#define submods_invalid_duplicate_size       73
 
 /* Both types of submod is incorrectly an array, rather than a map and string */
-extern const unsigned char submods_is_array_token[];
-#define submods_is_array_token_size 19
+extern const unsigned char submods_invalid_is_array_bytes[];
+#define submods_invalid_is_array_size 19
 
 
 /* This has a submod section with two simple submodules */
 /* One is empty and the other is a nested JSON token */
-extern const unsigned char submods_minimal_token[];
-#define submods_minimal_token_size 40
-
-
-/* This has a submod section with two simple submodules */
-/* One is empty and the other is a nested JSON token */
-extern const unsigned char submods_non_string_label_token[];
-#define submods_non_string_label_token_size 28
+extern const unsigned char submods_invalid_non_string_label_bytes[];
+#define submods_invalid_non_string_label_size 28
 
 
 /* The submod section is an integer with an indefinite length instead */
 /* of a map.  Such an integer is not well formed (and not really an */
 /* integer). Decoders should error out on this. */
-extern const unsigned char submods_nwf_section_token[];
-#define submods_nwf_section_token_size        3
+extern const unsigned char submods_invalid_nwf_section_bytes[];
+#define submods_invalid_nwf_section_size        3
 
 /* The submod named "submod" is an integer with an indefinite length */
 /* instead of a map.  Such an integer is not well formed (and not */
 /* really an integer). Decoders should error out on this. */
-extern const unsigned char submods_nwf_submod_token[];
-#define submods_nwf_submod_token_size       11
+extern const unsigned char submods_invalid_nwf_sumbod_bytes[];
+#define submods_invalid_nwf_sumbod_size       11
 
-/* The secboot claim with a value of null which is not allowed. There are */
-/*  many ways secboot can be invalid. This is just one. It is picked because */
-/* it is very similar to the value of true and false, but still invalid. */
-extern const unsigned char secboot_invalid1_token[];
-#define secboot_invalid1_token_size 3
-
-
-/* A secboot claim with a value that is an integer which is not allowed. */
-/* There are  many ways secboot can be invalid. This is just one. */
-/* It is picked because some might consider the integer 0 to be false. */
-extern const unsigned char secboot_invalid2_token[];
-#define secboot_invalid2_token_size 3
+/* Five nested levels of submodules with a distinct nonce at each level. */
+/* Each level also has a nested token. TODO: make the nested tokens real */
+/* A good test to perform on this is to traverse the whole tree getting */
+/* the nonces and the nested tokens and validating their values. */
+/* Note that nested tokens must be signed. They can't be UCCS per */
+/* the EAT standard, so when this is filled in they will be larger */
+/* and not so straight forward to validate */
+extern const unsigned char submods_valid_deeply_nested_bytes[];
+#define submods_valid_deeply_nested_size 130
 
 
-/* The value of secboot is 0x1f an integer with an indefinite */
-/* length. This not-well-formed CBOR that should be caught at the lowest */
-/* layer in the decoder and bubbled up to some top-level error. This is */
-/* to test that path of bubbling up errors. There are lots of other ways */
-/* that CBOR can be invalid here. This is just one to test the error */
-/* propagation. */
-extern const unsigned char secboot_invalid3_token[];
-#define secboot_invalid3_token_size        3
-
-/* A secboot claim with value the text "false". It is supposed to be a */
-/* true Boolean value, not a text string. */
-extern const unsigned char secboot_invalid4_token[];
-#define secboot_invalid4_token_size 8
+/* An empty submodule (which is of course legal) */
+extern const unsigned char submods_valid_empty_bytes[];
+#define submods_valid_empty_size 11
 
 
-/* A secboot claim with value the text "truee". It is supposed to be a */
-/* true Boolean value, not a text string. */
-extern const unsigned char secboot_invalid5_token[];
-#define secboot_invalid5_token_size 7
-
-
-/* A valid secboot claim with a value of true */
-/* The expected result from decoding this the value true */
-extern const unsigned char secboot_valid1_token[];
-#define secboot_valid1_token_size 3
-
-
-/* A valid secboot claim with a value of false */
-/* The expected results from decoding this is the value false */
-extern const unsigned char secboot_valid2_token[];
-#define secboot_valid2_token_size 3
-
-
-/* A completely empty UCCS token. */
-/* It has no tags and no claims. */
-extern const unsigned char completely_empty_token[];
-#define completely_empty_token_size 1
+/* This has a submod section with two simple submodules */
+/* One is empty and the other is a nested JSON token */
+extern const unsigned char submods_valid_minimal_bytes[];
+#define submods_valid_minimal_size 40
 
 
