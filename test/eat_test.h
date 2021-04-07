@@ -44,6 +44,9 @@ int32_t debug_and_boot_test(void);
 int32_t get_next_test(void);
 
 
+int32_t secboot_test(void);
+
+
 
 #ifdef __cplusplus
 }

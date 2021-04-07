@@ -648,7 +648,7 @@ struct decode_submod_test_config {
 static const struct decode_submod_test_config submod_test_inputs[] = {
     {
         1,
-        {completely_empty_token, completely_empty_token_size},
+        TEST2UB(completely_empty),
         CTOKEN_ERR_SUCCESS,          /* expected_call_num_submods */
         CTOKEN_ERR_SUBMOD_NOT_FOUND, /* expected_enter_0th */
         0, /* expected_decode_nonce */
@@ -666,7 +666,7 @@ static const struct decode_submod_test_config submod_test_inputs[] = {
     },
     {
         2,
-        {submods_nwf_section_token, submods_nwf_section_token_size},
+        TEST2UB(submods_invalid_nwf_section),
         CTOKEN_ERR_CBOR_NOT_WELL_FORMED, /* expected_call_num_submods */
         CTOKEN_ERR_CBOR_NOT_WELL_FORMED, /* expected_enter_0th */
         0, /* expected_decode_nonce */
@@ -685,7 +685,7 @@ static const struct decode_submod_test_config submod_test_inputs[] = {
 
     {
         3,
-        {submods_minimal_token, submods_minimal_token_size},
+        TEST2UB(submods_valid_minimal),
         CTOKEN_ERR_SUCCESS,          /* expected_call_num_submods */
         CTOKEN_ERR_SUCCESS, /* expected_enter_0th */
         CTOKEN_ERR_SUCCESS, /* expected_decode_nonce */
@@ -704,7 +704,7 @@ static const struct decode_submod_test_config submod_test_inputs[] = {
 
     {
         4,
-        {submods_non_string_label_token, submods_non_string_label_token_size},
+        TEST2UB(submods_invalid_non_string_label),
         CTOKEN_ERR_SUCCESS,          /* expected_call_num_submods */
         CTOKEN_ERR_SUBMOD_NAME_NOT_A_TEXT_STRING, /* expected_enter_0th */
         0, /* expected_decode_nonce */
@@ -723,7 +723,7 @@ static const struct decode_submod_test_config submod_test_inputs[] = {
 
     {
         5,
-        {submods_empty_token, submods_empty_token_size},
+        TEST2UB(submods_valid_empty),
         CTOKEN_ERR_SUCCESS,          /* expected_call_num_submods */
         CTOKEN_ERR_SUCCESS, /* expected_enter_0th */
         CTOKEN_ERR_CLAIM_NOT_PRESENT, /* expected_decode_nonce */
@@ -742,7 +742,7 @@ static const struct decode_submod_test_config submod_test_inputs[] = {
 
     {
         6,
-        {submods_is_array_token, submods_is_array_token_size},
+        TEST2UB(submods_invalid_is_array),
         CTOKEN_ERR_SUCCESS,          /* expected_call_num_submods */
         CTOKEN_ERR_SUBMOD_TYPE, /* expected_enter_0th */
         0, /* expected_decode_nonce */
@@ -761,7 +761,7 @@ static const struct decode_submod_test_config submod_test_inputs[] = {
 
     {
         7,
-        {submods_duplicate_token, submods_duplicate_token_size},
+        TEST2UB(submods_invalid_duplicate),
         CTOKEN_ERR_SUCCESS,     /* expected_call_num_submods */
         CTOKEN_ERR_SUCCESS, /* expected_enter_0th */
         CTOKEN_ERR_SUCCESS, /* expected_decode_nonce */
@@ -780,7 +780,7 @@ static const struct decode_submod_test_config submod_test_inputs[] = {
 
     {
         8,
-        {submods_nwf_submod_token, submods_nwf_submod_token_size},
+        TEST2UB(submods_invalid_nwf_sumbod),
         CTOKEN_ERR_CBOR_NOT_WELL_FORMED,     /* expected_call_num_submods */
         CTOKEN_ERR_CBOR_DECODE, /* expected_enter_0th */
         CTOKEN_ERR_SUCCESS, /* expected_decode_nonce */
@@ -961,7 +961,7 @@ int32_t submod_decode_errors_test()
                        0,
                        CTOKEN_PROTECTION_NONE);
 
-    ctoken_result = ctoken_decode_validate_token(&decode_context, TUB(submods_deeply_nested));
+    ctoken_result = ctoken_decode_validate_token(&decode_context, TEST2UB(submods_valid_deeply_nested));
     if(ctoken_result) {
         return test_result_code(20, 0, ctoken_result);
     }
@@ -994,7 +994,7 @@ int32_t submod_decode_errors_test()
 
 
     /* Try calling exit without entering */
-    ctoken_result = ctoken_decode_validate_token(&decode_context, TUB(submods_deeply_nested));
+    ctoken_result = ctoken_decode_validate_token(&decode_context, TEST2UB(submods_valid_deeply_nested));
     if(ctoken_result) {
         return test_result_code(25, 0, ctoken_result);
     }
@@ -1005,7 +1005,7 @@ int32_t submod_decode_errors_test()
 
 
     /* Trigger an unusual error ctoken_decode_exit_submod */
-    ctoken_result = ctoken_decode_validate_token(&decode_context, TUB(submods_deeply_nested));
+    ctoken_result = ctoken_decode_validate_token(&decode_context, TEST2UB(submods_valid_deeply_nested));
     if(ctoken_result) {
         return test_result_code(25, 0, ctoken_result);
     }
@@ -1626,6 +1626,98 @@ int32_t get_next_test()
     if(result != CTOKEN_ERR_NO_MORE_CLAIMS) {
         return test_result_code(20, 0, result);
     }
+
+    return 0;
+}
+
+
+int32_t secboot_test(void)
+{
+    struct ctoken_decode_ctx  decode_context;
+    enum ctoken_err_t         result;
+    bool                      sec_boot;
+
+
+
+    ctoken_decode_init(&decode_context,
+                       0,
+                       0,
+                       CTOKEN_PROTECTION_NONE);
+
+    result = ctoken_decode_validate_token(&decode_context, TEST2UB(secboot_valid1));
+    if(result) {
+        return test_result_code(1, 0, result);;
+    }
+
+    result = ctoken_decode_secure_boot(&decode_context, &sec_boot);
+    if(result != CTOKEN_ERR_SUCCESS | sec_boot != true) {
+        return test_result_code(1, 1, result);
+    }
+
+
+    result = ctoken_decode_validate_token(&decode_context, TEST2UB(secboot_valid2));
+    if(result) {
+        return test_result_code(1, 0, result);;
+    }
+
+    result = ctoken_decode_secure_boot(&decode_context, &sec_boot);
+    if(result != CTOKEN_ERR_SUCCESS | sec_boot != false) {
+        return test_result_code(2, 1, result);
+    }
+
+
+    result = ctoken_decode_validate_token(&decode_context, TEST2UB(secboot_invalid1));
+    if(result) {
+        return test_result_code(3, 0, result);;
+    }
+
+    result = ctoken_decode_secure_boot(&decode_context, &sec_boot);
+    if(result != CTOKEN_ERR_CBOR_TYPE) {
+        return test_result_code(2, 1, result);
+    }
+
+
+    result = ctoken_decode_validate_token(&decode_context, TEST2UB(secboot_invalid2));
+    if(result) {
+        return test_result_code(3, 0, result);;
+    }
+
+    result = ctoken_decode_secure_boot(&decode_context, &sec_boot);
+    if(result != CTOKEN_ERR_CBOR_TYPE) {
+        return test_result_code(2, 1, result);
+    }
+
+    result = ctoken_decode_validate_token(&decode_context, TEST2UB(secboot_invalid3));
+    if(result) {
+        return test_result_code(3, 0, result);;
+    }
+
+    result = ctoken_decode_secure_boot(&decode_context, &sec_boot);
+    if(result != CTOKEN_ERR_CBOR_NOT_WELL_FORMED) {
+        return test_result_code(2, 1, result);
+    }
+
+
+    result = ctoken_decode_validate_token(&decode_context, TEST2UB(secboot_invalid4));
+    if(result) {
+        return test_result_code(3, 0, result);;
+    }
+
+    result = ctoken_decode_secure_boot(&decode_context, &sec_boot);
+    if(result != CTOKEN_ERR_CBOR_TYPE) {
+        return test_result_code(2, 1, result);
+    }
+
+    result = ctoken_decode_validate_token(&decode_context, TEST2UB(secboot_invalid5));
+    if(result) {
+        return test_result_code(3, 0, result);;
+    }
+
+    result = ctoken_decode_secure_boot(&decode_context, &sec_boot);
+    if(result != CTOKEN_ERR_CBOR_TYPE) {
+        return test_result_code(2, 1, result);
+    }
+
 
     return 0;
 }
