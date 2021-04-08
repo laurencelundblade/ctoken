@@ -169,7 +169,8 @@ enum ctoken_debug_level_t {
      */
     CTOKEN_DEBUG_DISABLED_PERMANENT = 3,
     /** The debug system cannot be enabled by anyone */
-    CTOKEN_DEBUG_DISABLED_FULL_PERMANENT = 4};
+    CTOKEN_DEBUG_DISABLED_FULL_PERMANENT = 4
+};
 
 
 /* These are labels for inside the map that is the location claims.

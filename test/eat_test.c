@@ -1721,3 +1721,50 @@ int32_t secboot_test(void)
 
     return 0;
 }
+
+
+
+int32_t profile_decode_test(void)
+{
+
+    struct ctoken_decode_ctx  decode_context;
+    enum ctoken_err_t         result;
+    struct q_useful_buf_c     profile;
+
+
+
+    ctoken_decode_init(&decode_context,
+                       0,
+                       0,
+                       CTOKEN_PROTECTION_NONE);
+
+    result = ctoken_decode_validate_token(&decode_context, TEST2UB(profile_valid_uri));
+    if(result) {
+        return test_result_code(1, 0, result);;
+    }
+
+    result = ctoken_decode_profile_uri(&decode_context, &profile);
+    if(result != CTOKEN_ERR_SUCCESS) {
+        return test_result_code(1, 1, result);
+    }
+
+
+    result = ctoken_decode_validate_token(&decode_context, TEST2UB(profile_valid_oid));
+    if(result) {
+        return test_result_code(1, 0, result);;
+    }
+
+    result = ctoken_decode_profile_oid(&decode_context, &profile);
+    if(result != CTOKEN_ERR_SUCCESS) {
+        return test_result_code(1, 1, result);
+    }
+
+
+    return 0;
+}
+
+
+int32_t profile_encode_test(void)
+{
+    return 0;
+}
