@@ -1821,5 +1821,48 @@ int32_t profile_decode_test(void)
 
 int32_t profile_encode_test(void)
 {
+    struct ctoken_encode_ctx     encode_ctx;
+    struct q_useful_buf_c        token;
+    Q_USEFUL_BUF_MAKE_STACK_UB(  buf, 50);
+    enum ctoken_err_t            result;
+
+    /* 1.3.6.1.4.1.90000.4 */
+    static const uint8_t oid[] = {0x06, 0x09, 0x2B, 0x06, 0x01, 0x04, 0x01, 0x85, 0xBF, 0x10, 0x04};
+
+    ctoken_encode_init(&encode_ctx, 0, CTOKEN_OPT_TOP_LEVEL_NOT_TAG, CTOKEN_PROTECTION_NONE, 0);
+    
+
+    result = ctoken_encode_start(&encode_ctx, buf);
+    if(result != CTOKEN_ERR_SUCCESS) {
+        return test_result_code(1, 1, result);
+    }
+
+    ctoken_encode_profile_uri(&encode_ctx,
+                              Q_USEFUL_BUF_FROM_SZ_LITERAL("http://arm.com/psa/2.0.0"));
+
+    result = ctoken_encode_finish(&encode_ctx, &token);
+    result = ctoken_encode_start(&encode_ctx, buf);
+    if(result != CTOKEN_ERR_SUCCESS) {
+        return test_result_code(1, 2, result);
+    }
+
+    if(q_useful_buf_compare(token, TEST2UB(profile_valid_uri))) {
+        return test_result_code(1, 3, 0);
+    }
+
+
+    ctoken_encode_start(&encode_ctx, buf);
+    ctoken_encode_profile_oid(&encode_ctx,
+                              Q_USEFUL_BUF_FROM_BYTE_ARRAY_LITERAL(oid));
+
+    result = ctoken_encode_finish(&encode_ctx, &token);
+    result = ctoken_encode_start(&encode_ctx, buf);
+    if(result != CTOKEN_ERR_SUCCESS) {
+        return test_result_code(2, 2, result);
+    }
+
+    if(q_useful_buf_compare(token, TEST2UB(profile_valid_oid))) {
+        return test_result_code(2, 3, 0);
+    }
     return 0;
 }

@@ -35,10 +35,9 @@ extern const unsigned char profile_invalid_type_bytes[];
 
 
 /* A valid URI-format profile claim */
-/* TODO: a better OID */
-/* TODO: document this better */
+/* 1.3.6.1.4.1.90000.4, a somewhat randomly picked OID for test prupose only */
 extern const unsigned char profile_valid_oid_bytes[];
-#define profile_valid_oid_size 12
+#define profile_valid_oid_size 14
 
 
 /* A valid URI-format profile claim */
