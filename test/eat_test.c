@@ -1747,18 +1747,73 @@ int32_t profile_decode_test(void)
     if(result != CTOKEN_ERR_SUCCESS) {
         return test_result_code(1, 1, result);
     }
-
+    result = ctoken_decode_profile_oid(&decode_context, &profile);
+    if(result != CTOKEN_ERR_CBOR_TYPE) {
+        return test_result_code(1, 2, result);
+    }
 
     result = ctoken_decode_validate_token(&decode_context, TEST2UB(profile_valid_oid));
     if(result) {
-        return test_result_code(1, 0, result);;
+        return test_result_code(2, 1, result);;
     }
 
     result = ctoken_decode_profile_oid(&decode_context, &profile);
     if(result != CTOKEN_ERR_SUCCESS) {
-        return test_result_code(1, 1, result);
+        return test_result_code(2, 2, result);
+    }
+    result = ctoken_decode_profile_uri(&decode_context, &profile);
+    if(result != CTOKEN_ERR_CBOR_TYPE) {
+        return test_result_code(2, 3, result);
     }
 
+
+    result = ctoken_decode_validate_token(&decode_context, TEST2UB(profile_invalid_type));
+    if(result != CTOKEN_ERR_SUCCESS) {
+        return test_result_code(3, 0, result);;
+    }
+
+    result = ctoken_decode_profile_oid(&decode_context, &profile);
+    if(result != CTOKEN_ERR_CBOR_TYPE) {
+        return test_result_code(3, 1, result);
+    }
+
+    result = ctoken_decode_profile_uri(&decode_context, &profile);
+    if(result != CTOKEN_ERR_CBOR_TYPE) {
+        return test_result_code(3, 2, result);
+    }
+
+
+    result = ctoken_decode_validate_token(&decode_context, TEST2UB(profile_invalid_nwf));
+    if(result != CTOKEN_ERR_SUCCESS) {
+        return test_result_code(4, 0, result);;
+    }
+
+    result = ctoken_decode_profile_oid(&decode_context, &profile);
+    if(result != CTOKEN_ERR_CBOR_NOT_WELL_FORMED) {
+        return test_result_code(4, 1, result);
+    }
+
+    result = ctoken_decode_profile_uri(&decode_context, &profile);
+    if(result != CTOKEN_ERR_CBOR_NOT_WELL_FORMED) {
+        return test_result_code(4, 2, result);
+    }
+
+
+
+    result = ctoken_decode_validate_token(&decode_context, TEST2UB(profile_invalid_dup));
+    if(result != CTOKEN_ERR_SUCCESS) {
+        return test_result_code(5, 0, result);;
+    }
+
+    result = ctoken_decode_profile_oid(&decode_context, &profile);
+    if(result != CTOKEN_ERR_DUPLICATE_LABEL) {
+        return test_result_code(5, 1, result);
+    }
+
+    result = ctoken_decode_profile_uri(&decode_context, &profile);
+    if(result != CTOKEN_ERR_DUPLICATE_LABEL) {
+        return test_result_code(5, 2, result);
+    }
 
     return 0;
 }
