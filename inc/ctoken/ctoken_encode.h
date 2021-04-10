@@ -681,10 +681,13 @@ ctoken_encode_intended_use(struct ctoken_encode_ctx   *context,
 
 
 /**
- * \brief  Encode the EAT an OID-formated profile claim.
+ * \brief  Encode an OID-formated profile claim.
  *
  * \param[in] context  The encoding context to output to.
- * TODO: finish doc
+ * \param[in] profile  The OID to encode.
+ *
+ * The OID is of the format given in the draft-ietf-cbor-tags-oid.
+ * It must be an absolute OID.
  */
 static void
 ctoken_encode_profile_oid(struct ctoken_encode_ctx   *context,
@@ -692,14 +695,15 @@ ctoken_encode_profile_oid(struct ctoken_encode_ctx   *context,
 
 
 /**
- * \brief  Encode the EAT an URI-formated profile claim.
+ * \brief  Encode an URI-formated profile claim.
  *
  * \param[in] context  The encoding context to output to.
- * TODO: finish doc
+ * \param[in] profile  The URI to encode.
  */
 static void
 ctoken_encode_profile_uri(struct ctoken_encode_ctx   *context,
                           struct q_useful_buf_c       profile);
+
 
 
 

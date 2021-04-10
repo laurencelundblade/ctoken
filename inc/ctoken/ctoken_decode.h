@@ -84,6 +84,10 @@ extern "C" {
  * separate CBOR parser to decode the claims out of it.  Future work may
  * include more general facilities for handling claims with complex
  * structures made up of maps and arrays.
+ *
+ * \anchor decode-errors
+ *
+ * TODO: fill in error handling
  */
 
 /** The maximum number of tag numbers on the token that were not processed.
@@ -1018,10 +1022,14 @@ ctoken_decode_intended_use(struct ctoken_decode_ctx   *context,
 
 
 /**
- * \brief  Decode an OID-format profile claim
+ * \brief  Decode an OID-format profile claim.
  *
  * \param[in] context  The decoding context.
- * TODO: finish doc
+ * \param[out] uri     The decoded URI.
+ *
+ * See \ref decode-errors for description of error handling.
+ *
+ * See also ctoken_decode_profile_uri() and ctoken_decode_profile().
  */
 static inline enum ctoken_err_t
 ctoken_decode_profile_oid(struct ctoken_decode_ctx *context,
@@ -1029,10 +1037,14 @@ ctoken_decode_profile_oid(struct ctoken_decode_ctx *context,
 
 
 /**
- * \brief  Decode a URI-format profile claim
+ * \brief  Decode a URI-format profile claim.
  *
  * \param[in] context  The decoding context.
- * TODO: finish doc
+ * \param[out] uri     The decoded URI.
+ *
+ * See \ref decode-errors for description of error handling.
+ *
+ * See also ctoken_decode_profile_oid() and ctoken_decode_profile().
  */
 static inline enum ctoken_err_t
 ctoken_decode_profile_uri(struct ctoken_decode_ctx *context,
@@ -1043,7 +1055,17 @@ ctoken_decode_profile_uri(struct ctoken_decode_ctx *context,
  * \brief  Decode profile claim in either URI or OID format
  *
  * \param[in] context  The decoding context.
- * TODO: finish doc
+ * \param[out] is_oid_format  True if the profile is oid format
+ *                            false is uri format.
+ * \param[out] profile   The decoded profile.
+ *
+ * See \ref decode-errors for description of error handling.
+ *
+ * This decodes either the oid or uri format profile claim,
+ * returning \c is_oid_format to indicate which format.
+
+ * See also ctoken_decode_profile_oid() and
+ * ctoken_decode_profile_uri().
  */
 static inline enum ctoken_err_t
 ctoken_decode_profile(struct ctoken_decode_ctx *context,
@@ -1587,16 +1609,16 @@ ctoken_decode_profile(struct ctoken_decode_ctx *me,
                       bool                     *is_oid_format,
                       struct q_useful_buf_c    *profile)
 {
-    enum ctoken_err_t xx;
+    enum ctoken_err_t err;
 
     *is_oid_format = false;
-    xx = ctoken_decode_profile_uri(me, profile);
-    if(xx == CTOKEN_ERR_CBOR_TYPE) {
+    err = ctoken_decode_profile_uri(me, profile);
+    if(err == CTOKEN_ERR_CBOR_TYPE) {
         *is_oid_format = true;
-        xx = ctoken_decode_profile_oid(me, profile);
+        err = ctoken_decode_profile_oid(me, profile);
     }
 
-    return xx;
+    return err;
 }
 
 
