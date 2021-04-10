@@ -273,7 +273,7 @@ static inline enum ctoken_err_t
 ctoken_psaia_decode_boot_seed(struct ctoken_decode_ctx *me,
                                   struct q_useful_buf_c *boot_seed)
 {
-    return ctoken_decode_get_bstr(me,
+    return ctoken_decode_bstr(me,
                                         EAT_CBOR_ARM_LABEL_BOOT_SEED,
                                         boot_seed);
 }
@@ -283,7 +283,7 @@ static inline enum ctoken_err_t
 ctoken_psaia_decode_hw_version(struct ctoken_decode_ctx *me,
                                struct q_useful_buf_c *hw_version)
 {
-    return ctoken_decode_get_tstr(me, EAT_CBOR_ARM_LABEL_HW_VERSION, hw_version);
+    return ctoken_decode_tstr(me, EAT_CBOR_ARM_LABEL_HW_VERSION, hw_version);
 }
 
 
@@ -291,7 +291,7 @@ static inline enum ctoken_err_t
 ctoken_psaia_decode_implementation_id(struct ctoken_decode_ctx *me,
                                       struct q_useful_buf_c*implementation_id)
 {
-    return ctoken_decode_get_bstr(me, EAT_CBOR_ARM_LABEL_IMPLEMENTATION_ID, implementation_id);
+    return ctoken_decode_bstr(me, EAT_CBOR_ARM_LABEL_IMPLEMENTATION_ID, implementation_id);
 }
 
 
@@ -302,7 +302,7 @@ ctoken_psaia_decode_client_id(struct ctoken_decode_ctx *me,
     enum ctoken_err_t return_value;
     int64_t caller_id_64;
 
-    return_value = ctoken_decode_get_int(me, EAT_CBOR_ARM_LABEL_CLIENT_ID, &caller_id_64);
+    return_value = ctoken_decode_int(me, EAT_CBOR_ARM_LABEL_CLIENT_ID, &caller_id_64);
     if(return_value != CTOKEN_ERR_SUCCESS) {
         goto Done;
     }
@@ -324,7 +324,7 @@ ctoken_psaia_decode_security_lifecycle(struct ctoken_decode_ctx *me,
     enum ctoken_err_t return_value;
     uint64_t security_lifecycle_64;
 
-    return_value = ctoken_decode_get_uint(me,
+    return_value = ctoken_decode_uint(me,
                                           EAT_CBOR_ARM_LABEL_SECURITY_LIFECYCLE,
                                           &security_lifecycle_64);
     if(security_lifecycle_64 > UINT32_MAX) {
@@ -343,7 +343,7 @@ static inline enum ctoken_err_t
 ctoken_psaia_decode_profile_definition(struct ctoken_decode_ctx *me,
                                        struct q_useful_buf_c *profile_definition)
 {
-    return ctoken_decode_get_tstr(me, EAT_CBOR_ARM_LABEL_PROFILE_DEFINITION, profile_definition);
+    return ctoken_decode_tstr(me, EAT_CBOR_ARM_LABEL_PROFILE_DEFINITION, profile_definition);
 }
 
 

@@ -253,7 +253,7 @@ Done:
  * Public function. See ctoken_decode.h
  */
 enum ctoken_err_t
-ctoken_decode_get_bstr(struct ctoken_decode_ctx *me,
+ctoken_decode_bstr(struct ctoken_decode_ctx *me,
                        int64_t                  label,
                        struct q_useful_buf_c   *claim)
 {
@@ -278,7 +278,7 @@ Done:
  * Public function. See ctoken_decode.h
  */
 enum ctoken_err_t
-ctoken_decode_get_tstr(struct ctoken_decode_ctx *me,
+ctoken_decode_tstr(struct ctoken_decode_ctx *me,
                        int64_t                   label,
                        struct q_useful_buf_c    *claim)
 {
@@ -303,7 +303,7 @@ Done:
  * Public function. See ctoken_decode.h
  */
 enum ctoken_err_t
-ctoken_decode_get_int(struct ctoken_decode_ctx *me,
+ctoken_decode_int(struct ctoken_decode_ctx *me,
                       int64_t                   label,
                       int64_t                  *integer)
 {
@@ -328,7 +328,7 @@ Done:
  * Public function. See ctoken_decode.h
  */
 enum ctoken_err_t
-ctoken_decode_get_uint(struct ctoken_decode_ctx *me,
+ctoken_decode_uint(struct ctoken_decode_ctx *me,
                        int64_t                   label,
                        uint64_t                 *integer)
 {
@@ -354,7 +354,7 @@ Done:
  * Public function. See ctoken_decode.h
  */
 enum ctoken_err_t
-ctoken_decode_get_bool(struct ctoken_decode_ctx *me,
+ctoken_decode_bool(struct ctoken_decode_ctx *me,
                        int64_t                   label,
                        bool                     *b)
 {
@@ -406,7 +406,7 @@ Done:
  * Public function. See ctoken_eat_encode.h
  */
 enum ctoken_err_t
-ctoken_decode_get_int_constrained(struct ctoken_decode_ctx *me,
+ctoken_decode_int_constrained(struct ctoken_decode_ctx *me,
                                   int64_t                   label,
                                   int64_t                   min,
                                   int64_t                   max,
@@ -414,7 +414,7 @@ ctoken_decode_get_int_constrained(struct ctoken_decode_ctx *me,
 {
     enum ctoken_err_t return_value;
 
-    return_value = ctoken_decode_get_int(me, label, claim);
+    return_value = ctoken_decode_int(me, label, claim);
     if(return_value != CTOKEN_ERR_SUCCESS) {
         goto Done;
     }

@@ -385,9 +385,9 @@ ctoken_decode_borrow_context(struct ctoken_decode_ctx *context);
  * be set.
  */
 enum ctoken_err_t
-ctoken_decode_get_bstr(struct ctoken_decode_ctx  *context,
-                       int64_t                    label,
-                       struct q_useful_buf_c     *claim);
+ctoken_decode_bstr(struct ctoken_decode_ctx  *context,
+                   int64_t                    label,
+                   struct q_useful_buf_c     *claim);
 
 
 /**
@@ -420,9 +420,9 @@ ctoken_decode_get_bstr(struct ctoken_decode_ctx  *context,
  * be set.
  */
 enum ctoken_err_t
-ctoken_decode_get_tstr(struct ctoken_decode_ctx *context,
-                       int64_t                   label,
-                       struct q_useful_buf_c    *claim);
+ctoken_decode_tstr(struct ctoken_decode_ctx *context,
+                   int64_t                   label,
+                   struct q_useful_buf_c    *claim);
 
 
 /**
@@ -461,9 +461,9 @@ ctoken_decode_get_tstr(struct ctoken_decode_ctx *context,
  * inside the \c ctoken_decode_ctx will be set.
  */
 enum ctoken_err_t
-ctoken_decode_get_int(struct ctoken_decode_ctx *context,
-                      int64_t                   label,
-                      int64_t                  *claim);
+ctoken_decode_int(struct ctoken_decode_ctx *context,
+                  int64_t                   label,
+                  int64_t                  *claim);
 
 
 /**
@@ -485,11 +485,11 @@ ctoken_decode_get_int(struct ctoken_decode_ctx *context,
  * usually fit into an enumerated type.
  */
 enum ctoken_err_t
-ctoken_decode_get_int_constrained(struct ctoken_decode_ctx *context,
-                                  int64_t                   label,
-                                  int64_t                   min,
-                                  int64_t                   max,
-                                  int64_t                  *claim);
+ctoken_decode_int_constrained(struct ctoken_decode_ctx *context,
+                              int64_t                   label,
+                              int64_t                   min,
+                              int64_t                   max,
+                              int64_t                  *claim);
 
 
 /**
@@ -527,17 +527,19 @@ ctoken_decode_get_int_constrained(struct ctoken_decode_ctx *context,
  *  inside the \c ctoken_decode_ctx will be set.
  */
 enum ctoken_err_t
-ctoken_decode_get_uint(struct ctoken_decode_ctx *context,
-                       int64_t                  label,
-                       uint64_t                *claim);
+ctoken_decode_uint(struct ctoken_decode_ctx *context,
+                   int64_t                  label,
+                   uint64_t                *claim);
 
 
 
 enum ctoken_err_t
-ctoken_decode_get_bool(struct ctoken_decode_ctx *context,
-                       int64_t                   label,
-                       bool                     *b);
+ctoken_decode_bool(struct ctoken_decode_ctx *context,
+                   int64_t                   label,
+                   bool                     *b);
 
+
+// TODO: add enter map and enter array methods
 
 /**
  * \brief Decode the CWT issuer.
@@ -1334,7 +1336,7 @@ static inline enum ctoken_err_t
 ctoken_decode_issuer(struct ctoken_decode_ctx *me,
                      struct q_useful_buf_c    *issuer)
 {
-    return ctoken_decode_get_tstr(me, CTOKEN_CWT_LABEL_ISSUER, issuer);
+    return ctoken_decode_tstr(me, CTOKEN_CWT_LABEL_ISSUER, issuer);
 }
 
 
@@ -1342,7 +1344,7 @@ static inline enum ctoken_err_t
 ctoken_decode_subject(struct ctoken_decode_ctx *me,
                       struct q_useful_buf_c    *subject)
 {
-    return ctoken_decode_get_tstr(me, CTOKEN_CWT_LABEL_SUBJECT, subject);
+    return ctoken_decode_tstr(me, CTOKEN_CWT_LABEL_SUBJECT, subject);
 }
 
 
@@ -1350,7 +1352,7 @@ static inline enum ctoken_err_t
 ctoken_decode_audience(struct ctoken_decode_ctx *me,
                        struct q_useful_buf_c    *audience)
 {
-    return ctoken_decode_get_tstr(me, CTOKEN_CWT_LABEL_AUDIENCE, audience);
+    return ctoken_decode_tstr(me, CTOKEN_CWT_LABEL_AUDIENCE, audience);
 }
 
 
@@ -1358,14 +1360,14 @@ static inline enum ctoken_err_t
 ctoken_decode_expiration(struct ctoken_decode_ctx *me,
                          int64_t                  *expiration)
 {
-    return ctoken_decode_get_int(me, CTOKEN_CWT_LABEL_EXPIRATION, expiration);
+    return ctoken_decode_int(me, CTOKEN_CWT_LABEL_EXPIRATION, expiration);
 }
 
 static inline enum ctoken_err_t
 ctoken_decode_not_before(struct ctoken_decode_ctx *me,
                          int64_t                  *not_before)
 {
-    return ctoken_decode_get_int(me, CTOKEN_CWT_LABEL_NOT_BEFORE, not_before);
+    return ctoken_decode_int(me, CTOKEN_CWT_LABEL_NOT_BEFORE, not_before);
 }
 
 
@@ -1373,7 +1375,7 @@ static inline enum ctoken_err_t
 ctoken_decode_iat(struct ctoken_decode_ctx *me,
                   int64_t                  *iat)
 {
-    return ctoken_decode_get_int(me, CTOKEN_CWT_LABEL_NOT_BEFORE, iat);
+    return ctoken_decode_int(me, CTOKEN_CWT_LABEL_NOT_BEFORE, iat);
 }
 
 
@@ -1381,7 +1383,7 @@ static inline enum ctoken_err_t
 ctoken_decode_cti(struct ctoken_decode_ctx *me,
                   struct q_useful_buf_c    *cti)
 {
-    return ctoken_decode_get_bstr(me, CTOKEN_CWT_LABEL_CTI,  cti);
+    return ctoken_decode_bstr(me, CTOKEN_CWT_LABEL_CTI,  cti);
 }
 
 
@@ -1391,11 +1393,11 @@ ctoken_decode_nonce(struct ctoken_decode_ctx *me,
 {
     enum ctoken_err_t return_value;
 
-    return_value = ctoken_decode_get_bstr(me, CTOKEN_EAT_LABEL_NONCE, nonce);
+    return_value = ctoken_decode_bstr(me, CTOKEN_EAT_LABEL_NONCE, nonce);
 
 #ifndef CTOKEN_DISABLE_TEMP_LABELS
     if(return_value == CTOKEN_ERR_CLAIM_NOT_PRESENT) {
-       return_value = ctoken_decode_get_bstr(me, CTOKEN_TEMP_EAT_LABEL_NONCE, nonce);
+       return_value = ctoken_decode_bstr(me, CTOKEN_TEMP_EAT_LABEL_NONCE, nonce);
     }
 #endif
 
@@ -1409,11 +1411,11 @@ ctoken_decode_ueid(struct ctoken_decode_ctx *me,
 {
     enum ctoken_err_t return_value;
 
-    return_value = ctoken_decode_get_bstr(me, CTOKEN_EAT_LABEL_UEID, ueid);
+    return_value = ctoken_decode_bstr(me, CTOKEN_EAT_LABEL_UEID, ueid);
 
 #ifndef CTOKEN_DISABLE_TEMP_LABELS
     if(return_value == CTOKEN_ERR_CLAIM_NOT_PRESENT) {
-        return_value = ctoken_decode_get_bstr(me, CTOKEN_TEMP_EAT_LABEL_UEID, ueid);
+        return_value = ctoken_decode_bstr(me, CTOKEN_TEMP_EAT_LABEL_UEID, ueid);
     }
 #endif
     return return_value;
@@ -1426,11 +1428,11 @@ ctoken_decode_oemid(struct ctoken_decode_ctx *me,
 {
     enum ctoken_err_t return_value;
 
-    return_value = ctoken_decode_get_bstr(me, CTOKEN_EAT_LABEL_OEMID, oemid);
+    return_value = ctoken_decode_bstr(me, CTOKEN_EAT_LABEL_OEMID, oemid);
 
 #ifndef CTOKEN_DISABLE_TEMP_LABELS
     if(return_value == CTOKEN_ERR_CLAIM_NOT_PRESENT) {
-        return_value = ctoken_decode_get_bstr(me, CTOKEN_TEMP_EAT_LABEL_OEMID, oemid);
+        return_value = ctoken_decode_bstr(me, CTOKEN_TEMP_EAT_LABEL_OEMID, oemid);
     }
 #endif
     return return_value;
@@ -1441,7 +1443,7 @@ static inline enum ctoken_err_t
 ctoken_decode_origination(struct ctoken_decode_ctx *me,
                           struct q_useful_buf_c    *origination)
 {
-    return ctoken_decode_get_tstr(me, CTOKEN_EAT_LABEL_ORIGINATION, origination);
+    return ctoken_decode_tstr(me, CTOKEN_EAT_LABEL_ORIGINATION, origination);
 }
 
 
@@ -1451,7 +1453,7 @@ ctoken_decode_security_level(struct ctoken_decode_ctx         *me,
 {
     enum ctoken_err_t return_value;
 
-    return_value = ctoken_decode_get_int_constrained(me,
+    return_value = ctoken_decode_int_constrained(me,
                                              CTOKEN_EAT_LABEL_SECURITY_LEVEL,
                                              EAT_SL_UNRESTRICTED,
                                              EAT_SL_HARDWARE,
@@ -1459,7 +1461,7 @@ ctoken_decode_security_level(struct ctoken_decode_ctx         *me,
 
 #ifndef CTOKEN_DISABLE_TEMP_LABELS
     if(return_value == CTOKEN_ERR_CLAIM_NOT_PRESENT) {
-        return_value = ctoken_decode_get_int_constrained(me,
+        return_value = ctoken_decode_int_constrained(me,
                                              CTOKEN_TEMP_EAT_LABEL_SECURITY_LEVEL,
                                              EAT_SL_UNRESTRICTED,
                                              EAT_SL_HARDWARE,
@@ -1474,7 +1476,7 @@ static inline enum ctoken_err_t
 ctoken_decode_uptime(struct ctoken_decode_ctx *me,
                      uint64_t                 *uptime)
 {
-    return ctoken_decode_get_uint(me, CTOKEN_EAT_LABEL_UPTIME, uptime);
+    return ctoken_decode_uint(me, CTOKEN_EAT_LABEL_UPTIME, uptime);
 }
 
 
@@ -1484,12 +1486,12 @@ ctoken_decode_secure_boot(struct ctoken_decode_ctx *me,
 {
     enum ctoken_err_t return_value;
 
-    return_value = ctoken_decode_get_bool(me,
+    return_value = ctoken_decode_bool(me,
                                           CTOKEN_EAT_LABEL_SECURE_BOOT,
                                           secure_boot_enabled);
 #ifndef CTOKEN_DISABLE_TEMP_LABELS
     if(return_value == CTOKEN_ERR_CLAIM_NOT_PRESENT) {
-        return_value = ctoken_decode_get_bool(me,
+        return_value = ctoken_decode_bool(me,
                                               CTOKEN_TEMP_EAT_LABEL_SECURE_BOOT,
                                               secure_boot_enabled);
     }
@@ -1505,14 +1507,14 @@ ctoken_decode_debug_state(struct ctoken_decode_ctx  *me,
 {
     enum ctoken_err_t return_value;
 
-    return_value = ctoken_decode_get_int_constrained(me,
+    return_value = ctoken_decode_int_constrained(me,
                                              CTOKEN_TEMP_EAT_LABEL_DEBUG_STATE,
                                              CTOKEN_DEBUG_ENABLED,
                                              CTOKEN_DEBUG_DISABLED_FULL_PERMANENT,
                                              (int64_t *)debug_level);
 #ifndef CTOKEN_DISABLE_TEMP_LABELS
     if(return_value == CTOKEN_ERR_CLAIM_NOT_PRESENT) {
-        return ctoken_decode_get_int_constrained(me,
+        return ctoken_decode_int_constrained(me,
                                              CTOKEN_EAT_LABEL_DEBUG_STATE,
                                              CTOKEN_DEBUG_ENABLED,
                                              CTOKEN_DEBUG_DISABLED_FULL_PERMANENT,
@@ -1527,7 +1529,7 @@ static inline enum ctoken_err_t
 ctoken_decode_intended_use(struct ctoken_decode_ctx    *me,
                            enum ctoken_intended_use_t  *use)
 {
-    return ctoken_decode_get_int_constrained(me,
+    return ctoken_decode_int_constrained(me,
                                              CTOKEN_EAT_LABEL_INTENDED_USE,
                                              CTOKEN_USE_GENERAL,
                                              CTOKEN_USE_PROOF_OF_POSSSION,
