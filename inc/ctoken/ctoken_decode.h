@@ -84,6 +84,10 @@ extern "C" {
  * separate CBOR parser to decode the claims out of it.  Future work may
  * include more general facilities for handling claims with complex
  * structures made up of maps and arrays.
+ *
+ * \anchor decode-errors
+ *
+ * TODO: fill in error handling
  */
 
 /** The maximum number of tag numbers on the token that were not processed.
@@ -1017,6 +1021,56 @@ ctoken_decode_intended_use(struct ctoken_decode_ctx   *context,
                            enum ctoken_intended_use_t *use);
 
 
+/**
+ * \brief  Decode an OID-format profile claim.
+ *
+ * \param[in] context  The decoding context.
+ * \param[out] uri     The decoded URI.
+ *
+ * See \ref decode-errors for description of error handling.
+ *
+ * See also ctoken_decode_profile_uri() and ctoken_decode_profile().
+ */
+static inline enum ctoken_err_t
+ctoken_decode_profile_oid(struct ctoken_decode_ctx *context,
+                          struct q_useful_buf_c    *uri);
+
+
+/**
+ * \brief  Decode a URI-format profile claim.
+ *
+ * \param[in] context  The decoding context.
+ * \param[out] uri     The decoded URI.
+ *
+ * See \ref decode-errors for description of error handling.
+ *
+ * See also ctoken_decode_profile_oid() and ctoken_decode_profile().
+ */
+static inline enum ctoken_err_t
+ctoken_decode_profile_uri(struct ctoken_decode_ctx *context,
+                          struct q_useful_buf_c    *uri);
+
+
+/**
+ * \brief  Decode profile claim in either URI or OID format
+ *
+ * \param[in] context  The decoding context.
+ * \param[out] is_oid_format  True if the profile is oid format
+ *                            false is uri format.
+ * \param[out] profile   The decoded profile.
+ *
+ * See \ref decode-errors for description of error handling.
+ *
+ * This decodes either the oid or uri format profile claim,
+ * returning \c is_oid_format to indicate which format.
+
+ * See also ctoken_decode_profile_oid() and
+ * ctoken_decode_profile_uri().
+ */
+static inline enum ctoken_err_t
+ctoken_decode_profile(struct ctoken_decode_ctx *context,
+                      bool                     *is_oid_format,
+                      struct q_useful_buf_c    *profile);
 
 
 /**
@@ -1532,6 +1586,39 @@ ctoken_decode_intended_use(struct ctoken_decode_ctx    *me,
                                              CTOKEN_USE_GENERAL,
                                              CTOKEN_USE_PROOF_OF_POSSSION,
                                              (int64_t *)use);
+}
+
+
+static inline enum ctoken_err_t
+ctoken_decode_profile_uri(struct ctoken_decode_ctx *me,
+                          struct q_useful_buf_c    *profile)
+{
+    return ctoken_decode_get_tstr(me, CTOKEN_EAT_LABEL_PROFILE, profile);
+}
+
+
+static inline enum ctoken_err_t
+ctoken_decode_profile_oid(struct ctoken_decode_ctx *me,
+                          struct q_useful_buf_c    *profile)
+{
+    return ctoken_decode_get_bstr(me, CTOKEN_EAT_LABEL_PROFILE, profile);
+}
+
+static inline enum ctoken_err_t
+ctoken_decode_profile(struct ctoken_decode_ctx *me,
+                      bool                     *is_oid_format,
+                      struct q_useful_buf_c    *profile)
+{
+    enum ctoken_err_t err;
+
+    *is_oid_format = false;
+    err = ctoken_decode_profile_uri(me, profile);
+    if(err == CTOKEN_ERR_CBOR_TYPE) {
+        *is_oid_format = true;
+        err = ctoken_decode_profile_oid(me, profile);
+    }
+
+    return err;
 }
 
 

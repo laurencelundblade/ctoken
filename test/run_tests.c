@@ -49,6 +49,8 @@ static test_entry2 s_tests2[] = {
 #endif
 
 static test_entry s_tests[] = {
+    TEST_ENTRY(profile_decode_test),
+    TEST_ENTRY(profile_encode_test),
     TEST_ENTRY(secboot_test),
     TEST_ENTRY(minimal_get_size_test),
     TEST_ENTRY(psaia_basic_test),

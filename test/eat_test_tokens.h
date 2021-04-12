@@ -16,6 +16,35 @@ extern const unsigned char some_submods_bytes[];
 #define some_submods_size 82
 
 
+/* There ae two claims with the profile label of 18 */
+extern const unsigned char profile_invalid_dup_bytes[];
+#define profile_invalid_dup_size       23
+
+/* The value of the profile is 0x1f an integer with an indefinite */
+/* length. This not-well-formed CBOR that should be caught at the lowest */
+/* layer in the decoder and bubbled up to some top-level error. This is */
+/* to test that path of bubbling up errors. There are lots of other ways */
+/* that CBOR can be invalid here. This is just one to test the error */
+/* propagation. */
+extern const unsigned char profile_invalid_nwf_bytes[];
+#define profile_invalid_nwf_size        3
+
+/* A profile that is invalid because it is the wrong type */
+extern const unsigned char profile_invalid_type_bytes[];
+#define profile_invalid_type_size 3
+
+
+/* A valid URI-format profile claim */
+/* 1.3.6.1.4.1.90000.4, a somewhat randomly picked OID for test prupose only */
+extern const unsigned char profile_valid_oid_bytes[];
+#define profile_valid_oid_size 14
+
+
+/* A valid URI-format profile claim */
+extern const unsigned char profile_valid_uri_bytes[];
+#define profile_valid_uri_size 28
+
+
 /* The secboot claim with a value of null which is not allowed. There are */
 /*  many ways secboot can be invalid. This is just one. It is picked because */
 /* it is very similar to the value of true and false, but still invalid. */
@@ -96,6 +125,17 @@ extern const unsigned char submods_invalid_nwf_section_bytes[];
 /* really an integer). Decoders should error out on this. */
 extern const unsigned char submods_invalid_nwf_sumbod_bytes[];
 #define submods_invalid_nwf_sumbod_size       11
+
+/* The submod section is an integer lacking its CBOR argument. That is the */
+/* integer is truncated. The CBOR decoder should find that the submodules */
+/* section is not well formed.  */
+extern const unsigned char submods_nwf_section_bytes[];
+#define submods_nwf_section_size        3
+
+/* The submod named "submod" is an not-allowed form of positive integer. */
+/* It is the byte 1f a positive integer with indefinite length. */
+extern const unsigned char submods_nwf_submod_bytes[];
+#define submods_nwf_submod_size       11
 
 /* Five nested levels of submodules with a distinct nonce at each level. */
 /* Each level also has a nested token. TODO: make the nested tokens real */
