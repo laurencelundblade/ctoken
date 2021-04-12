@@ -47,6 +47,8 @@ int32_t get_next_test(void);
 int32_t secboot_test(void);
 
 
+int32_t map_and_array_test(void);
+
 
 #ifdef __cplusplus
 }

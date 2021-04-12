@@ -532,14 +532,37 @@ ctoken_decode_uint(struct ctoken_decode_ctx *context,
                    uint64_t                *claim);
 
 
-
 enum ctoken_err_t
 ctoken_decode_bool(struct ctoken_decode_ctx *context,
                    int64_t                   label,
                    bool                     *b);
 
 
-// TODO: add enter map and enter array methods
+/*
+ *
+ * This is good for decoding a claim that is map
+ * but not one that is nested maps. It is probably
+ * better to call ctoken_decode_borrow_context and
+ * use QCBOR directly to decode such.
+ *
+ * It is intentional that no method for entering
+ * and exiting arrays is provided. If the internal
+ * structure of a claim involves an array that is
+ * fine and the way to encode and decode it is
+ * by 
+ */
+enum ctoken_err_t
+ctoken_decode_enter_map(struct ctoken_decode_ctx *context,
+                        int64_t                   label,
+                        QCBORDecodeContext      **decoder);
+
+
+enum ctoken_err_t
+ctoken_decode_exit_map(struct ctoken_decode_ctx *context);
+
+
+
+
 
 /**
  * \brief Decode the CWT issuer.

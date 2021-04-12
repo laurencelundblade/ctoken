@@ -17,8 +17,6 @@
 #include "eat_test_tokens.h"
 
 
-#define TUB(xxx) ((struct q_useful_buf_c){xxx##_token, xxx##_token_size})
-
 
 /* Return code is
  xxxyyyzzz where zz is the error code, yy is the test number and zz is
@@ -1719,5 +1717,65 @@ int32_t secboot_test(void)
     }
 
 
+    return 0;
+}
+
+
+
+int32_t map_and_array_test()
+{
+#if 0
+    struct ctoken_encode_ctx en;
+    struct ctoken_decode_ctx de;
+    MakeUsefulBufOnStack(    token_buffer, 50);
+    struct q_useful_buf_c    completed_token;
+    QCBORItem                claim;
+    bool                     b;
+    enum ctoken_err_t        ctoken_err;
+    QCBOREncodeContext      *cbor_en;
+
+    ctoken_encode_init(&en,
+                       0,
+                       CTOKEN_OPT_TOP_LEVEL_NOT_TAG,
+                       CTOKEN_PROTECTION_NONE,
+                       T_COSE_ALGORITHM_ES256);
+
+    ctoken_encode_start(&en, token_buffer);
+
+    ctoken_encode_open_map(&en, 665, &cbor_en);
+    ctoken_encode_iat(&en, 666);
+    ctoken_encode_expiration(&en, 888);
+    ctoken_encode_close_map(&en);
+    ctoken_encode_bool(&en, 777, true);
+    ctoken_encode_close_map(&en);
+
+    ctoken_err = ctoken_encode_finish(&en, &completed_token);
+
+    if(ctoken_err != CTOKEN_ERR_SUCCESS) {
+        return -1;
+    }
+
+    ctoken_decode_init(&de, 0, 0, CTOKEN_PROTECTION_NONE);
+    ctoken_err = ctoken_decode_validate_token(&de, completed_token);
+    if(ctoken_err != CTOKEN_ERR_SUCCESS) {
+        return -2;
+    }
+    ctoken_err = ctoken_decode_enter_map(&de, 665);
+    if(ctoken_err != CTOKEN_ERR_SUCCESS) {
+        return -3;
+    }
+    ctoken_err = ctoken_decode_enter_map(&de, 456);
+    if(ctoken_err != CTOKEN_ERR_SUCCESS) {
+        return -4;
+    }
+    
+
+
+
+    ctoken_decode_exit_map(&de);
+    ctoken_decode_bool(&de, 777,  &b);
+
+
+#endif
     return 0;
 }

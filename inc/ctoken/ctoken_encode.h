@@ -199,6 +199,12 @@ static void ctoken_encode_int(struct ctoken_encode_ctx *context,
                               int64_t                   value);
 
 
+// TODO: document this
+static inline void
+ctoken_encode_unsigned(struct ctoken_encode_ctx *context,
+                       int64_t label,
+                       uint64_t Value);
+
 /**
  * \brief Add a binary string claim
  *
@@ -280,15 +286,21 @@ static void ctoken_encode_cbor(struct ctoken_encode_ctx *context,
 
 
 /**
- * \brief Open an array.
+ * \brief Start encoding a claim that is an array
  *
  * \param[in] context       Token creation context.
  * \param[in] label    Integer label for new array.
+ * \param[out] encoder CBOR encoder context with which to encode the parts of the claim.
  *
- * This must be matched by a ctoken_encode_close_array().
+ * Use the QCBOR encoder context to add the items to the array that make
+ * up the claim. Any number of items, including further nesting of arrays and
+ * maps are OK as long as all the maps and arrays open are closed. Finally,
+ * this must be matched by a ctoken_encode_close_array().
  */
 static inline void
-ctoken_encode_open_array(struct ctoken_encode_ctx *context, int64_t label);
+ctoken_encode_open_array(struct ctoken_encode_ctx *context,
+                         int64_t                   label,
+                         QCBOREncodeContext      **encoder);
 
 
 /**
@@ -303,15 +315,20 @@ ctoken_encode_close_array(struct ctoken_encode_ctx *context);
 
 
 /**
- * \brief Open an map.
+ * \brief Start encoding a claim that is a map.
  *
  * \param[in] context  Token creation context.
  * \param[in] label    Integer label for new map.
+ * \param[out] encoder CBOR encoder context with which to encode the parts of the claim.
  *
- * This must be matched by a ctoken_encode_close_map().
- */
+ * Use the QCBOR encoder context to add the items to the map that make
+ * up the claim. Any number of items, including further nesting of arrays and
+ * maps are OK as long as all the maps and arrays open are closed. Finally,
+ * this must be matched by a ctoken_encode_close_map(). */
 static inline void
-ctoken_encode_open_map(struct ctoken_encode_ctx *context, int64_t label);
+ctoken_encode_open_map(struct ctoken_encode_ctx *context,
+                       int64_t                   label,
+                       QCBOREncodeContext      **encoder);
 
 
 /**
@@ -333,10 +350,10 @@ ctoken_encode_close_map(struct ctoken_encode_ctx *context);
  * \return The CBOR encoding context
  *
  * Allows the caller to encode CBOR right into the output buffer using
- * any of the \c QCBOREncode_AddXXXX() methods. Anything added here
+ * any of the QCBOR encode methods. Anything added here
  * will be part of the claims that gets hashed. This can be used to
  * make complex CBOR structures. All open arrays and maps must be
- * close before calling any other \c ctoken methods.  \c
+ * closed before calling any other \c ctoken methods.  \c
  * QCBOREncode_Finish() should not be closed on this context.
  */
 static QCBOREncodeContext *
@@ -873,7 +890,7 @@ ctoken_encode_int(struct ctoken_encode_ctx *me,
 
 
 static inline void
-ctoken_encode_add_unsigned(struct ctoken_encode_ctx *me,
+ctoken_encode_unsigned(struct ctoken_encode_ctx *me,
                           int64_t label,
                           uint64_t Value)
 {
@@ -937,17 +954,18 @@ ctoken_encode_double(struct ctoken_encode_ctx *me,
 
 static inline void
 ctoken_encode_cbor(struct ctoken_encode_ctx *me,
-                       int64_t label,
-                       struct q_useful_buf_c encoded)
+                   int64_t label,
+                   struct q_useful_buf_c encoded)
 {
     QCBOREncode_AddEncodedToMapN(&(me->cbor_encode_context), label, encoded);
 }
 
 
 static inline void
-ctoken_encode_open_array(struct ctoken_encode_ctx *me, int64_t label)
+ctoken_encode_open_array(struct ctoken_encode_ctx *me, int64_t label, QCBOREncodeContext **encoder)
 {
     QCBOREncode_OpenArrayInMapN(&(me->cbor_encode_context), label);
+    *encoder = &(me->cbor_encode_context);
 }
 
 
@@ -959,9 +977,10 @@ ctoken_encode_close_array(struct ctoken_encode_ctx *me)
 
 
 static inline void
-ctoken_encode_open_map(struct ctoken_encode_ctx *me, int64_t label)
+ctoken_encode_open_map(struct ctoken_encode_ctx *me, int64_t label, QCBOREncodeContext **encoder)
 {
     QCBOREncode_OpenMapInMapN(&(me->cbor_encode_context), label);
+    *encoder = &(me->cbor_encode_context);
 }
 
 

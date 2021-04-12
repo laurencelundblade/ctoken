@@ -246,7 +246,7 @@ static inline void
 ctoken_psaia_encode_security_lifecycle(struct ctoken_encode_ctx *me,
                                        uint32_t security_lifecycle)
 {
-    ctoken_encode_add_unsigned(me, EAT_CBOR_ARM_LABEL_SECURITY_LIFECYCLE, security_lifecycle);
+    ctoken_encode_unsigned(me, EAT_CBOR_ARM_LABEL_SECURITY_LIFECYCLE, security_lifecycle);
 }
 
 
