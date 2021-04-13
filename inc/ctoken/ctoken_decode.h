@@ -560,6 +560,15 @@ ctoken_decode_enter_map(struct ctoken_decode_ctx *context,
 enum ctoken_err_t
 ctoken_decode_exit_map(struct ctoken_decode_ctx *context);
 
+enum ctoken_err_t
+ctoken_decode_enter_array(struct ctoken_decode_ctx *context,
+                          int64_t                   label,
+                          QCBORDecodeContext      **decoder);
+
+
+enum ctoken_err_t
+ctoken_decode_exit_array(struct ctoken_decode_ctx *context);
+
 
 
 

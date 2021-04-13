@@ -810,6 +810,10 @@ void ctoken_encode_nested_token(struct ctoken_encode_ctx    *context,
  * This completes the token after the payload has been added. When
  * this is called the signing algorithm is run and the final
  * formatting of the token is completed.
+ *
+ * This can be relied upon to catch any encoding errors from ctoken,
+ * from t_cose or the underlying CBOR encoder. For many implementations
+ * this can be the only place that an error return code is checked.
  */
 enum ctoken_err_t
 ctoken_encode_finish(struct ctoken_encode_ctx *context,

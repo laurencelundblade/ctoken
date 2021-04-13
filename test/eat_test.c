@@ -1721,61 +1721,68 @@ int32_t secboot_test(void)
 }
 
 
-
 int32_t map_and_array_test()
 {
-#if 0
     struct ctoken_encode_ctx en;
     struct ctoken_decode_ctx de;
     MakeUsefulBufOnStack(    token_buffer, 50);
     struct q_useful_buf_c    completed_token;
-    QCBORItem                claim;
-    bool                     b;
     enum ctoken_err_t        ctoken_err;
     QCBOREncodeContext      *cbor_en;
+    QCBORDecodeContext      *cbor_de;
+    int64_t                  iii;
 
     ctoken_encode_init(&en,
                        0,
                        CTOKEN_OPT_TOP_LEVEL_NOT_TAG,
                        CTOKEN_PROTECTION_NONE,
-                       T_COSE_ALGORITHM_ES256);
+                       0);
 
     ctoken_encode_start(&en, token_buffer);
 
     ctoken_encode_open_map(&en, 665, &cbor_en);
-    ctoken_encode_iat(&en, 666);
-    ctoken_encode_expiration(&en, 888);
-    ctoken_encode_close_map(&en);
-    ctoken_encode_bool(&en, 777, true);
+    QCBOREncode_AddInt64ToMapN(cbor_en, 1, 123456);
+    QCBOREncode_AddTextToMapN(cbor_en, 2, Q_USEFUL_BUF_FROM_SZ_LITERAL("hi there"));
     ctoken_encode_close_map(&en);
 
+    ctoken_encode_open_array(&en, 44, &cbor_en);
+    for(int i = 0; i < 10; i++) {
+        QCBOREncode_AddInt64(cbor_en, i);
+    }
+    ctoken_encode_close_array(&en);
+
+    /* ctoken_encode_finish will catch errors from underlying CBOR encoder */
     ctoken_err = ctoken_encode_finish(&en, &completed_token);
-
     if(ctoken_err != CTOKEN_ERR_SUCCESS) {
-        return -1;
+        return test_result_code(1, 1, ctoken_err);
     }
 
     ctoken_decode_init(&de, 0, 0, CTOKEN_PROTECTION_NONE);
     ctoken_err = ctoken_decode_validate_token(&de, completed_token);
     if(ctoken_err != CTOKEN_ERR_SUCCESS) {
-        return -2;
+        return test_result_code(2, 1, ctoken_err);;
     }
-    ctoken_err = ctoken_decode_enter_map(&de, 665);
+    ctoken_err = ctoken_decode_enter_map(&de, 665, &cbor_de);
     if(ctoken_err != CTOKEN_ERR_SUCCESS) {
-        return -3;
+        return test_result_code(3, 1, ctoken_err);;
     }
-    ctoken_err = ctoken_decode_enter_map(&de, 456);
+    QCBORDecode_GetInt64InMapN(cbor_de, 1, &iii);
+    ctoken_err = ctoken_decode_exit_map(&de);
     if(ctoken_err != CTOKEN_ERR_SUCCESS) {
-        return -4;
+         return test_result_code(4, 1, ctoken_err);
+     }
+
+    ctoken_decode_enter_array(&de, 44, &cbor_de);
+    for(int i = 0; i < 10; i++) {
+        QCBORDecode_GetInt64(cbor_de, &iii);
+        if(iii != i) {
+            return test_result_code(5, i, 0);
+        }
     }
-    
+    ctoken_err = ctoken_decode_exit_array(&de);
+    if(ctoken_err != CTOKEN_ERR_SUCCESS) {
+        return test_result_code(6, 1, ctoken_err);
+    }
 
-
-
-    ctoken_decode_exit_map(&de);
-    ctoken_decode_bool(&de, 777,  &b);
-
-
-#endif
     return 0;
 }

@@ -471,7 +471,8 @@ ctoken_decode_exit_map(struct ctoken_decode_ctx *me)
  */
 enum ctoken_err_t
 ctoken_decode_enter_array(struct ctoken_decode_ctx *me,
-                          int64_t                   label)
+                          int64_t                   label,
+                          QCBORDecodeContext     **decoder)
 {
     enum ctoken_err_t return_value;
 
@@ -482,6 +483,7 @@ ctoken_decode_enter_array(struct ctoken_decode_ctx *me,
 
     QCBORDecode_EnterArrayFromMapN(&(me->qcbor_decode_context), label);
     return_value = get_and_reset_error(&(me->qcbor_decode_context));
+    *decoder = &(me->qcbor_decode_context);
 
 Done:
     return return_value;
