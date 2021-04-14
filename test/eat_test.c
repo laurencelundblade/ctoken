@@ -1732,6 +1732,7 @@ int32_t map_and_array_test()
     QCBORDecodeContext      *cbor_de;
     int64_t                  iii;
 
+    /* Make a token with one claim that is an array and one that is a map */
     ctoken_encode_init(&en,
                        0,
                        CTOKEN_OPT_TOP_LEVEL_NOT_TAG,
@@ -1756,7 +1757,10 @@ int32_t map_and_array_test()
     if(ctoken_err != CTOKEN_ERR_SUCCESS) {
         return test_result_code(1, 1, ctoken_err);
     }
+    /* Successfully made the token with two claims */
 
+
+    /* Decode the token just made */
     ctoken_decode_init(&de, 0, 0, CTOKEN_PROTECTION_NONE);
     ctoken_err = ctoken_decode_validate_token(&de, completed_token);
     if(ctoken_err != CTOKEN_ERR_SUCCESS) {
@@ -1782,6 +1786,95 @@ int32_t map_and_array_test()
     ctoken_err = ctoken_decode_exit_array(&de);
     if(ctoken_err != CTOKEN_ERR_SUCCESS) {
         return test_result_code(6, 1, ctoken_err);
+    }
+    /* Completed test decoding the token */
+
+    /* Test array not found */
+    ctoken_err = ctoken_decode_enter_array(&de, 45, &cbor_de);
+    if(ctoken_err != CTOKEN_ERR_CLAIM_NOT_PRESENT) {
+        return test_result_code(7, 1, ctoken_err);
+    }
+
+    /* Test map not found */
+    ctoken_err = ctoken_decode_enter_array(&de, 666, &cbor_de);
+    if(ctoken_err != CTOKEN_ERR_CLAIM_NOT_PRESENT) {
+        return test_result_code(8, 1, ctoken_err);
+    }
+
+    /* Test closing an array that is not open */
+    ctoken_err = ctoken_decode_exit_array(&de);
+    if(ctoken_err != CTOKEN_ERR_CBOR_DECODE) {
+        return test_result_code(9, 1, ctoken_err);
+    }
+
+    /* No test for closing a map that is not open
+     * because a call to close a map will close the
+     * token-enclosing map. There is no tracking
+     * of which map opened is which
+     */
+
+    /* Test closing an array without opening it */
+    ctoken_encode_init(&en,
+                       0,
+                       CTOKEN_OPT_TOP_LEVEL_NOT_TAG,
+                       CTOKEN_PROTECTION_NONE,
+                       0);
+
+    ctoken_encode_start(&en, token_buffer);
+
+    ctoken_encode_close_array(&en);
+    /* ctoken_encode_finish will catch errors from underlying CBOR encoder */
+    ctoken_err = ctoken_encode_finish(&en, &completed_token);
+    if(ctoken_err != CTOKEN_ERR_CBOR_FORMATTING) {
+        return test_result_code(11, 1, ctoken_err);
+    }
+
+    /* Test closing a map without opening it */
+    ctoken_encode_init(&en,
+                       0,
+                       CTOKEN_OPT_TOP_LEVEL_NOT_TAG,
+                       CTOKEN_PROTECTION_NONE,
+                       0);
+
+    ctoken_encode_start(&en, token_buffer);
+
+    ctoken_encode_close_map(&en);
+    /* ctoken_encode_finish will catch errors from underlying CBOR encoder */
+    ctoken_err = ctoken_encode_finish(&en, &completed_token);
+    if(ctoken_err != CTOKEN_ERR_CBOR_FORMATTING) {
+        return test_result_code(12, 1, ctoken_err);
+    }
+
+    /* Test opening a map without closing it */
+    ctoken_encode_init(&en,
+                       0,
+                       CTOKEN_OPT_TOP_LEVEL_NOT_TAG,
+                       CTOKEN_PROTECTION_NONE,
+                       0);
+
+    ctoken_encode_start(&en, token_buffer);
+
+    ctoken_encode_open_map(&en, 88, &cbor_en);
+    /* ctoken_encode_finish will catch errors from underlying CBOR encoder */
+    ctoken_err = ctoken_encode_finish(&en, &completed_token);
+    if(ctoken_err != CTOKEN_ERR_CBOR_FORMATTING) {
+        return test_result_code(13, 1, ctoken_err);
+    }
+
+    /* Test opening an array without closing it */
+    ctoken_encode_init(&en,
+                       0,
+                       CTOKEN_OPT_TOP_LEVEL_NOT_TAG,
+                       CTOKEN_PROTECTION_NONE,
+                       0);
+
+    ctoken_encode_start(&en, token_buffer);
+
+    ctoken_encode_open_array(&en, 88, &cbor_en);
+    /* ctoken_encode_finish will catch errors from underlying CBOR encoder */
+    ctoken_err = ctoken_encode_finish(&en, &completed_token);
+    if(ctoken_err != CTOKEN_ERR_CBOR_FORMATTING) {
+        return test_result_code(14, 1, ctoken_err);
     }
 
     return 0;
