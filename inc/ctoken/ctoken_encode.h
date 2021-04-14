@@ -681,7 +681,7 @@ ctoken_encode_uptime(struct ctoken_encode_ctx  *context,
 
 
 /**
- * \brief  Encode the EAT intended claim.
+ * \brief  Encode the EAT intended use claim.
  *
  * \param[in] context  The encoding context to output to.
  * \paran[in] use      See \ref ctoken_intended_use_t for possible values.
@@ -695,6 +695,33 @@ ctoken_encode_uptime(struct ctoken_encode_ctx  *context,
 static void
 ctoken_encode_intended_use(struct ctoken_encode_ctx   *context,
                            enum ctoken_intended_use_t  use);
+
+
+/**
+ * \brief  Encode an OID-formated profile claim.
+ *
+ * \param[in] context  The encoding context to output to.
+ * \param[in] profile  The OID to encode.
+ *
+ * The OID is of the format given in the draft-ietf-cbor-tags-oid.
+ * It must be an absolute OID.
+ */
+static void
+ctoken_encode_profile_oid(struct ctoken_encode_ctx   *context,
+                          struct q_useful_buf_c       profile);
+
+
+/**
+ * \brief  Encode an URI-formated profile claim.
+ *
+ * \param[in] context  The encoding context to output to.
+ * \param[in] profile  The URI to encode.
+ */
+static void
+ctoken_encode_profile_uri(struct ctoken_encode_ctx   *context,
+                          struct q_useful_buf_c       profile);
+
+
 
 
 /**
@@ -1138,6 +1165,22 @@ ctoken_encode_intended_use(struct ctoken_encode_ctx   *me,
         return;
     }
     ctoken_encode_int(me, CTOKEN_EAT_LABEL_INTENDED_USE, use);
+}
+
+
+static inline void
+ctoken_encode_profile_oid(struct ctoken_encode_ctx   *me,
+                          struct q_useful_buf_c       profile)
+{
+    ctoken_encode_bstr(me, CTOKEN_EAT_LABEL_PROFILE, profile);
+}
+
+
+static inline void
+ctoken_encode_profile_uri(struct ctoken_encode_ctx   *me,
+                          struct q_useful_buf_c       profile)
+{
+    ctoken_encode_tstr(me, CTOKEN_EAT_LABEL_PROFILE, profile);
 }
 
 
