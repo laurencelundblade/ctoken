@@ -250,7 +250,7 @@ static void ctoken_encode_bool(struct ctoken_encode_ctx *context,
 /**
  * \brief Add the \c NULL value as a claim.
  *
- *  \param[in] context  Token creation context.
+ * \param[in] context  Token creation context.
  * \param[in] label     Integer label for claim.
  */
 static void ctoken_encode_null(struct ctoken_encode_ctx *context,
@@ -976,8 +976,8 @@ ctoken_encode_null(struct ctoken_encode_ctx *me,
 
 static inline void
 ctoken_encode_double(struct ctoken_encode_ctx *me,
-                         int64_t                   label,
-                         double                    value)
+                     int64_t                   label,
+                     double                    value)
 {
     QCBOREncode_AddDoubleToMapN(&(me->cbor_encode_context), label, value);
 }
@@ -985,15 +985,17 @@ ctoken_encode_double(struct ctoken_encode_ctx *me,
 
 static inline void
 ctoken_encode_cbor(struct ctoken_encode_ctx *me,
-                   int64_t label,
-                   struct q_useful_buf_c encoded)
+                   int64_t                   label,
+                   struct q_useful_buf_c     encoded)
 {
     QCBOREncode_AddEncodedToMapN(&(me->cbor_encode_context), label, encoded);
 }
 
 
 static inline void
-ctoken_encode_open_array(struct ctoken_encode_ctx *me, int64_t label, QCBOREncodeContext **encoder)
+ctoken_encode_open_array(struct ctoken_encode_ctx *me,
+                         int64_t                   label,
+                         QCBOREncodeContext       **encoder)
 {
     QCBOREncode_OpenArrayInMapN(&(me->cbor_encode_context), label);
     *encoder = &(me->cbor_encode_context);
@@ -1008,7 +1010,9 @@ ctoken_encode_close_array(struct ctoken_encode_ctx *me)
 
 
 static inline void
-ctoken_encode_open_map(struct ctoken_encode_ctx *me, int64_t label, QCBOREncodeContext **encoder)
+ctoken_encode_open_map(struct ctoken_encode_ctx *me,
+                       int64_t                   label,
+                       QCBOREncodeContext      **encoder)
 {
     QCBOREncode_OpenMapInMapN(&(me->cbor_encode_context), label);
     *encoder = &(me->cbor_encode_context);
@@ -1103,8 +1107,8 @@ ctoken_encode_origination(struct ctoken_encode_ctx *me,
 
 
 static inline void
-ctoken_encode_security_level(struct ctoken_encode_ctx *me,
-                                 enum ctoken_security_level_t security_level)
+ctoken_encode_security_level(struct ctoken_encode_ctx    *me,
+                             enum ctoken_security_level_t security_level)
 {
     /* Good compilers should optimize this out if a constant is passed
      * in reducing this whole function to just a call to
@@ -1132,7 +1136,9 @@ static inline void
 ctoken_encode_secure_boot(struct ctoken_encode_ctx  *me,
                           bool                       secure_boot_enabled)
 {
-    QCBOREncode_AddBoolToMapN(&(me->cbor_encode_context), CTOKEN_EAT_LABEL_SECURE_BOOT, secure_boot_enabled);
+    QCBOREncode_AddBoolToMapN(&(me->cbor_encode_context),
+                              CTOKEN_EAT_LABEL_SECURE_BOOT,
+                              secure_boot_enabled);
 }
 
 

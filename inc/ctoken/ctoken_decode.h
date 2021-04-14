@@ -537,23 +537,44 @@ ctoken_decode_uint(struct ctoken_decode_ctx *context,
 
 
 enum ctoken_err_t
+ctoken_decode_double(struct ctoken_decode_ctx *context,
+                     int64_t                  label,
+                     double                  *claim);
+
+/**
+ * \brief Get a claim of type boolean
+ *
+ * \param[in]  context    The token decoder context.
+ * \param[in]  label The integer label identifying the claim.
+ * \param[out] claim The boolean value tha t is returned.
+ *
+ * \return An error from \ref CTOKEN_ERR_t.
+ */
+enum ctoken_err_t
 ctoken_decode_bool(struct ctoken_decode_ctx *context,
                    int64_t                   label,
-                   bool                     *b);
+                   bool                     *claim);
 
 
-/*
+/**
+ * \brief Start decoding a claim that is a map.
  *
- * This is good for decoding a claim that is map
- * but not one that is nested maps. It is probably
- * better to call ctoken_decode_borrow_context and
- * use QCBOR directly to decode such.
+ * \param[in]  context  The token decoder context.
+ * \param[in]  label    The integer label identifying the claim.
+ * \param[out] decoder  Instance of the CBOR decoder from which to
+ *                      get map items.
  *
- * It is intentional that no method for entering
- * and exiting arrays is provided. If the internal
- * structure of a claim involves an array that is
- * fine and the way to encode and decode it is
- * by 
+ * \return An error from \ref CTOKEN_ERR_t
+ *
+ * After some or all the items in the map have been retrieved, call
+ * ctoken_decode_exit_map().
+ *
+ * This is mostly a wrapper around QCBORDecode_EnterMapFromMapN() from
+ * QCBOR spiffy decode.  It enters the map in bounded mode.  Methods
+ * like QCBORDecode_GetInt64InMapN(),
+ * QCBORDecode_GetTextStringInMapN() and
+ * QCBORDecode_EnterArrayFromMapN() can then be called.  The map may
+ * contain other arrays and maps.
  */
 enum ctoken_err_t
 ctoken_decode_enter_map(struct ctoken_decode_ctx *context,
@@ -561,18 +582,68 @@ ctoken_decode_enter_map(struct ctoken_decode_ctx *context,
                         QCBORDecodeContext      **decoder);
 
 
+/**
+ * \brief End decoding a claim that is an map.
+ *
+ * \param[in]  context  The token decoder context.
+ *
+ * \return An error from \ref CTOKEN_ERR_t
+ *
+ * This ends decoding of a claim that is an array started by
+ * ctoken_decode_enter_map().
+ *
+ * This is mostly a wrapper around QCBORDecode_ExitMap() from CBOR
+ * spiffy decode.  Any maps or arrays subordinate to the main array of
+ * the claim must be exitied if they were entered before this is
+ * called.
+ */
 enum ctoken_err_t
 ctoken_decode_exit_map(struct ctoken_decode_ctx *context);
 
+
+/**
+ * \brief Start decoding a claim that is an array.
+ *
+ * \param[in]  context  The token decoder context.
+ * \param[in]  label    The integer label identifying the claim.
+ * \param[out] decoder  Instance of the CBOR decoder from which to
+ *                      get array items.
+ *
+ * \return An error from \ref CTOKEN_ERR_t
+ *
+ * After some or all the items in the array have been retrieved, call
+ * ctoken_decode_exit_array().
+ *
+ * This is  mostly a wrapper around QCBORDecode_EnterArrayFromMapN() from
+ * QCBOR spiffy decode.  It enters the array in bounded mode.  Methods
+ * like QCBORDecode_GetNext(), QCBORDecode_GetInt64() and
+ * QCBORDecode_GetTextString() can then be called until one returns \ref
+ * QCBOR_ERR_NO_MORE_ITEMS.  The array may contain other arrays and
+ * maps.
+ */
 enum ctoken_err_t
 ctoken_decode_enter_array(struct ctoken_decode_ctx *context,
                           int64_t                   label,
                           QCBORDecodeContext      **decoder);
 
 
+/**
+ * \brief End decoding a claim that is an array.
+ *
+ * \param[in]  context  The token decoder context.
+ *
+ * \return An error from \ref CTOKEN_ERR_t
+ *
+ * This ends decoding of a claim that is an array started by
+ * ctoken_decode_enter_array().
+ *
+ * This is mostly a wrapper around QCBORDecode_ExitArray() from CBOR
+ * spiffy decode.  Any maps or arrays subordinate to the main array of
+ * the claim must be exitied if they were entered before this is
+ * called.
+ */
 enum ctoken_err_t
 ctoken_decode_exit_array(struct ctoken_decode_ctx *context);
-
 
 
 

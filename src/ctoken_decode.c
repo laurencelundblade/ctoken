@@ -407,6 +407,30 @@ Done:
  * Public function. See ctoken_decode.h
  */
 enum ctoken_err_t
+ctoken_decode_double(struct ctoken_decode_ctx *me,
+                     int64_t                  label,
+                     double                  *claim)
+{
+    enum ctoken_err_t return_value;
+
+    if(me->last_error != CTOKEN_ERR_SUCCESS) {
+        return_value = me->last_error;
+        *claim = 0;
+        goto Done;
+    }
+
+    QCBORDecode_GetDoubleInMapN(&(me->qcbor_decode_context), label, claim);
+
+    return_value = get_and_reset_error(&(me->qcbor_decode_context));
+
+Done:
+    return return_value;
+}
+
+/*
+ * Public function. See ctoken_decode.h
+ */
+enum ctoken_err_t
 ctoken_decode_bool(struct ctoken_decode_ctx *me,
                    int64_t                   label,
                    bool                     *b)
