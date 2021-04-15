@@ -50,6 +50,12 @@ int32_t profile_decode_test(void);
 
 int32_t profile_encode_test(void);
 
+int32_t map_and_array_test(void);
+
+int32_t basic_types_decode_test(void);
+
+int32_t basic_types_encode_test(void);
+
 
 #ifdef __cplusplus
 }

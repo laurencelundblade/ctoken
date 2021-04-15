@@ -210,21 +210,21 @@ static inline void
 ctoken_psaia_encode_boot_seed(struct ctoken_encode_ctx *me,
                               struct q_useful_buf_c boot_seed)
 {
-    ctoken_encode_add_bstr(me, EAT_CBOR_ARM_LABEL_BOOT_SEED, boot_seed);
+    ctoken_encode_bstr(me, EAT_CBOR_ARM_LABEL_BOOT_SEED, boot_seed);
 }
 
 static inline void
 ctoken_psaia_encode_hw_version(struct ctoken_encode_ctx *me,
                                struct q_useful_buf_c hw_version)
 {
-    ctoken_encode_add_bstr(me, EAT_CBOR_ARM_LABEL_HW_VERSION, hw_version);
+    ctoken_encode_bstr(me, EAT_CBOR_ARM_LABEL_HW_VERSION, hw_version);
 }
 
 static inline void
 ctoken_psaia_encode_implementation_id(struct ctoken_encode_ctx *me,
                                       struct q_useful_buf_c implementation_id)
 {
-    ctoken_encode_add_bstr(me, EAT_CBOR_ARM_LABEL_IMPLEMENTATION_ID, implementation_id);
+    ctoken_encode_bstr(me, EAT_CBOR_ARM_LABEL_IMPLEMENTATION_ID, implementation_id);
 }
 
 static inline void
@@ -238,7 +238,7 @@ static inline void
 ctoken_psaia_encode_profile_definition(struct ctoken_encode_ctx *me,
                                        struct q_useful_buf_c profile_definition)
 {
-    ctoken_encode_add_bstr(me, EAT_CBOR_ARM_LABEL_PROFILE_DEFINITION, profile_definition);
+    ctoken_encode_bstr(me, EAT_CBOR_ARM_LABEL_PROFILE_DEFINITION, profile_definition);
 }
 
 
@@ -246,7 +246,7 @@ static inline void
 ctoken_psaia_encode_security_lifecycle(struct ctoken_encode_ctx *me,
                                        uint32_t security_lifecycle)
 {
-    ctoken_encode_add_unsigned(me, EAT_CBOR_ARM_LABEL_SECURITY_LIFECYCLE, security_lifecycle);
+    ctoken_encode_unsigned(me, EAT_CBOR_ARM_LABEL_SECURITY_LIFECYCLE, security_lifecycle);
 }
 
 
@@ -254,7 +254,7 @@ static inline void
 ctoken_psaia_encode_client_id(struct ctoken_encode_ctx *me,
                               int32_t client_id)
 {
-    ctoken_encode_add_integer(me, EAT_CBOR_ARM_LABEL_CLIENT_ID, client_id);
+    ctoken_encode_int(me, EAT_CBOR_ARM_LABEL_CLIENT_ID, client_id);
 }
 
 #ifdef __cplusplus

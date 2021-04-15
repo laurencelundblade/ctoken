@@ -17,8 +17,6 @@
 #include "eat_test_tokens.h"
 
 
-#define TUB(xxx) ((struct q_useful_buf_c){xxx##_token, xxx##_token_size})
-
 
 /* Return code is
  xxxyyyzzz where zz is the error code, yy is the test number and zz is
@@ -604,8 +602,8 @@ int32_t submods_encode_errors_test(void)
 }
 
 
-
-int32_t sign_cbor(struct q_useful_buf_c  cbor_input,
+#if 0
+static int32_t sign_cbor(struct q_useful_buf_c  cbor_input,
                   struct q_useful_buf    out_buf,
                   struct q_useful_buf_c *completed_token)
 {
@@ -622,6 +620,7 @@ int32_t sign_cbor(struct q_useful_buf_c  cbor_input,
 
     return 0;
 }
+#endif
 
 
 struct decode_submod_test_config {
@@ -823,7 +822,7 @@ static const struct decode_submod_test_config submod_test_inputs[] = {
  will be processed successfully and those that won't and see that
  the error codes are correct in all cases.
  */
-int32_t one_decode_errors_test_case(const struct decode_submod_test_config *t)
+static int32_t one_decode_errors_test_case(const struct decode_submod_test_config *t)
 {
     struct ctoken_decode_ctx  decode_context;
     enum ctoken_err_t         ctoken_result;
@@ -1030,7 +1029,7 @@ int32_t submod_decode_errors_test()
 /* Create a token with the given payload and set up a decoder context
  * for it so everything is ready to for testing the decode methods.
  */
-int32_t setup_decode_test(struct q_useful_buf_c     cbor_input,
+static int32_t setup_decode_test(struct q_useful_buf_c     cbor_input,
                           UsefulBuf                 out_buf,
                           struct ctoken_decode_ctx *decode_context)
 {
@@ -1637,8 +1636,6 @@ int32_t secboot_test(void)
     enum ctoken_err_t         result;
     bool                      sec_boot;
 
-
-
     ctoken_decode_init(&decode_context,
                        0,
                        0,
@@ -1650,7 +1647,7 @@ int32_t secboot_test(void)
     }
 
     result = ctoken_decode_secure_boot(&decode_context, &sec_boot);
-    if(result != CTOKEN_ERR_SUCCESS | sec_boot != true) {
+    if(result != CTOKEN_ERR_SUCCESS || sec_boot != true) {
         return test_result_code(1, 1, result);
     }
 
@@ -1661,7 +1658,7 @@ int32_t secboot_test(void)
     }
 
     result = ctoken_decode_secure_boot(&decode_context, &sec_boot);
-    if(result != CTOKEN_ERR_SUCCESS | sec_boot != false) {
+    if(result != CTOKEN_ERR_SUCCESS || sec_boot != false) {
         return test_result_code(2, 1, result);
     }
 
@@ -1722,6 +1719,165 @@ int32_t secboot_test(void)
     return 0;
 }
 
+
+int32_t map_and_array_test()
+{
+    struct ctoken_encode_ctx en;
+    struct ctoken_decode_ctx de;
+    MakeUsefulBufOnStack(    token_buffer, 50);
+    struct q_useful_buf_c    completed_token;
+    enum ctoken_err_t        ctoken_err;
+    QCBOREncodeContext      *cbor_en;
+    QCBORDecodeContext      *cbor_de;
+    int64_t                  iii;
+
+    /* Make a token with one claim that is an array and one that is a map */
+    ctoken_encode_init(&en,
+                       0,
+                       CTOKEN_OPT_TOP_LEVEL_NOT_TAG,
+                       CTOKEN_PROTECTION_NONE,
+                       0);
+
+    ctoken_encode_start(&en, token_buffer);
+
+    ctoken_encode_open_map(&en, 665, &cbor_en);
+    QCBOREncode_AddInt64ToMapN(cbor_en, 1, 123456);
+    QCBOREncode_AddTextToMapN(cbor_en, 2, Q_USEFUL_BUF_FROM_SZ_LITERAL("hi there"));
+    ctoken_encode_close_map(&en);
+
+    ctoken_encode_open_array(&en, 44, &cbor_en);
+    for(int i = 0; i < 10; i++) {
+        QCBOREncode_AddInt64(cbor_en, i);
+    }
+    ctoken_encode_close_array(&en);
+
+    /* ctoken_encode_finish will catch errors from underlying CBOR encoder */
+    ctoken_err = ctoken_encode_finish(&en, &completed_token);
+    if(ctoken_err != CTOKEN_ERR_SUCCESS) {
+        return test_result_code(1, 1, ctoken_err);
+    }
+    /* Successfully made the token with two claims */
+
+
+    /* Decode the token just made */
+    ctoken_decode_init(&de, 0, 0, CTOKEN_PROTECTION_NONE);
+    ctoken_err = ctoken_decode_validate_token(&de, completed_token);
+    if(ctoken_err != CTOKEN_ERR_SUCCESS) {
+        return test_result_code(2, 1, ctoken_err);;
+    }
+    ctoken_err = ctoken_decode_enter_map(&de, 665, &cbor_de);
+    if(ctoken_err != CTOKEN_ERR_SUCCESS) {
+        return test_result_code(3, 1, ctoken_err);;
+    }
+    QCBORDecode_GetInt64InMapN(cbor_de, 1, &iii);
+    ctoken_err = ctoken_decode_exit_map(&de);
+    if(ctoken_err != CTOKEN_ERR_SUCCESS) {
+         return test_result_code(4, 1, ctoken_err);
+     }
+
+    ctoken_decode_enter_array(&de, 44, &cbor_de);
+    for(int i = 0; i < 10; i++) {
+        QCBORDecode_GetInt64(cbor_de, &iii);
+        if(iii != i) {
+            return test_result_code(5, i, 0);
+        }
+    }
+    ctoken_err = ctoken_decode_exit_array(&de);
+    if(ctoken_err != CTOKEN_ERR_SUCCESS) {
+        return test_result_code(6, 1, ctoken_err);
+    }
+    /* Completed test decoding the token */
+
+    /* Test array not found */
+    ctoken_err = ctoken_decode_enter_array(&de, 45, &cbor_de);
+    if(ctoken_err != CTOKEN_ERR_CLAIM_NOT_PRESENT) {
+        return test_result_code(7, 1, ctoken_err);
+    }
+
+    /* Test map not found */
+    ctoken_err = ctoken_decode_enter_array(&de, 666, &cbor_de);
+    if(ctoken_err != CTOKEN_ERR_CLAIM_NOT_PRESENT) {
+        return test_result_code(8, 1, ctoken_err);
+    }
+
+    /* Test closing an array that is not open */
+    ctoken_err = ctoken_decode_exit_array(&de);
+    if(ctoken_err != CTOKEN_ERR_CBOR_DECODE) {
+        return test_result_code(9, 1, ctoken_err);
+    }
+
+    /* No test for closing a map that is not open
+     * because a call to close a map will close the
+     * token-enclosing map. There is no tracking
+     * of which map opened is which
+     */
+
+    /* Test closing an array without opening it */
+    ctoken_encode_init(&en,
+                       0,
+                       CTOKEN_OPT_TOP_LEVEL_NOT_TAG,
+                       CTOKEN_PROTECTION_NONE,
+                       0);
+
+    ctoken_encode_start(&en, token_buffer);
+
+    ctoken_encode_close_array(&en);
+    /* ctoken_encode_finish will catch errors from underlying CBOR encoder */
+    ctoken_err = ctoken_encode_finish(&en, &completed_token);
+    if(ctoken_err != CTOKEN_ERR_CBOR_FORMATTING) {
+        return test_result_code(11, 1, ctoken_err);
+    }
+
+    /* Test closing a map without opening it */
+    ctoken_encode_init(&en,
+                       0,
+                       CTOKEN_OPT_TOP_LEVEL_NOT_TAG,
+                       CTOKEN_PROTECTION_NONE,
+                       0);
+
+    ctoken_encode_start(&en, token_buffer);
+
+    ctoken_encode_close_map(&en);
+    /* ctoken_encode_finish will catch errors from underlying CBOR encoder */
+    ctoken_err = ctoken_encode_finish(&en, &completed_token);
+    if(ctoken_err != CTOKEN_ERR_CBOR_FORMATTING) {
+        return test_result_code(12, 1, ctoken_err);
+    }
+
+    /* Test opening a map without closing it */
+    ctoken_encode_init(&en,
+                       0,
+                       CTOKEN_OPT_TOP_LEVEL_NOT_TAG,
+                       CTOKEN_PROTECTION_NONE,
+                       0);
+
+    ctoken_encode_start(&en, token_buffer);
+
+    ctoken_encode_open_map(&en, 88, &cbor_en);
+    /* ctoken_encode_finish will catch errors from underlying CBOR encoder */
+    ctoken_err = ctoken_encode_finish(&en, &completed_token);
+    if(ctoken_err != CTOKEN_ERR_CBOR_FORMATTING) {
+        return test_result_code(13, 1, ctoken_err);
+    }
+
+    /* Test opening an array without closing it */
+    ctoken_encode_init(&en,
+                       0,
+                       CTOKEN_OPT_TOP_LEVEL_NOT_TAG,
+                       CTOKEN_PROTECTION_NONE,
+                       0);
+
+    ctoken_encode_start(&en, token_buffer);
+
+    ctoken_encode_open_array(&en, 88, &cbor_en);
+    /* ctoken_encode_finish will catch errors from underlying CBOR encoder */
+    ctoken_err = ctoken_encode_finish(&en, &completed_token);
+    if(ctoken_err != CTOKEN_ERR_CBOR_FORMATTING) {
+        return test_result_code(14, 1, ctoken_err);
+    }
+
+    return 0;
+}
 
 
 int32_t profile_decode_test(void)
@@ -1841,7 +1997,6 @@ int32_t profile_encode_test(void)
                               Q_USEFUL_BUF_FROM_SZ_LITERAL("http://arm.com/psa/2.0.0"));
 
     result = ctoken_encode_finish(&encode_ctx, &token);
-    result = ctoken_encode_start(&encode_ctx, buf);
     if(result != CTOKEN_ERR_SUCCESS) {
         return test_result_code(1, 2, result);
     }
@@ -1856,7 +2011,6 @@ int32_t profile_encode_test(void)
                               Q_USEFUL_BUF_FROM_BYTE_ARRAY_LITERAL(oid));
 
     result = ctoken_encode_finish(&encode_ctx, &token);
-    result = ctoken_encode_start(&encode_ctx, buf);
     if(result != CTOKEN_ERR_SUCCESS) {
         return test_result_code(2, 2, result);
     }
@@ -1864,5 +2018,103 @@ int32_t profile_encode_test(void)
     if(q_useful_buf_compare(token, TEST2UB(profile_valid_oid))) {
         return test_result_code(2, 3, 0);
     }
+    return 0;
+}
+
+
+static const uint8_t valid_bool[] = {0xA1, 0x16, 0xF5};
+static const uint8_t valid_double[] = {0xA1, 0x16, 0xFB, 0x40, 0x09, 0x21, 0xF9,
+                                       0xF0, 0x1B, 0x86, 0x6E};
+
+
+int32_t basic_types_decode_test(void)
+{
+    struct ctoken_decode_ctx  decode_context;
+    enum ctoken_err_t         result;
+    bool                      b;
+    double                    d;
+
+    ctoken_decode_init(&decode_context,
+                       0,
+                       0,
+                       CTOKEN_PROTECTION_NONE);
+
+    result = ctoken_decode_validate_token(&decode_context, Q_USEFUL_BUF_FROM_BYTE_ARRAY_LITERAL(valid_bool));
+    if(result) {
+        return test_result_code(1, 0, result);;
+    }
+
+    result = ctoken_decode_bool(&decode_context, 22, &b);
+    if(result != CTOKEN_ERR_SUCCESS) {
+        return test_result_code(1, 1, result);
+    }
+    if(b != true) {
+        return test_result_code(1, 2, 0);
+    }
+
+    result = ctoken_decode_validate_token(&decode_context, Q_USEFUL_BUF_FROM_BYTE_ARRAY_LITERAL(valid_double));
+    if(result) {
+        return test_result_code(2, 0, result);;
+    }
+
+    result = ctoken_decode_double(&decode_context, 22, &d);
+    if(result != CTOKEN_ERR_SUCCESS) {
+        return test_result_code(2, 1, result);
+    }
+    if(d != 3.14159) {
+        return test_result_code(2, 2, 0);
+    }
+
+    // TODO: add the other basic types
+
+    return 0;
+}
+
+
+
+int32_t basic_types_encode_test(void)
+{
+    struct ctoken_encode_ctx     encode_ctx;
+    struct q_useful_buf_c        token;
+    Q_USEFUL_BUF_MAKE_STACK_UB(  buf, 50);
+    enum ctoken_err_t            result;
+
+    ctoken_encode_init(&encode_ctx, 0, CTOKEN_OPT_TOP_LEVEL_NOT_TAG, CTOKEN_PROTECTION_NONE, 0);
+
+
+    result = ctoken_encode_start(&encode_ctx, buf);
+    if(result != CTOKEN_ERR_SUCCESS) {
+        return test_result_code(1, 1, result);
+    }
+
+    ctoken_encode_bool(&encode_ctx, 22, true);
+
+    result = ctoken_encode_finish(&encode_ctx, &token);
+    if(result != CTOKEN_ERR_SUCCESS) {
+        return test_result_code(1, 2, result);
+    }
+
+    if(q_useful_buf_compare(token, UsefulBuf_FROM_BYTE_ARRAY_LITERAL(valid_bool))) {
+        return test_result_code(1, 3, 0);
+    }
+
+    result = ctoken_encode_start(&encode_ctx, buf);
+    if(result != CTOKEN_ERR_SUCCESS) {
+        return test_result_code(2, 1, result);
+    }
+
+    ctoken_encode_double(&encode_ctx, 22, 3.14159);
+
+    result = ctoken_encode_finish(&encode_ctx, &token);
+    if(result != CTOKEN_ERR_SUCCESS) {
+        return test_result_code(2, 2, result);
+    }
+
+    if(q_useful_buf_compare(token, UsefulBuf_FROM_BYTE_ARRAY_LITERAL(valid_double))) {
+        return test_result_code(2, 3, 0);
+    }
+
+    // TODO: add the other basic types
+
     return 0;
 }

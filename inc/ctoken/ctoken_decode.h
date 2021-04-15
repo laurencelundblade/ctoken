@@ -362,74 +362,6 @@ ctoken_decode_borrow_context(struct ctoken_decode_ctx *context);
 
 
 /**
- *
- * \brief Get a claim of type byte string.
- *
- * \param[in]  context    The token decoder context.
- * \param[in]  label The integer label identifying the claim.
- * \param[out] claim The byte string or \c NULL_Q_USEFUL_BUF_C.
- *
- * \return An error from \ref CTOKEN_ERR_t.
- *
- * \retval CTOKEN_ERR_CBOR_STRUCTURE
- *         General structure of the token is incorrect, for example
- *         the top level is not a map or some map wasn't closed.
- *
- * \retval CTOKEN_ERR_CBOR_NOT_WELL_FORMED
- *         CBOR syntax is wrong and it is not decodable.
- *
- * \retval CTOKEN_ERR_CBOR_TYPE
- *         Returned if the claim is not a byte string.
- *
- * \retval CTOKEN_ERR_NOT_FOUND
- *         Data item for \c label was not found in token.
- *
- * If an error occurs, the claim will be set to \c NULL_Q_USEFUL_BUF_C
- * and the error state inside \c ctoken_decode_ctx will
- * be set.
- */
-enum ctoken_err_t
-ctoken_decode_get_bstr(struct ctoken_decode_ctx  *context,
-                       int64_t                    label,
-                       struct q_useful_buf_c     *claim);
-
-
-/**
- * \brief Get a claim of type text string.
- * string.
- *
- * \param[in] context     The token decoder context.
- * \param[in] label  The integer label identifying the claim.
- * \param[out] claim The byte string or \c NULL_Q_USEFUL_BUF_C.
- *
- * \return An error from \ref CTOKEN_ERR_t.
- *
- * \retval CTOKEN_ERR_CBOR_STRUCTURE
- *         General structure of the token is incorrect, for example
- *         the top level is not a map or some map wasn't closed.
- *
- * \retval CTOKEN_ERR_CBOR_NOT_WELL_FORMED
- *         CBOR syntax is wrong and it is not decodable.
- *
- * \retval CTOKEN_ERR_CBOR_TYPE
- *         Returned if the claim is not a byte string.
- *
- * \retval CTOKEN_ERR_NOT_FOUND
- *         Data item for \c label was not found in token.
- *
- * Even though this is a text string, it is not NULL-terminated.
- *
- * If an error occurs, the claim will be set to \c NULL_Q_USEFUL_BUF_C
- * and the error state inside \c ctoken_decode_ctx will
- * be set.
- */
-enum ctoken_err_t
-ctoken_decode_get_tstr(struct ctoken_decode_ctx *context,
-                       int64_t                   label,
-                       struct q_useful_buf_c    *claim);
-
-
-/**
  * \brief Get a claim of type signed integer.
  *
  * \param[in]  context    The token decoder context.
@@ -465,9 +397,9 @@ ctoken_decode_get_tstr(struct ctoken_decode_ctx *context,
  * inside the \c ctoken_decode_ctx will be set.
  */
 enum ctoken_err_t
-ctoken_decode_get_int(struct ctoken_decode_ctx *context,
-                      int64_t                   label,
-                      int64_t                  *claim);
+ctoken_decode_int(struct ctoken_decode_ctx *context,
+                  int64_t                   label,
+                  int64_t                  *claim);
 
 
 /**
@@ -489,11 +421,11 @@ ctoken_decode_get_int(struct ctoken_decode_ctx *context,
  * usually fit into an enumerated type.
  */
 enum ctoken_err_t
-ctoken_decode_get_int_constrained(struct ctoken_decode_ctx *context,
-                                  int64_t                   label,
-                                  int64_t                   min,
-                                  int64_t                   max,
-                                  int64_t                  *claim);
+ctoken_decode_int_constrained(struct ctoken_decode_ctx *context,
+                              int64_t                   label,
+                              int64_t                   min,
+                              int64_t                   max,
+                              int64_t                  *claim);
 
 
 /**
@@ -531,16 +463,197 @@ ctoken_decode_get_int_constrained(struct ctoken_decode_ctx *context,
  *  inside the \c ctoken_decode_ctx will be set.
  */
 enum ctoken_err_t
-ctoken_decode_get_uint(struct ctoken_decode_ctx *context,
-                       int64_t                  label,
-                       uint64_t                *claim);
+ctoken_decode_uint(struct ctoken_decode_ctx *context,
+                   int64_t                  label,
+                   uint64_t                *claim);
 
 
-
+/**
+ *
+ * \brief Get a claim of type byte string.
+ *
+ * \param[in]  context    The token decoder context.
+ * \param[in]  label The integer label identifying the claim.
+ * \param[out] claim The byte string or \c NULL_Q_USEFUL_BUF_C.
+ *
+ * \return An error from \ref CTOKEN_ERR_t.
+ *
+ * \retval CTOKEN_ERR_CBOR_STRUCTURE
+ *         General structure of the token is incorrect, for example
+ *         the top level is not a map or some map wasn't closed.
+ *
+ * \retval CTOKEN_ERR_CBOR_NOT_WELL_FORMED
+ *         CBOR syntax is wrong and it is not decodable.
+ *
+ * \retval CTOKEN_ERR_CBOR_TYPE
+ *         Returned if the claim is not a byte string.
+ *
+ * \retval CTOKEN_ERR_NOT_FOUND
+ *         Data item for \c label was not found in token.
+ *
+ * If an error occurs, the claim will be set to \c NULL_Q_USEFUL_BUF_C
+ * and the error state inside \c ctoken_decode_ctx will
+ * be set.
+ */
 enum ctoken_err_t
-ctoken_decode_get_bool(struct ctoken_decode_ctx *context,
-                       int64_t                   label,
-                       bool                     *b);
+ctoken_decode_bstr(struct ctoken_decode_ctx  *context,
+                   int64_t                    label,
+                   struct q_useful_buf_c     *claim);
+
+
+/**
+ * \brief Get a claim of type text string.
+ * string.
+ *
+ * \param[in] context     The token decoder context.
+ * \param[in] label  The integer label identifying the claim.
+ * \param[out] claim The byte string or \c NULL_Q_USEFUL_BUF_C.
+ *
+ * \return An error from \ref CTOKEN_ERR_t.
+ *
+ * \retval CTOKEN_ERR_CBOR_STRUCTURE
+ *         General structure of the token is incorrect, for example
+ *         the top level is not a map or some map wasn't closed.
+ *
+ * \retval CTOKEN_ERR_CBOR_NOT_WELL_FORMED
+ *         CBOR syntax is wrong and it is not decodable.
+ *
+ * \retval CTOKEN_ERR_CBOR_TYPE
+ *         Returned if the claim is not a byte string.
+ *
+ * \retval CTOKEN_ERR_NOT_FOUND
+ *         Data item for \c label was not found in token.
+ *
+ * Even though this is a text string, it is not NULL-terminated.
+ *
+ * If an error occurs, the claim will be set to \c NULL_Q_USEFUL_BUF_C
+ * and the error state inside \c ctoken_decode_ctx will
+ * be set.
+ */
+enum ctoken_err_t
+ctoken_decode_tstr(struct ctoken_decode_ctx *context,
+                   int64_t                   label,
+                   struct q_useful_buf_c    *claim);
+
+
+/**
+ * \brief Get a claim of type boolean
+ *
+ * \param[in]  context    The token decoder context.
+ * \param[in]  label The integer label identifying the claim.
+ * \param[out] claim The boolean value tha t is returned.
+ *
+ * \return An error from \ref CTOKEN_ERR_t.
+ */
+enum ctoken_err_t
+ctoken_decode_bool(struct ctoken_decode_ctx *context,
+                   int64_t                   label,
+                   bool                     *claim);
+
+
+/**
+ * \brief Get a claim of type double
+ *
+ * \param[in]  context    The token decoder context.
+ * \param[in]  label The integer label identifying the claim.
+ * \param[out] claim The double value tha t is returned.
+ *
+ * \return An error from \ref CTOKEN_ERR_t.
+ */
+enum ctoken_err_t
+ctoken_decode_double(struct ctoken_decode_ctx *context,
+                     int64_t                  label,
+                     double                  *claim);
+
+
+/**
+ * \brief Start decoding a claim that is an array.
+ *
+ * \param[in]  context  The token decoder context.
+ * \param[in]  label    The integer label identifying the claim.
+ * \param[out] decoder  Instance of the CBOR decoder from which to
+ *                      get array items.
+ *
+ * \return An error from \ref CTOKEN_ERR_t
+ *
+ * After some or all the items in the array have been retrieved, call
+ * ctoken_decode_exit_array().
+ *
+ * This is  mostly a wrapper around QCBORDecode_EnterArrayFromMapN() from
+ * QCBOR spiffy decode.  It enters the array in bounded mode.  Methods
+ * like QCBORDecode_GetNext(), QCBORDecode_GetInt64() and
+ * QCBORDecode_GetTextString() can then be called until one returns \ref
+ * QCBOR_ERR_NO_MORE_ITEMS.  The array may contain other arrays and
+ * maps.
+ */
+enum ctoken_err_t
+ctoken_decode_enter_array(struct ctoken_decode_ctx *context,
+                          int64_t                   label,
+                          QCBORDecodeContext      **decoder);
+
+
+/**
+ * \brief End decoding a claim that is an array.
+ *
+ * \param[in]  context  The token decoder context.
+ *
+ * \return An error from \ref CTOKEN_ERR_t
+ *
+ * This ends decoding of a claim that is an array started by
+ * ctoken_decode_enter_array().
+ *
+ * This is mostly a wrapper around QCBORDecode_ExitArray() from CBOR
+ * spiffy decode.  Any maps or arrays subordinate to the main array of
+ * the claim must be exitied if they were entered before this is
+ * called.
+ */
+enum ctoken_err_t
+ctoken_decode_exit_array(struct ctoken_decode_ctx *context);
+
+
+/**
+ * \brief Start decoding a claim that is a map.
+ *
+ * \param[in]  context  The token decoder context.
+ * \param[in]  label    The integer label identifying the claim.
+ * \param[out] decoder  Instance of the CBOR decoder from which to
+ *                      get map items.
+ *
+ * \return An error from \ref CTOKEN_ERR_t
+ *
+ * After some or all the items in the map have been retrieved, call
+ * ctoken_decode_exit_map().
+ *
+ * This is mostly a wrapper around QCBORDecode_EnterMapFromMapN() from
+ * QCBOR spiffy decode.  It enters the map in bounded mode.  Methods
+ * like QCBORDecode_GetInt64InMapN(),
+ * QCBORDecode_GetTextStringInMapN() and
+ * QCBORDecode_EnterArrayFromMapN() can then be called.  The map may
+ * contain other arrays and maps.
+ */
+enum ctoken_err_t
+ctoken_decode_enter_map(struct ctoken_decode_ctx *context,
+                        int64_t                   label,
+                        QCBORDecodeContext      **decoder);
+
+
+/**
+ * \brief End decoding a claim that is an map.
+ *
+ * \param[in]  context  The token decoder context.
+ *
+ * \return An error from \ref CTOKEN_ERR_t
+ *
+ * This ends decoding of a claim that is an array started by
+ * ctoken_decode_enter_map().
+ *
+ * This is mostly a wrapper around QCBORDecode_ExitMap() from CBOR
+ * spiffy decode.  Any maps or arrays subordinate to the main array of
+ * the claim must be exitied if they were entered before this is
+ * called.
+ */
+enum ctoken_err_t
+ctoken_decode_exit_map(struct ctoken_decode_ctx *context);
 
 
 /**
@@ -1388,7 +1501,7 @@ static inline enum ctoken_err_t
 ctoken_decode_issuer(struct ctoken_decode_ctx *me,
                      struct q_useful_buf_c    *issuer)
 {
-    return ctoken_decode_get_tstr(me, CTOKEN_CWT_LABEL_ISSUER, issuer);
+    return ctoken_decode_tstr(me, CTOKEN_CWT_LABEL_ISSUER, issuer);
 }
 
 
@@ -1396,7 +1509,7 @@ static inline enum ctoken_err_t
 ctoken_decode_subject(struct ctoken_decode_ctx *me,
                       struct q_useful_buf_c    *subject)
 {
-    return ctoken_decode_get_tstr(me, CTOKEN_CWT_LABEL_SUBJECT, subject);
+    return ctoken_decode_tstr(me, CTOKEN_CWT_LABEL_SUBJECT, subject);
 }
 
 
@@ -1404,7 +1517,7 @@ static inline enum ctoken_err_t
 ctoken_decode_audience(struct ctoken_decode_ctx *me,
                        struct q_useful_buf_c    *audience)
 {
-    return ctoken_decode_get_tstr(me, CTOKEN_CWT_LABEL_AUDIENCE, audience);
+    return ctoken_decode_tstr(me, CTOKEN_CWT_LABEL_AUDIENCE, audience);
 }
 
 
@@ -1412,14 +1525,14 @@ static inline enum ctoken_err_t
 ctoken_decode_expiration(struct ctoken_decode_ctx *me,
                          int64_t                  *expiration)
 {
-    return ctoken_decode_get_int(me, CTOKEN_CWT_LABEL_EXPIRATION, expiration);
+    return ctoken_decode_int(me, CTOKEN_CWT_LABEL_EXPIRATION, expiration);
 }
 
 static inline enum ctoken_err_t
 ctoken_decode_not_before(struct ctoken_decode_ctx *me,
                          int64_t                  *not_before)
 {
-    return ctoken_decode_get_int(me, CTOKEN_CWT_LABEL_NOT_BEFORE, not_before);
+    return ctoken_decode_int(me, CTOKEN_CWT_LABEL_NOT_BEFORE, not_before);
 }
 
 
@@ -1427,7 +1540,7 @@ static inline enum ctoken_err_t
 ctoken_decode_iat(struct ctoken_decode_ctx *me,
                   int64_t                  *iat)
 {
-    return ctoken_decode_get_int(me, CTOKEN_CWT_LABEL_NOT_BEFORE, iat);
+    return ctoken_decode_int(me, CTOKEN_CWT_LABEL_NOT_BEFORE, iat);
 }
 
 
@@ -1435,7 +1548,7 @@ static inline enum ctoken_err_t
 ctoken_decode_cti(struct ctoken_decode_ctx *me,
                   struct q_useful_buf_c    *cti)
 {
-    return ctoken_decode_get_bstr(me, CTOKEN_CWT_LABEL_CTI,  cti);
+    return ctoken_decode_bstr(me, CTOKEN_CWT_LABEL_CTI,  cti);
 }
 
 
@@ -1445,11 +1558,11 @@ ctoken_decode_nonce(struct ctoken_decode_ctx *me,
 {
     enum ctoken_err_t return_value;
 
-    return_value = ctoken_decode_get_bstr(me, CTOKEN_EAT_LABEL_NONCE, nonce);
+    return_value = ctoken_decode_bstr(me, CTOKEN_EAT_LABEL_NONCE, nonce);
 
 #ifndef CTOKEN_DISABLE_TEMP_LABELS
     if(return_value == CTOKEN_ERR_CLAIM_NOT_PRESENT) {
-       return_value = ctoken_decode_get_bstr(me, CTOKEN_TEMP_EAT_LABEL_NONCE, nonce);
+       return_value = ctoken_decode_bstr(me, CTOKEN_TEMP_EAT_LABEL_NONCE, nonce);
     }
 #endif
 
@@ -1463,11 +1576,11 @@ ctoken_decode_ueid(struct ctoken_decode_ctx *me,
 {
     enum ctoken_err_t return_value;
 
-    return_value = ctoken_decode_get_bstr(me, CTOKEN_EAT_LABEL_UEID, ueid);
+    return_value = ctoken_decode_bstr(me, CTOKEN_EAT_LABEL_UEID, ueid);
 
 #ifndef CTOKEN_DISABLE_TEMP_LABELS
     if(return_value == CTOKEN_ERR_CLAIM_NOT_PRESENT) {
-        return_value = ctoken_decode_get_bstr(me, CTOKEN_TEMP_EAT_LABEL_UEID, ueid);
+        return_value = ctoken_decode_bstr(me, CTOKEN_TEMP_EAT_LABEL_UEID, ueid);
     }
 #endif
     return return_value;
@@ -1480,11 +1593,11 @@ ctoken_decode_oemid(struct ctoken_decode_ctx *me,
 {
     enum ctoken_err_t return_value;
 
-    return_value = ctoken_decode_get_bstr(me, CTOKEN_EAT_LABEL_OEMID, oemid);
+    return_value = ctoken_decode_bstr(me, CTOKEN_EAT_LABEL_OEMID, oemid);
 
 #ifndef CTOKEN_DISABLE_TEMP_LABELS
     if(return_value == CTOKEN_ERR_CLAIM_NOT_PRESENT) {
-        return_value = ctoken_decode_get_bstr(me, CTOKEN_TEMP_EAT_LABEL_OEMID, oemid);
+        return_value = ctoken_decode_bstr(me, CTOKEN_TEMP_EAT_LABEL_OEMID, oemid);
     }
 #endif
     return return_value;
@@ -1495,7 +1608,7 @@ static inline enum ctoken_err_t
 ctoken_decode_origination(struct ctoken_decode_ctx *me,
                           struct q_useful_buf_c    *origination)
 {
-    return ctoken_decode_get_tstr(me, CTOKEN_EAT_LABEL_ORIGINATION, origination);
+    return ctoken_decode_tstr(me, CTOKEN_EAT_LABEL_ORIGINATION, origination);
 }
 
 
@@ -1505,7 +1618,7 @@ ctoken_decode_security_level(struct ctoken_decode_ctx         *me,
 {
     enum ctoken_err_t return_value;
 
-    return_value = ctoken_decode_get_int_constrained(me,
+    return_value = ctoken_decode_int_constrained(me,
                                              CTOKEN_EAT_LABEL_SECURITY_LEVEL,
                                              EAT_SL_UNRESTRICTED,
                                              EAT_SL_HARDWARE,
@@ -1513,7 +1626,7 @@ ctoken_decode_security_level(struct ctoken_decode_ctx         *me,
 
 #ifndef CTOKEN_DISABLE_TEMP_LABELS
     if(return_value == CTOKEN_ERR_CLAIM_NOT_PRESENT) {
-        return_value = ctoken_decode_get_int_constrained(me,
+        return_value = ctoken_decode_int_constrained(me,
                                              CTOKEN_TEMP_EAT_LABEL_SECURITY_LEVEL,
                                              EAT_SL_UNRESTRICTED,
                                              EAT_SL_HARDWARE,
@@ -1528,7 +1641,7 @@ static inline enum ctoken_err_t
 ctoken_decode_uptime(struct ctoken_decode_ctx *me,
                      uint64_t                 *uptime)
 {
-    return ctoken_decode_get_uint(me, CTOKEN_EAT_LABEL_UPTIME, uptime);
+    return ctoken_decode_uint(me, CTOKEN_EAT_LABEL_UPTIME, uptime);
 }
 
 
@@ -1538,14 +1651,14 @@ ctoken_decode_secure_boot(struct ctoken_decode_ctx *me,
 {
     enum ctoken_err_t return_value;
 
-    return_value = ctoken_decode_get_bool(me,
-                                          CTOKEN_EAT_LABEL_SECURE_BOOT,
-                                          secure_boot_enabled);
+    return_value = ctoken_decode_bool(me,
+                                      CTOKEN_EAT_LABEL_SECURE_BOOT,
+                                      secure_boot_enabled);
 #ifndef CTOKEN_DISABLE_TEMP_LABELS
     if(return_value == CTOKEN_ERR_CLAIM_NOT_PRESENT) {
-        return_value = ctoken_decode_get_bool(me,
-                                              CTOKEN_TEMP_EAT_LABEL_SECURE_BOOT,
-                                              secure_boot_enabled);
+        return_value = ctoken_decode_bool(me,
+                                          CTOKEN_TEMP_EAT_LABEL_SECURE_BOOT,
+                                          secure_boot_enabled);
     }
 #endif
 
@@ -1559,14 +1672,14 @@ ctoken_decode_debug_state(struct ctoken_decode_ctx  *me,
 {
     enum ctoken_err_t return_value;
 
-    return_value = ctoken_decode_get_int_constrained(me,
+    return_value = ctoken_decode_int_constrained(me,
                                              CTOKEN_TEMP_EAT_LABEL_DEBUG_STATE,
                                              CTOKEN_DEBUG_ENABLED,
                                              CTOKEN_DEBUG_DISABLED_FULL_PERMANENT,
                                              (int64_t *)debug_level);
 #ifndef CTOKEN_DISABLE_TEMP_LABELS
     if(return_value == CTOKEN_ERR_CLAIM_NOT_PRESENT) {
-        return ctoken_decode_get_int_constrained(me,
+        return ctoken_decode_int_constrained(me,
                                              CTOKEN_EAT_LABEL_DEBUG_STATE,
                                              CTOKEN_DEBUG_ENABLED,
                                              CTOKEN_DEBUG_DISABLED_FULL_PERMANENT,
@@ -1581,11 +1694,11 @@ static inline enum ctoken_err_t
 ctoken_decode_intended_use(struct ctoken_decode_ctx    *me,
                            enum ctoken_intended_use_t  *use)
 {
-    return ctoken_decode_get_int_constrained(me,
-                                             CTOKEN_EAT_LABEL_INTENDED_USE,
-                                             CTOKEN_USE_GENERAL,
-                                             CTOKEN_USE_PROOF_OF_POSSSION,
-                                             (int64_t *)use);
+    return ctoken_decode_int_constrained(me,
+                                         CTOKEN_EAT_LABEL_INTENDED_USE,
+                                         CTOKEN_USE_GENERAL,
+                                         CTOKEN_USE_PROOF_OF_POSSSION,
+                                         (int64_t *)use);
 }
 
 
@@ -1593,7 +1706,7 @@ static inline enum ctoken_err_t
 ctoken_decode_profile_uri(struct ctoken_decode_ctx *me,
                           struct q_useful_buf_c    *profile)
 {
-    return ctoken_decode_get_tstr(me, CTOKEN_EAT_LABEL_PROFILE, profile);
+    return ctoken_decode_tstr(me, CTOKEN_EAT_LABEL_PROFILE, profile);
 }
 
 
@@ -1601,7 +1714,7 @@ static inline enum ctoken_err_t
 ctoken_decode_profile_oid(struct ctoken_decode_ctx *me,
                           struct q_useful_buf_c    *profile)
 {
-    return ctoken_decode_get_bstr(me, CTOKEN_EAT_LABEL_PROFILE, profile);
+    return ctoken_decode_bstr(me, CTOKEN_EAT_LABEL_PROFILE, profile);
 }
 
 static inline enum ctoken_err_t

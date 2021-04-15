@@ -345,9 +345,7 @@ ctoken_encode_location(struct ctoken_encode_ctx       *me,
         return;
     }
 
-    encode_cxt = ctoken_encode_borrow_cbor_cntxt(me);
-
-    QCBOREncode_OpenMapInMapN(encode_cxt, CTOKEN_EAT_LABEL_LOCATION);
+    ctoken_encode_open_map(me, CTOKEN_EAT_LABEL_LOCATION, &encode_cxt);
 
     for(item_iterator = CTOKEN_EAT_LABEL_LATITUDE-1;
         item_iterator <= NUM_FLOAT_LOCATION_ITEMS-1;
