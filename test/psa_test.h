@@ -8,8 +8,8 @@
  * See BSD-3-Clause license in README.md
  */
 
-#ifndef __PSAIA_TEST_H__
-#define __PSAIA_TEST_H__
+#ifndef __psa_TEST_H__
+#define __psa_TEST_H__
 
 #include <stdint.h>
 #include "t_cose/q_useful_buf.h"
@@ -125,4 +125,4 @@ int32_t make_normal_token(struct q_useful_buf token_storage, struct q_useful_buf
 }
 #endif
 
-#endif /* __PSAIA_TEST_H__ */
+#endif /* __psa_TEST_H__ */

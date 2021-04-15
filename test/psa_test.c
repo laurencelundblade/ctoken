@@ -8,12 +8,12 @@
  * See BSD-3-Clause license in README.md
  */
 
-#include "psaia_test.h"
+#include "psa_test.h"
 #include "t_cose/q_useful_buf.h"
 #include "ctoken/ctoken_decode.h"
 #include "ctoken/ctoken_encode.h"
-#include "ctoken/ctoken_psaia_encode.h"
-#include "ctoken/ctoken_psaia_decode.h"
+#include "ctoken/ctoken_encode_psa.h"
+#include "ctoken/ctoken_decode_psa.h"
 
 
 
@@ -24,7 +24,7 @@ int32_t psaia_basic_test()
     MakeUsefulBufOnStack(        token_out_buffer, 400);
     struct q_useful_buf_c        completed_token;
     enum ctoken_err_t            result;
-    struct ctoken_psaia_simple_claims_t psaia_claims;
+    struct ctoken_psa_simple_claims_t psaia_claims;
 
     uint8_t test_nonce_bytes[] = {0x05, 0x08, 0x33, 0x99};
     const struct q_useful_buf_c test_nonce = Q_USEFUL_BUF_FROM_BYTE_ARRAY_LITERAL(test_nonce_bytes);
@@ -59,11 +59,11 @@ int32_t psaia_basic_test()
     psaia_claims.nonce       = test_nonce;
     psaia_claims.ueid        = test_ueid;
     psaia_claims.origination = test_origination;
-    psaia_claims.item_flags  = ITEM_FLAG(NONCE_FLAG) |
-                               ITEM_FLAG(UEID_FLAG) |
-                               ITEM_FLAG(ORIGINATION_FLAG);
+    psaia_claims.item_flags  = ITEM_FLAG(CTOKEN_PSA_NONCE_FLAG) |
+                               ITEM_FLAG(CTOKEN_PSA_UEID_FLAG) |
+                               ITEM_FLAG(CTOKEN_PSA_ORIGINATION_FLAG);
 
-    ctoken_psaia_encode_simple_claims(&encode_ctx, &psaia_claims);
+    ctoken_encode_psa_simple_claims(&encode_ctx, &psaia_claims);
 
     /* --- Done adding the claims --- */
 
@@ -96,15 +96,15 @@ int32_t psaia_basic_test()
 
     memset(&psaia_claims, 0, sizeof(psaia_claims));
 
-    result = ctoken_psaia_decode_simple_claims(&decode_context,
+    result = ctoken_decode_psa_simple_claims(&decode_context,
                                                &psaia_claims);
     if(result) {
         return result;
     }
 
-    if(psaia_claims.item_flags != (ITEM_FLAG(NONCE_FLAG) |
-                                   ITEM_FLAG(UEID_FLAG) |
-                                   ITEM_FLAG(ORIGINATION_FLAG))) {
+    if(psaia_claims.item_flags != (ITEM_FLAG(CTOKEN_PSA_NONCE_FLAG) |
+                                   ITEM_FLAG(CTOKEN_PSA_UEID_FLAG) |
+                                   ITEM_FLAG(CTOKEN_PSA_ORIGINATION_FLAG))) {
         return 400;
     }
 
@@ -629,7 +629,7 @@ static int_fast16_t check_sw_component_1(
     return_value = 0;
 
     /* -- Check first type -- */
-    if(!IS_ITEM_FLAG_SET(SW_MEASUREMENT_TYPE_FLAG, sw_component->item_flags)) {
+    if(!IS_ITEM_FLAG_SET(CTOKEN_PSA_SW_MEASUREMENT_TYPE_FLAG, sw_component->item_flags)) {
         /* Claim is not present in token */
         if(TOKEN_TEST_REQUIRE_SWC1_MEASUREMENT_TYPE) {
             /* It should have been present */
@@ -652,7 +652,7 @@ static int_fast16_t check_sw_component_1(
     }
 
     /* -- Check first measurement -- */
-    if(!IS_ITEM_FLAG_SET(SW_MEASURMENT_VAL_FLAG, sw_component->item_flags)) {
+    if(!IS_ITEM_FLAG_SET(CTOKEN_PSA_SW_MEASURMENT_VAL_FLAG, sw_component->item_flags)) {
         /* Claim is not present in token */
         if(TOKEN_TEST_REQUIRE_SWC1_MEASUREMENT_VAL) {
             /* It should have been present */
@@ -672,7 +672,7 @@ static int_fast16_t check_sw_component_1(
     }
 
     /* -- Check first epoch -- */
-    if(!IS_ITEM_FLAG_SET(SW_EPOCH_FLAG, sw_component->item_flags)) {
+    if(!IS_ITEM_FLAG_SET(CTOKEN_PSA_SW_EPOCH_FLAG, sw_component->item_flags)) {
         /* Claim is not present in token */
         if(TOKEN_TEST_REQUIRE_SWC1_EPOCH) {
             /* It should have been present */
@@ -691,7 +691,7 @@ static int_fast16_t check_sw_component_1(
     }
 
     /* -- Check first version -- */
-    if(!IS_ITEM_FLAG_SET(SW_VERSION_FLAG, sw_component->item_flags)) {
+    if(!IS_ITEM_FLAG_SET(CTOKEN_PSA_SW_VERSION_FLAG, sw_component->item_flags)) {
         /* Claim is not present in token */
         if(TOKEN_TEST_REQUIRE_SWC1_VERSION) {
             /* It should have been present */
@@ -713,7 +713,7 @@ static int_fast16_t check_sw_component_1(
     }
 
     /* -- Check first signer ID -- */
-    if(!IS_ITEM_FLAG_SET(SW_SIGNER_ID_FLAG, sw_component->item_flags)) {
+    if(!IS_ITEM_FLAG_SET(CTOKEN_PSA_SW_SIGNER_ID_FLAG, sw_component->item_flags)) {
         /* Claim is not present in token */
         if(TOKEN_TEST_REQUIRE_SWC1_SIGNER_ID) {
             /* It should have been present */
@@ -733,7 +733,7 @@ static int_fast16_t check_sw_component_1(
     }
 
     /* -- Check first measurement description -- */
-    if(!IS_ITEM_FLAG_SET(SW_MEASUREMENT_DESC_FLAG, sw_component->item_flags)) {
+    if(!IS_ITEM_FLAG_SET(CTOKEN_PSA_SW_MEASUREMENT_DESC_FLAG, sw_component->item_flags)) {
         /* Claim is not present in token */
         if(TOKEN_TEST_REQUIRE_SWC1_MEASUREMENT_DESC) {
             /* It should have been present */
@@ -794,7 +794,7 @@ static int_fast16_t check_sw_component_2(
     return_value = 0;
 
     /* -- Check second type -- */
-    if(!IS_ITEM_FLAG_SET(SW_MEASUREMENT_TYPE_FLAG, sw_component->item_flags)) {
+    if(!IS_ITEM_FLAG_SET(CTOKEN_PSA_SW_MEASUREMENT_TYPE_FLAG, sw_component->item_flags)) {
         /* Claim is not present in token */
         if(TOKEN_TEST_REQUIRE_SWC2_MEASUREMENT_TYPE) {
             /* It should have been present */
@@ -817,7 +817,7 @@ static int_fast16_t check_sw_component_2(
     }
 
     /* -- Check second measurement -- */
-    if(!IS_ITEM_FLAG_SET(SW_MEASURMENT_VAL_FLAG, sw_component->item_flags)) {
+    if(!IS_ITEM_FLAG_SET(CTOKEN_PSA_SW_MEASURMENT_VAL_FLAG, sw_component->item_flags)) {
         /* Claim is not present in token */
         if(TOKEN_TEST_REQUIRE_SWC2_MEASUREMENT_VAL) {
             /* It should have been present */
@@ -837,7 +837,7 @@ static int_fast16_t check_sw_component_2(
     }
 
     /* -- Check second epoch -- */
-    if(!IS_ITEM_FLAG_SET(SW_EPOCH_FLAG, sw_component->item_flags)) {
+    if(!IS_ITEM_FLAG_SET(CTOKEN_PSA_SW_EPOCH_FLAG, sw_component->item_flags)) {
         /* Claim is not present in token */
         if(TOKEN_TEST_REQUIRE_SWC2_EPOCH) {
             /* It should have been present */
@@ -856,7 +856,7 @@ static int_fast16_t check_sw_component_2(
     }
 
     /* -- Check second version -- */
-    if(!IS_ITEM_FLAG_SET(SW_VERSION_FLAG, sw_component->item_flags)) {
+    if(!IS_ITEM_FLAG_SET(CTOKEN_PSA_SW_VERSION_FLAG, sw_component->item_flags)) {
         /* Claim is not present in token */
         if(TOKEN_TEST_REQUIRE_SWC2_VERSION) {
             /* It should have been present */
@@ -878,7 +878,7 @@ static int_fast16_t check_sw_component_2(
     }
 
     /* -- Check second signer ID -- */
-    if(!IS_ITEM_FLAG_SET(SW_SIGNER_ID_FLAG, sw_component->item_flags)) {
+    if(!IS_ITEM_FLAG_SET(CTOKEN_PSA_SW_SIGNER_ID_FLAG, sw_component->item_flags)) {
         /* Claim is not present in token */
         if(TOKEN_TEST_REQUIRE_SWC2_SIGNER_ID) {
             /* It should have been present */
@@ -898,7 +898,7 @@ static int_fast16_t check_sw_component_2(
     }
 
     /* -- Check second measurement description -- */
-    if(!IS_ITEM_FLAG_SET(SW_MEASUREMENT_DESC_FLAG, sw_component->item_flags)) {
+    if(!IS_ITEM_FLAG_SET(CTOKEN_PSA_SW_MEASUREMENT_DESC_FLAG, sw_component->item_flags)) {
         /* Claim is not present in token */
         if(TOKEN_TEST_REQUIRE_SWC2_MEASUREMENT_DESC) {
             /* It should have been present */

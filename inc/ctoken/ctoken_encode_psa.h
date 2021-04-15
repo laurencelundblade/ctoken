@@ -1,7 +1,7 @@
 /*
- * ctoken_psaia_encode.h
+ * ctoken_encode_psa.h
  *
- * Copyright (c) 2020 Laurence Lundblade.
+ * Copyright (c) 2020-2021, Laurence Lundblade.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -11,10 +11,10 @@
  */
 
 
-#ifndef psa_ia_encode_h
-#define psa_ia_encode_h
+#ifndef encode_psa_h
+#define encode_psa_h
 
-#include "ctoken_psaia_labels.h"
+#include "ctoken_psa_labels.h"
 #include "ctoken_encode.h"
 
 
@@ -35,7 +35,7 @@ extern "C" {
  * measurement claims all at once. It is a little more efficient than
  * calling the individual methods to output one at a time.
  *
- * See \ref ctoken_psaia_simple_claims_t for the structure holding the
+ * See \ref ctoken_psa_simple_claims_t for the structure holding the
  * claims to be output. Note that only claims that are indicated as
  * present in \c item_flags will be output.
  *
@@ -43,8 +43,8 @@ extern "C" {
  * the error state is entered. It is returned later when ctoken_encode_finish()
  * is called.
  */
-void ctoken_psaia_encode_simple_claims(struct ctoken_encode_ctx *context,
-                                       const struct ctoken_psaia_simple_claims_t *claims);
+void ctoken_encode_psa_simple_claims(struct ctoken_encode_ctx                *context,
+                                     const struct ctoken_psa_simple_claims_t *claims);
 
 
 
@@ -65,8 +65,8 @@ void ctoken_psaia_encode_simple_claims(struct ctoken_encode_ctx *context,
  * is called.
  */
 static void
-ctoken_psaia_encode_boot_seed(struct ctoken_encode_ctx *context,
-                              struct q_useful_buf_c boot_seed);
+ctoken_encode_psa_boot_seed(struct ctoken_encode_ctx *context,
+                            struct q_useful_buf_c     boot_seed);
 
 
 /**
@@ -85,8 +85,8 @@ ctoken_psaia_encode_boot_seed(struct ctoken_encode_ctx *context,
  * is called.
  */
 static inline void
-ctoken_psaia_encode_hw_version(struct ctoken_encode_ctx *context,
-                               struct q_useful_buf_c hw_version);
+ctoken_encode_psa_hw_version(struct ctoken_encode_ctx *context,
+                             struct q_useful_buf_c     hw_version);
 
 
 /**
@@ -105,8 +105,8 @@ ctoken_psaia_encode_hw_version(struct ctoken_encode_ctx *context,
  * is called.
  */
 static inline void
-ctoken_psaia_encode_implementation_id(struct ctoken_encode_ctx *context,
-                                      struct q_useful_buf_c implementation_id);
+ctoken_encode_psa_implementation_id(struct ctoken_encode_ctx *context,
+                                    struct q_useful_buf_c     implementation_id);
 
 /**
  * \brief Encode the origination in to the token.
@@ -124,8 +124,8 @@ ctoken_psaia_encode_implementation_id(struct ctoken_encode_ctx *context,
  * is called.
  */
 static inline void
-ctoken_psaia_encode_origination(struct ctoken_encode_ctx *context,
-                                struct q_useful_buf_c origination);
+ctoken_encode_psa_origination(struct ctoken_encode_ctx *context,
+                              struct q_useful_buf_c     origination);
 
 
 /**
@@ -146,8 +146,8 @@ ctoken_psaia_encode_origination(struct ctoken_encode_ctx *context,
  * is called.
  */
 static inline void
-ctoken_psaia_encode_profile_definition(struct ctoken_encode_ctx *context,
-                                       struct q_useful_buf_c profile_definition);
+ctoken_encode_psa_profile_definition(struct ctoken_encode_ctx *context,
+                                     struct q_useful_buf_c     profile_definition);
 
 
 /**
@@ -172,8 +172,8 @@ ctoken_psaia_encode_profile_definition(struct ctoken_encode_ctx *context,
  * is called.
  */
 static inline void
-ctoken_psaia_encode_security_lifecycle(struct ctoken_encode_ctx *context,
-                                       uint32_t security_lifecycle);
+ctoken_encode_psa_security_lifecycle(struct ctoken_encode_ctx *context,
+                                     uint32_t                  security_lifecycle);
 
 
 /**
@@ -194,8 +194,8 @@ ctoken_psaia_encode_security_lifecycle(struct ctoken_encode_ctx *context,
  * is called.
  */
 static inline void
-ctoken_psaia_encode_client_id(struct ctoken_encode_ctx *context,
-                              int32_t client_id);
+ctoken_encode_psa_client_id(struct ctoken_encode_ctx *context,
+                            int32_t                   client_id);
 
 
 // TODO: output the SW components claims.
@@ -207,58 +207,58 @@ ctoken_psaia_encode_client_id(struct ctoken_encode_ctx *context,
 
 
 static inline void
-ctoken_psaia_encode_boot_seed(struct ctoken_encode_ctx *me,
-                              struct q_useful_buf_c boot_seed)
+ctoken_encode_psa_boot_seed(struct ctoken_encode_ctx *me,
+                            struct q_useful_buf_c     boot_seed)
 {
-    ctoken_encode_bstr(me, EAT_CBOR_ARM_LABEL_BOOT_SEED, boot_seed);
+    ctoken_encode_bstr(me, CTOKEN_PSA_LABEL_BOOT_SEED, boot_seed);
 }
 
 static inline void
-ctoken_psaia_encode_hw_version(struct ctoken_encode_ctx *me,
-                               struct q_useful_buf_c hw_version)
+ctoken_encode_psa_hw_version(struct ctoken_encode_ctx *me,
+                             struct q_useful_buf_c     hw_version)
 {
-    ctoken_encode_bstr(me, EAT_CBOR_ARM_LABEL_HW_VERSION, hw_version);
+    ctoken_encode_bstr(me, CTOKEN_PSA_LABEL_HW_VERSION, hw_version);
 }
 
 static inline void
-ctoken_psaia_encode_implementation_id(struct ctoken_encode_ctx *me,
-                                      struct q_useful_buf_c implementation_id)
+ctoken_encode_psa_implementation_id(struct ctoken_encode_ctx *me,
+                                    struct q_useful_buf_c     implementation_id)
 {
-    ctoken_encode_bstr(me, EAT_CBOR_ARM_LABEL_IMPLEMENTATION_ID, implementation_id);
+    ctoken_encode_bstr(me, CTOKEN_PSA_LABEL_IMPLEMENTATION_ID, implementation_id);
 }
 
 static inline void
-ctoken_psaia_encode_origination(struct ctoken_encode_ctx *me,
-                                struct q_useful_buf_c origination)
+ctoken_encode_psa_origination(struct ctoken_encode_ctx *me,
+                              struct q_useful_buf_c     origination)
 {
     ctoken_encode_origination(me, origination);
 }
 
 static inline void
-ctoken_psaia_encode_profile_definition(struct ctoken_encode_ctx *me,
-                                       struct q_useful_buf_c profile_definition)
+ctoken_encode_psa_profile_definition(struct ctoken_encode_ctx *me,
+                                     struct q_useful_buf_c     profile_definition)
 {
-    ctoken_encode_bstr(me, EAT_CBOR_ARM_LABEL_PROFILE_DEFINITION, profile_definition);
+    ctoken_encode_bstr(me, CTOKEN_PSA_LABEL_PROFILE_DEFINITION, profile_definition);
 }
 
 
 static inline void
-ctoken_psaia_encode_security_lifecycle(struct ctoken_encode_ctx *me,
-                                       uint32_t security_lifecycle)
+ctoken_encode_psa_security_lifecycle(struct ctoken_encode_ctx *me,
+                                     uint32_t                  security_lifecycle)
 {
-    ctoken_encode_unsigned(me, EAT_CBOR_ARM_LABEL_SECURITY_LIFECYCLE, security_lifecycle);
+    ctoken_encode_unsigned(me, CTOKEN_PSA_LABEL_SECURITY_LIFECYCLE, security_lifecycle);
 }
 
 
 static inline void
-ctoken_psaia_encode_client_id(struct ctoken_encode_ctx *me,
-                              int32_t client_id)
+ctoken_encode_psa_client_id(struct ctoken_encode_ctx *me,
+                            int32_t                   client_id)
 {
-    ctoken_encode_int(me, EAT_CBOR_ARM_LABEL_CLIENT_ID, client_id);
+    ctoken_encode_int(me, CTOKEN_PSA_LABEL_CLIENT_ID, client_id);
 }
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* psa_ia_encode_h */
+#endif /* encode_psa_h */

@@ -17,7 +17,7 @@
 
 #include "cwt_test.h"
 #include "eat_test.h"
-#include "psaia_test.h"
+#include "psa_test.h"
 
 /*
  Test configuration
