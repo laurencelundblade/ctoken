@@ -1,7 +1,7 @@
 /*
- * psaiai_test.c (formerly attest_token_test.c)
+ * psa_test.c (formerly attest_token_test.c)
  *
- * Copyright (c) 2018-2020, Laurence Lundblade.
+ * Copyright (c) 2018-2021, Laurence Lundblade.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -18,13 +18,13 @@
 
 
 
-int32_t psaia_basic_test()
+int32_t psa_basic_test()
 {
     struct ctoken_encode_ctx     encode_ctx;
     MakeUsefulBufOnStack(        token_out_buffer, 400);
     struct q_useful_buf_c        completed_token;
     enum ctoken_err_t            result;
-    struct ctoken_psa_simple_claims_t psaia_claims;
+    struct ctoken_psa_simple_claims_t psa_claims;
 
     uint8_t test_nonce_bytes[] = {0x05, 0x08, 0x33, 0x99};
     const struct q_useful_buf_c test_nonce = Q_USEFUL_BUF_FROM_BYTE_ARRAY_LITERAL(test_nonce_bytes);
@@ -56,14 +56,14 @@ int32_t psaia_basic_test()
     /* --- Add the claims --- */
     /* Values are just made up for test */
 
-    psaia_claims.nonce       = test_nonce;
-    psaia_claims.ueid        = test_ueid;
-    psaia_claims.origination = test_origination;
-    psaia_claims.item_flags  = ITEM_FLAG(CTOKEN_PSA_NONCE_FLAG) |
+    psa_claims.nonce       = test_nonce;
+    psa_claims.ueid        = test_ueid;
+    psa_claims.origination = test_origination;
+    psa_claims.item_flags  = ITEM_FLAG(CTOKEN_PSA_NONCE_FLAG) |
                                ITEM_FLAG(CTOKEN_PSA_UEID_FLAG) |
                                ITEM_FLAG(CTOKEN_PSA_ORIGINATION_FLAG);
 
-    ctoken_encode_psa_simple_claims(&encode_ctx, &psaia_claims);
+    ctoken_encode_psa_simple_claims(&encode_ctx, &psa_claims);
 
     /* --- Done adding the claims --- */
 
@@ -94,31 +94,31 @@ int32_t psaia_basic_test()
         return 300 + (int32_t)result;
     }
 
-    memset(&psaia_claims, 0, sizeof(psaia_claims));
+    memset(&psa_claims, 0, sizeof(psa_claims));
 
     result = ctoken_decode_psa_simple_claims(&decode_context,
-                                               &psaia_claims);
+                                               &psa_claims);
     if(result) {
         return result;
     }
 
-    if(psaia_claims.item_flags != (ITEM_FLAG(CTOKEN_PSA_NONCE_FLAG) |
+    if(psa_claims.item_flags != (ITEM_FLAG(CTOKEN_PSA_NONCE_FLAG) |
                                    ITEM_FLAG(CTOKEN_PSA_UEID_FLAG) |
                                    ITEM_FLAG(CTOKEN_PSA_ORIGINATION_FLAG))) {
         return 400;
     }
 
-    if(q_useful_buf_compare(psaia_claims.nonce, test_nonce)) {
+    if(q_useful_buf_compare(psa_claims.nonce, test_nonce)) {
         return 401;
     }
 
 
-    if(q_useful_buf_compare(psaia_claims.ueid, test_ueid)) {
+    if(q_useful_buf_compare(psa_claims.ueid, test_ueid)) {
         return 402;
     }
 
 
-    if(q_useful_buf_compare(psaia_claims.origination, test_origination)) {
+    if(q_useful_buf_compare(psa_claims.origination, test_origination)) {
         return 431;
     }
     return 0;
@@ -138,7 +138,7 @@ int32_t psaia_basic_test()
 
 
 /**
- * \file psaiai_test.c
+ * \file psa_test.c
  *
  * \brief Implementation for attestation token tests.
  *

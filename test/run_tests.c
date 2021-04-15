@@ -56,7 +56,7 @@ static test_entry s_tests[] = {
     TEST_ENTRY(profile_encode_test),
     TEST_ENTRY(secboot_test),
     TEST_ENTRY(minimal_get_size_test),
-    TEST_ENTRY(psaia_basic_test),
+    TEST_ENTRY(psa_basic_test),
     TEST_ENTRY(basic_eat_test),
     TEST_ENTRY(cwt_test),
     TEST_ENTRY(submods_test),

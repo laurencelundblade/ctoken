@@ -1,7 +1,7 @@
 /*
- * psaia_test.h (formerly attest_token_test.h)
+ * psa_test.h (formerly attest_token_test.h)
  *
- * Copyright (c) 2018-2020, Laurence Lundblade.
+ * Copyright (c) 2018-2021, Laurence Lundblade.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
@@ -22,7 +22,7 @@ extern "C" {
 #endif
 
 
-int32_t psaia_basic_test(void);
+int32_t psa_basic_test(void);
 
 
 
