@@ -602,8 +602,8 @@ int32_t submods_encode_errors_test(void)
 }
 
 
-
-int32_t sign_cbor(struct q_useful_buf_c  cbor_input,
+#if 0
+static int32_t sign_cbor(struct q_useful_buf_c  cbor_input,
                   struct q_useful_buf    out_buf,
                   struct q_useful_buf_c *completed_token)
 {
@@ -620,6 +620,7 @@ int32_t sign_cbor(struct q_useful_buf_c  cbor_input,
 
     return 0;
 }
+#endif
 
 
 struct decode_submod_test_config {
@@ -821,7 +822,7 @@ static const struct decode_submod_test_config submod_test_inputs[] = {
  will be processed successfully and those that won't and see that
  the error codes are correct in all cases.
  */
-int32_t one_decode_errors_test_case(const struct decode_submod_test_config *t)
+static int32_t one_decode_errors_test_case(const struct decode_submod_test_config *t)
 {
     struct ctoken_decode_ctx  decode_context;
     enum ctoken_err_t         ctoken_result;
@@ -1028,7 +1029,7 @@ int32_t submod_decode_errors_test()
 /* Create a token with the given payload and set up a decoder context
  * for it so everything is ready to for testing the decode methods.
  */
-int32_t setup_decode_test(struct q_useful_buf_c     cbor_input,
+static int32_t setup_decode_test(struct q_useful_buf_c     cbor_input,
                           UsefulBuf                 out_buf,
                           struct ctoken_decode_ctx *decode_context)
 {
@@ -1635,8 +1636,6 @@ int32_t secboot_test(void)
     enum ctoken_err_t         result;
     bool                      sec_boot;
 
-
-
     ctoken_decode_init(&decode_context,
                        0,
                        0,
@@ -1648,7 +1647,7 @@ int32_t secboot_test(void)
     }
 
     result = ctoken_decode_secure_boot(&decode_context, &sec_boot);
-    if(result != CTOKEN_ERR_SUCCESS | sec_boot != true) {
+    if(result != CTOKEN_ERR_SUCCESS || sec_boot != true) {
         return test_result_code(1, 1, result);
     }
 
@@ -1659,7 +1658,7 @@ int32_t secboot_test(void)
     }
 
     result = ctoken_decode_secure_boot(&decode_context, &sec_boot);
-    if(result != CTOKEN_ERR_SUCCESS | sec_boot != false) {
+    if(result != CTOKEN_ERR_SUCCESS || sec_boot != false) {
         return test_result_code(2, 1, result);
     }
 
@@ -1998,7 +1997,6 @@ int32_t profile_encode_test(void)
                               Q_USEFUL_BUF_FROM_SZ_LITERAL("http://arm.com/psa/2.0.0"));
 
     result = ctoken_encode_finish(&encode_ctx, &token);
-    result = ctoken_encode_start(&encode_ctx, buf);
     if(result != CTOKEN_ERR_SUCCESS) {
         return test_result_code(1, 2, result);
     }
@@ -2013,7 +2011,6 @@ int32_t profile_encode_test(void)
                               Q_USEFUL_BUF_FROM_BYTE_ARRAY_LITERAL(oid));
 
     result = ctoken_encode_finish(&encode_ctx, &token);
-    result = ctoken_encode_start(&encode_ctx, buf);
     if(result != CTOKEN_ERR_SUCCESS) {
         return test_result_code(2, 2, result);
     }
@@ -2021,5 +2018,103 @@ int32_t profile_encode_test(void)
     if(q_useful_buf_compare(token, TEST2UB(profile_valid_oid))) {
         return test_result_code(2, 3, 0);
     }
+    return 0;
+}
+
+
+static const uint8_t valid_bool[] = {0xA1, 0x16, 0xF5};
+static const uint8_t valid_double[] = {0xA1, 0x16, 0xFB, 0x40, 0x09, 0x21, 0xF9,
+                                       0xF0, 0x1B, 0x86, 0x6E};
+
+
+int32_t basic_types_decode_test(void)
+{
+    struct ctoken_decode_ctx  decode_context;
+    enum ctoken_err_t         result;
+    bool                      b;
+    double                    d;
+
+    ctoken_decode_init(&decode_context,
+                       0,
+                       0,
+                       CTOKEN_PROTECTION_NONE);
+
+    result = ctoken_decode_validate_token(&decode_context, Q_USEFUL_BUF_FROM_BYTE_ARRAY_LITERAL(valid_bool));
+    if(result) {
+        return test_result_code(1, 0, result);;
+    }
+
+    result = ctoken_decode_bool(&decode_context, 22, &b);
+    if(result != CTOKEN_ERR_SUCCESS) {
+        return test_result_code(1, 1, result);
+    }
+    if(b != true) {
+        return test_result_code(1, 2, 0);
+    }
+
+    result = ctoken_decode_validate_token(&decode_context, Q_USEFUL_BUF_FROM_BYTE_ARRAY_LITERAL(valid_double));
+    if(result) {
+        return test_result_code(2, 0, result);;
+    }
+
+    result = ctoken_decode_double(&decode_context, 22, &d);
+    if(result != CTOKEN_ERR_SUCCESS) {
+        return test_result_code(2, 1, result);
+    }
+    if(d != 3.14159) {
+        return test_result_code(2, 2, 0);
+    }
+
+    // TODO: add the other basic types
+
+    return 0;
+}
+
+
+
+int32_t basic_types_encode_test(void)
+{
+    struct ctoken_encode_ctx     encode_ctx;
+    struct q_useful_buf_c        token;
+    Q_USEFUL_BUF_MAKE_STACK_UB(  buf, 50);
+    enum ctoken_err_t            result;
+
+    ctoken_encode_init(&encode_ctx, 0, CTOKEN_OPT_TOP_LEVEL_NOT_TAG, CTOKEN_PROTECTION_NONE, 0);
+
+
+    result = ctoken_encode_start(&encode_ctx, buf);
+    if(result != CTOKEN_ERR_SUCCESS) {
+        return test_result_code(1, 1, result);
+    }
+
+    ctoken_encode_bool(&encode_ctx, 22, true);
+
+    result = ctoken_encode_finish(&encode_ctx, &token);
+    if(result != CTOKEN_ERR_SUCCESS) {
+        return test_result_code(1, 2, result);
+    }
+
+    if(q_useful_buf_compare(token, UsefulBuf_FROM_BYTE_ARRAY_LITERAL(valid_bool))) {
+        return test_result_code(1, 3, 0);
+    }
+
+    result = ctoken_encode_start(&encode_ctx, buf);
+    if(result != CTOKEN_ERR_SUCCESS) {
+        return test_result_code(2, 1, result);
+    }
+
+    ctoken_encode_double(&encode_ctx, 22, 3.14159);
+
+    result = ctoken_encode_finish(&encode_ctx, &token);
+    if(result != CTOKEN_ERR_SUCCESS) {
+        return test_result_code(2, 2, result);
+    }
+
+    if(q_useful_buf_compare(token, UsefulBuf_FROM_BYTE_ARRAY_LITERAL(valid_double))) {
+        return test_result_code(2, 3, 0);
+    }
+
+    // TODO: add the other basic types
+
     return 0;
 }

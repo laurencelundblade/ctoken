@@ -269,20 +269,7 @@ static void ctoken_encode_double(struct ctoken_encode_ctx *context,
                                  double                   value);
 
 
-/**
- * \brief Add some already-encoded CBOR to payload
- *
- * \param[in] context       Token creation context.
- * \param[in] label    Integer label for claim.
- * \param[in] encoded  The already-encoded CBOR.
- *
- * Encoded CBOR must be a full map or full array or a non-aggregate
- * type. It cannot be a partial map or array. It can be nested maps
- * and arrays, but they must all be complete.
- */
-static void ctoken_encode_cbor(struct ctoken_encode_ctx *context,
-                               int64_t                   label,
-                               struct q_useful_buf_c     encoded);
+
 
 
 /**
@@ -340,6 +327,22 @@ ctoken_encode_open_map(struct ctoken_encode_ctx *context,
  */
 static inline void
 ctoken_encode_close_map(struct ctoken_encode_ctx *context);
+
+
+/**
+ * \brief Add some already-encoded CBOR to payload
+ *
+ * \param[in] context       Token creation context.
+ * \param[in] label    Integer label for claim.
+ * \param[in] encoded  The already-encoded CBOR.
+ *
+ * Encoded CBOR must be a full map or full array or a non-aggregate
+ * type. It cannot be a partial map or array. It can be nested maps
+ * and arrays, but they must all be complete.
+ */
+static void ctoken_encode_cbor(struct ctoken_encode_ctx *context,
+                               int64_t                   label,
+                               struct q_useful_buf_c     encoded);
 
 
 /**
