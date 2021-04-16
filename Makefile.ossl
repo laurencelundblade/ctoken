@@ -59,7 +59,7 @@ C_OPTS=-Os -fPIC
 
 # ---- T_COSE Config and test options ----
 TEST_CONFIG_OPTS=
-TEST_OBJ=test/eat_test.o test/cwt_test.o test/psaia_test.o test/run_tests.o \
+TEST_OBJ=test/eat_test.o test/cwt_test.o test/psa_test.o test/run_tests.o \
             test/eat_test_tokens.o
 
 
@@ -69,7 +69,7 @@ ALL_INC=$(CRYPTO_INC) $(QCBOR_INC) $(T_COSE_INC) $(INC)
 CFLAGS=$(ALL_INC) $(C_OPTS) $(TEST_CONFIG_OPTS) $(CRYPTO_CONFIG_OPTS)
 
 SRC_OBJ=src/ctoken_encode.o src/ctoken_decode.o src/ctoken_common.o\
-        src/ctoken_psaia_encode.o src/ctoken_psaia_decode.o
+        src/ctoken_encode_psa.o src/ctoken_decode_psa.o
 
 
 all:	libctoken.a ctoken_test eat_example_ossl
@@ -93,13 +93,13 @@ clean:
 # ---- public headers -----
 PUBLIC_INTERFACE=inc/ctoken/ctoken.h inc/ctoken/ctoken_encode.h inc/ctoken/ctoken_decode.h \
                   inc/ctoken/ctoken_cwt_labels.h inc/ctoken/ctoken_eat_labels.h \
-                  inc/ctoken/ctoken_psaia_decode.h inc/ctoken/ctoken_psaia_encode.h inc/ctoken/ctoken_psaia_labels.h
+                  inc/ctoken/ctoken_decode_psa.h inc/ctoken/ctoken_encode_psa.h inc/ctoken/ctoken_psa_labels.h
 
 # ---- source dependecies -----
 src/ctoken_encode.o:	inc/ctoken/ctoken_encode.h inc/ctoken/ctoken.h inc/ctoken/ctoken_cwt_labels.h inc/ctoken/ctoken_eat_labels.h src/ctoken_common.h
 src/ctoken_decode.o:	inc/ctoken/ctoken_decode.h inc/ctoken/ctoken.h inc/ctoken/ctoken_cwt_labels.h inc/ctoken/ctoken_eat_labels.h src/ctoken_common.h
-src/ctoken_psaia_encode.o:	inc/ctoken/ctoken_psaia_encode.h inc/ctoken/ctoken.h inc/ctoken/ctoken_psaia_labels.h  inc/ctoken/ctoken_cwt_labels.h inc/ctoken/ctoken_eat_labels.h
-src/ctoken_psaia_decode.o:	inc/ctoken/ctoken_psaia_decode.h inc/ctoken/ctoken.h inc/ctoken/ctoken_psaia_labels.h  inc/ctoken/ctoken_cwt_labels.h inc/ctoken/ctoken_eat_labels.h
+src/ctoken_encode_psa.o:	inc/ctoken/ctoken_encode_psa.h inc/ctoken/ctoken.h inc/ctoken/ctoken_psa_labels.h  inc/ctoken/ctoken_cwt_labels.h inc/ctoken/ctoken_eat_labels.h
+src/ctoken_decode_psa.o:	inc/ctoken/ctoken_decode_psa.h inc/ctoken/ctoken.h inc/ctoken/ctoken_psa_labels.h  inc/ctoken/ctoken_cwt_labels.h inc/ctoken/ctoken_eat_labels.h
 src/ctoken_common.o:	src/ctoken_common.h
 
 

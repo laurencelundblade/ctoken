@@ -1,15 +1,15 @@
 /*
- * psaia_test.h (formerly attest_token_test.h)
+ * psa_test.h (formerly attest_token_test.h)
  *
- * Copyright (c) 2018-2020, Laurence Lundblade.
+ * Copyright (c) 2018-2021, Laurence Lundblade.
  *
  * SPDX-License-Identifier: BSD-3-Clause
  *
  * See BSD-3-Clause license in README.md
  */
 
-#ifndef __PSAIA_TEST_H__
-#define __PSAIA_TEST_H__
+#ifndef __psa_TEST_H__
+#define __psa_TEST_H__
 
 #include <stdint.h>
 #include "t_cose/q_useful_buf.h"
@@ -22,7 +22,7 @@ extern "C" {
 #endif
 
 
-int32_t psaia_basic_test(void);
+int32_t psa_basic_test(void);
 
 
 
@@ -125,4 +125,4 @@ int32_t make_normal_token(struct q_useful_buf token_storage, struct q_useful_buf
 }
 #endif
 
-#endif /* __PSAIA_TEST_H__ */
+#endif /* __psa_TEST_H__ */
