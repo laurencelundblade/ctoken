@@ -342,6 +342,8 @@ decode_psa_sw_component(QCBORDecodeContext                *decode_context,
     return_value = CTOKEN_ERR_SUCCESS;
 
 Done:
+
+    QCBORDecode_ExitMap(decode_context);
     return return_value;
 }
 
@@ -355,7 +357,7 @@ ctoken_decode_psa_sw_component(struct ctoken_decode_ctx         *me,
                                struct ctoken_psa_sw_component_t *sw_components)
 {
     enum ctoken_err_t    return_value;
-    QCBORDecodeContext   decode_context;
+    QCBORDecodeContext   *decode_context;
     QCBORItem            sw_component_item;
 
     if(me->last_error != CTOKEN_ERR_SUCCESS) {
@@ -363,20 +365,31 @@ ctoken_decode_psa_sw_component(struct ctoken_decode_ctx         *me,
         goto Done;
     }
 
-    QCBORDecode_EnterArrayFromMapN(&(me->qcbor_decode_context),
-                                   CTOKEN_PSA_LABEL_SW_COMPONENTS);
+    return_value = ctoken_decode_enter_array(me,
+                                             CTOKEN_PSA_LABEL_SW_COMPONENTS,
+                                             &decode_context);
+    if(return_value != CTOKEN_ERR_SUCCESS) {
+        goto Done;
+    }
 
     /* Skip to the SW component index requested */
     for(uint32_t i = 0; i < requested_index; i++) {
-        QCBORDecode_EnterMap(&(me->qcbor_decode_context), NULL);
-        QCBORDecode_ExitMap(&(me->qcbor_decode_context));
+        QCBORDecode_VGetNextConsume(decode_context, &sw_component_item);
+    }
+
+    if(QCBORDecode_GetError(decode_context)){
+        return_value = 99;
+        goto Done2;
     }
 
     /* Let error check for the above happen in decode_sw_component */
 
-    return_value = decode_psa_sw_component(&decode_context,
+    return_value = decode_psa_sw_component(decode_context,
                                            &sw_component_item,
                                             sw_components);
+
+Done2:
+    ctoken_decode_exit_array(me);
 
 Done:
     return return_value;
