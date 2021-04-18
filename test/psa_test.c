@@ -163,17 +163,17 @@ static const struct decode_swc_test_config swc_test_inputs[] = {
     {
         2,
          TEST2UB(psa_swcomponents_invalid_missing_array),
-         CTOKEN_ERR_SUCCESS,          /* expected_call_num_swc */
-         1,                           /* num_swc */
-         CTOKEN_ERR_CBOR_STRUCTURE,   /* expected_call_get_swc0 */
-         CTOKEN_ERR_NOT_FOUND,        /* expected_call_get_swc1 */
+         CTOKEN_ERR_CBOR_STRUCTURE,          /* expected_call_num_swc */
+         0,                           /* num_swc */
+         CTOKEN_ERR_CBOR_TYPE,   /* expected_call_get_swc0 */
+         CTOKEN_ERR_CBOR_TYPE,        /* expected_call_get_swc1 */
     },
     {
         3,
          TEST2UB(psa_swcomponents_invalid_no_measurement),
          CTOKEN_ERR_SUCCESS,          /* expected_call_num_swc */
          1,                           /* num_swc */
-         CTOKEN_ERR_CBOR_STRUCTURE,   /* expected_call_get_swc0 */
+         CTOKEN_ERROR_MISSING_REQUIRED_CLAIM,   /* expected_call_get_swc0 */
          CTOKEN_ERR_NOT_FOUND,        /* expected_call_get_swc1 */
     },
 
@@ -191,7 +191,7 @@ static const struct decode_swc_test_config swc_test_inputs[] = {
          TEST2UB(psa_swcomponents_invalid_no_signer_id),
          CTOKEN_ERR_SUCCESS,          /* expected_call_num_swc */
          1,                           /* num_swc */
-         CTOKEN_ERR_CBOR_STRUCTURE,   /* expected_call_get_swc0 */
+         CTOKEN_ERROR_MISSING_REQUIRED_CLAIM,   /* expected_call_get_swc0 */
          CTOKEN_ERR_NOT_FOUND,        /* expected_call_get_swc1 */
     },
 
@@ -207,10 +207,10 @@ static const struct decode_swc_test_config swc_test_inputs[] = {
     {
         7,
          TEST2UB(psa_swcomponents_invalid_nwf_swc),
-         CTOKEN_ERR_SUCCESS,          /* expected_call_num_swc */
+         CTOKEN_ERR_CBOR_STRUCTURE,          /* expected_call_num_swc */
          1,                           /* num_swc */
-         CTOKEN_ERR_CBOR_STRUCTURE,   /* expected_call_get_swc0 */
-         CTOKEN_ERR_NOT_FOUND,        /* expected_call_get_swc1 */
+         CTOKEN_ERR_CBOR_NOT_WELL_FORMED,   /* expected_call_get_swc0 */
+         CTOKEN_ERR_CBOR_NOT_WELL_FORMED,        /* expected_call_get_swc1 */
     },
 
     {
@@ -226,10 +226,20 @@ static const struct decode_swc_test_config swc_test_inputs[] = {
         9,
          TEST2UB(psa_swcomponents_valid_basic),
          CTOKEN_ERR_SUCCESS,          /* expected_call_num_swc */
-         1,                           /* num_swc */
-         CTOKEN_ERR_CBOR_STRUCTURE,   /* expected_call_get_swc0 */
-         CTOKEN_ERR_NOT_FOUND,        /* expected_call_get_swc1 */
+         2,                           /* num_swc */
+         CTOKEN_ERR_SUCCESS,   /* expected_call_get_swc0 */
+         CTOKEN_ERR_SUCCESS,        /* expected_call_get_swc1 */
+    },
+
+    {
+        9,
+         NULL_Q_USEFUL_BUF_C,
+         CTOKEN_ERR_SUCCESS,          /* expected_call_num_swc */
+         0,                           /* num_swc */
+         CTOKEN_ERR_SUCCESS,   /* expected_call_get_swc0 */
+         CTOKEN_ERR_SUCCESS,        /* expected_call_get_swc1 */
     }
+
 };
 
 
@@ -264,7 +274,7 @@ static int32_t one_swc_decode_test_case(const struct decode_swc_test_config *t)
         return test_result_code(2, t->test_number, ctoken_result);
     }
 
-    if(t->num_swc != num_submods) {
+    if(ctoken_result == CTOKEN_ERR_SUCCESS && t->num_swc != num_submods) {
         return test_result_code(3, t->test_number, ctoken_result);
     }
 
@@ -300,7 +310,7 @@ int32_t decode_sw_components_test()
 
     /* Big test over a set of input tests cases */
     for(test_case = swc_test_inputs; !q_useful_buf_c_is_null(test_case->token); test_case++) {
-        if(test_case->test_number == 2) {
+        if(test_case->test_number == 7) {
             test_result = 99;
         }
         test_result = one_swc_decode_test_case(test_case);

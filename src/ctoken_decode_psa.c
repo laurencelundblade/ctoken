@@ -267,6 +267,7 @@ decode_psa_sw_component(QCBORDecodeContext                *decode_context,
 {
     enum ctoken_err_t  return_value;
     QCBORItem          list[CTOKEN_PSA_SW_NUMBER_OF_ITEMS+1];
+    QCBORError         cbor_error;
 
     (void)sw_component_item; // TODO: figure out what to do with this.
 
@@ -299,7 +300,11 @@ decode_psa_sw_component(QCBORDecodeContext                *decode_context,
     list[CTOKEN_PSA_SW_MEASUREMENT_DESC_FLAG+1].uLabelType  = QCBOR_TYPE_NONE;
 
     QCBORDecode_GetItemsInMap(decode_context, list);
-    if(QCBORDecode_GetError(decode_context) != QCBOR_SUCCESS) {
+    cbor_error = QCBORDecode_GetAndResetError(decode_context);
+    if(cbor_error == QCBOR_ERR_NO_MORE_ITEMS) {
+        return_value = CTOKEN_ERR_NOT_FOUND;
+        goto Done;
+    } else if(cbor_error != QCBOR_SUCCESS) {
         return_value = CTOKEN_ERR_CBOR_STRUCTURE; // TODO: right error?
         goto Done;
     }
@@ -337,6 +342,15 @@ decode_psa_sw_component(QCBORDecodeContext                *decode_context,
     if(list[CTOKEN_PSA_SW_MEASUREMENT_DESC_FLAG].uDataType != QCBOR_TYPE_NONE) {
         sw_component->measurement_desc = list[CTOKEN_PSA_SW_MEASUREMENT_DESC_FLAG].val.string;
         sw_component->item_flags |= CLAIM_PRESENT_BIT(CTOKEN_PSA_SW_MEASUREMENT_DESC_FLAG);
+    }
+
+    const uint32_t rf =
+          CLAIM_PRESENT_BIT(CTOKEN_PSA_SW_SIGNER_ID_FLAG) |
+          CLAIM_PRESENT_BIT(CTOKEN_PSA_SW_MEASURMENT_VAL_FLAG);
+
+    if((sw_component->item_flags & rf) != rf) {
+        return_value = CTOKEN_ERROR_MISSING_REQUIRED_CLAIM;
+        goto Done;
     }
 
     return_value = CTOKEN_ERR_SUCCESS;

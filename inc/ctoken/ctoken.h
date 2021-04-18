@@ -213,7 +213,10 @@ enum ctoken_err_t {
     CTOKEN_ERROR_KEY = 49,
 
     /** An issue with the CBOR tags on the COSE structures. */
-    CTOKEN_ERROR_COSE_TAG = 50
+    CTOKEN_ERROR_COSE_TAG = 50,
+
+    /** A claim required by a profile or such is not present. */
+    CTOKEN_ERROR_MISSING_REQUIRED_CLAIM,
 };
 
 
