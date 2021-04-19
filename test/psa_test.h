@@ -25,7 +25,7 @@ extern "C" {
 int32_t psa_basic_test(void);
 
 
-int32_t decode_sw_components_test();
+int32_t decode_sw_components_test(void);
 
 
 

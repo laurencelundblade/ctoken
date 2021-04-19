@@ -138,16 +138,14 @@ int32_t psa_basic_test()
 
 
 
+
 struct decode_swc_test_config {
     uint32_t              test_number;
     struct q_useful_buf_c token;
-
-    enum ctoken_err_t  expected_call_num_swc;
-    uint32_t           num_swc;
-    enum ctoken_err_t  expected_call_get_swc0;
-    enum ctoken_err_t  expected_call_get_swc1;
-
-
+    enum ctoken_err_t     expected_call_num_swc;
+    uint32_t              num_swc;
+    enum ctoken_err_t     expected_call_get_swc0;
+    enum ctoken_err_t     expected_call_get_swc1;
 };
 
 
@@ -157,42 +155,42 @@ static const struct decode_swc_test_config swc_test_inputs[] = {
         TEST2UB(psa_swcomponents_invalid_measurement_value),
         CTOKEN_ERR_SUCCESS,          /* expected_call_num_swc */
         1,                           /* num_swc */
-        CTOKEN_ERR_CBOR_STRUCTURE,   /* expected_call_get_swc0 */
-        CTOKEN_ERR_NOT_FOUND,        /* expected_call_get_swc1 */
+        CTOKEN_ERR_CBOR_TYPE,        /* expected_call_get_swc0 */
+        CTOKEN_ERR_NO_MORE_CLAIMS,   /* expected_call_get_swc1 */
     },
     {
         2,
-         TEST2UB(psa_swcomponents_invalid_missing_array),
-         CTOKEN_ERR_CBOR_STRUCTURE,          /* expected_call_num_swc */
-         0,                           /* num_swc */
-         CTOKEN_ERR_CBOR_TYPE,   /* expected_call_get_swc0 */
-         CTOKEN_ERR_CBOR_TYPE,        /* expected_call_get_swc1 */
+        TEST2UB(psa_swcomponents_invalid_missing_array),
+        CTOKEN_ERR_CBOR_TYPE,   /* expected_call_num_swc */
+        0,                      /* num_swc */
+        CTOKEN_ERR_CBOR_TYPE,   /* expected_call_get_swc0 */
+        CTOKEN_ERR_CBOR_TYPE,   /* expected_call_get_swc1 */
     },
     {
         3,
-         TEST2UB(psa_swcomponents_invalid_no_measurement),
-         CTOKEN_ERR_SUCCESS,          /* expected_call_num_swc */
-         1,                           /* num_swc */
-         CTOKEN_ERROR_MISSING_REQUIRED_CLAIM,   /* expected_call_get_swc0 */
-         CTOKEN_ERR_NOT_FOUND,        /* expected_call_get_swc1 */
+        TEST2UB(psa_swcomponents_invalid_no_measurement),
+        CTOKEN_ERR_SUCCESS,          /* expected_call_num_swc */
+        1,                           /* num_swc */
+        CTOKEN_ERROR_MISSING_REQUIRED_CLAIM,  /* expected_call_get_swc0 */
+        CTOKEN_ERR_NO_MORE_CLAIMS,   /* expected_call_get_swc1 */
     },
 
     {
         4,
-         TEST2UB(psa_swcomponents_invalid_measurement_value),
-         CTOKEN_ERR_SUCCESS,          /* expected_call_num_swc */
-         1,                           /* num_swc */
-         CTOKEN_ERR_CBOR_STRUCTURE,   /* expected_call_get_swc0 */
-         CTOKEN_ERR_NOT_FOUND,        /* expected_call_get_swc1 */
+        TEST2UB(psa_swcomponents_invalid_measurement_value),
+        CTOKEN_ERR_SUCCESS,        /* expected_call_num_swc */
+        1,                         /* num_swc */
+        CTOKEN_ERR_CBOR_TYPE,      /* expected_call_get_swc0 */
+        CTOKEN_ERR_NO_MORE_CLAIMS, /* expected_call_get_swc1 */
     },
 
     {
         5,
-         TEST2UB(psa_swcomponents_invalid_no_signer_id),
-         CTOKEN_ERR_SUCCESS,          /* expected_call_num_swc */
-         1,                           /* num_swc */
-         CTOKEN_ERROR_MISSING_REQUIRED_CLAIM,   /* expected_call_get_swc0 */
-         CTOKEN_ERR_NOT_FOUND,        /* expected_call_get_swc1 */
+        TEST2UB(psa_swcomponents_invalid_no_signer_id),
+        CTOKEN_ERR_SUCCESS,          /* expected_call_num_swc */
+        1,                           /* num_swc */
+        CTOKEN_ERROR_MISSING_REQUIRED_CLAIM,   /* expected_call_get_swc0 */
+        CTOKEN_ERR_NO_MORE_CLAIMS,   /* expected_call_get_swc1 */
     },
 
     {
@@ -200,64 +198,72 @@ static const struct decode_swc_test_config swc_test_inputs[] = {
          TEST2UB(psa_swcomponents_invalid_nwf_signer_id),
          CTOKEN_ERR_SUCCESS,          /* expected_call_num_swc */
          1,                           /* num_swc */
-         CTOKEN_ERR_CBOR_STRUCTURE,   /* expected_call_get_swc0 */
-         CTOKEN_ERR_NOT_FOUND,        /* expected_call_get_swc1 */
+         CTOKEN_ERR_CBOR_TYPE,        /* expected_call_get_swc0 */
+         CTOKEN_ERR_NO_MORE_CLAIMS,   /* expected_call_get_swc1 */
     },
 
     {
         7,
          TEST2UB(psa_swcomponents_invalid_nwf_swc),
-         CTOKEN_ERR_CBOR_STRUCTURE,          /* expected_call_num_swc */
-         1,                           /* num_swc */
-         CTOKEN_ERR_CBOR_NOT_WELL_FORMED,   /* expected_call_get_swc0 */
-         CTOKEN_ERR_CBOR_NOT_WELL_FORMED,        /* expected_call_get_swc1 */
+         CTOKEN_ERR_CBOR_NOT_WELL_FORMED, /* expected_call_num_swc */
+         1,                               /* num_swc */
+         CTOKEN_ERR_CBOR_NOT_WELL_FORMED, /* expected_call_get_swc0 */
+         CTOKEN_ERR_CBOR_NOT_WELL_FORMED, /* expected_call_get_swc1 */
     },
 
     {
         8,
-         TEST2UB(psa_swcomponents_invalid_signer_id),
-         CTOKEN_ERR_SUCCESS,          /* expected_call_num_swc */
-         1,                           /* num_swc */
-         CTOKEN_ERR_CBOR_STRUCTURE,   /* expected_call_get_swc0 */
-         CTOKEN_ERR_NOT_FOUND,        /* expected_call_get_swc1 */
+        TEST2UB(psa_swcomponents_invalid_signer_id),
+        CTOKEN_ERR_SUCCESS,         /* expected_call_num_swc */
+        1,                          /* num_swc */
+        CTOKEN_ERR_CBOR_TYPE,       /* expected_call_get_swc0 */
+        CTOKEN_ERR_NO_MORE_CLAIMS,  /* expected_call_get_swc1 */
     },
 
     {
         9,
-         TEST2UB(psa_swcomponents_valid_basic),
-         CTOKEN_ERR_SUCCESS,          /* expected_call_num_swc */
-         2,                           /* num_swc */
-         CTOKEN_ERR_SUCCESS,   /* expected_call_get_swc0 */
-         CTOKEN_ERR_SUCCESS,        /* expected_call_get_swc1 */
+        TEST2UB(psa_swcomponents_valid_basic),
+        CTOKEN_ERR_SUCCESS,          /* expected_call_num_swc */
+        2,                           /* num_swc */
+        CTOKEN_ERR_SUCCESS,          /* expected_call_get_swc0 */
+        CTOKEN_ERR_SUCCESS,          /* expected_call_get_swc1 */
+    },
+    {
+        10,
+        TEST2UB(psa_swcomponents_invalid_no_and_claim),
+        CTOKEN_ERR_SW_COMPONENTS_PRESENCE,  /* expected_call_num_swc */
+        2,                                  /* num_swc */
+        CTOKEN_ERR_SW_COMPONENTS_PRESENCE,  /* expected_call_get_swc0 */
+        CTOKEN_ERR_SW_COMPONENTS_PRESENCE,  /* expected_call_get_swc1 */
     },
 
     {
-        9,
-         NULL_Q_USEFUL_BUF_C,
-         CTOKEN_ERR_SUCCESS,          /* expected_call_num_swc */
-         0,                           /* num_swc */
-         CTOKEN_ERR_SUCCESS,   /* expected_call_get_swc0 */
-         CTOKEN_ERR_SUCCESS,        /* expected_call_get_swc1 */
+        11,
+        TEST2UB(psa_swcomponents_invalid_no_nor_claim),
+        CTOKEN_ERR_SW_COMPONENTS_PRESENCE,  /* expected_call_num_swc */
+        2,                                  /* num_swc */
+        CTOKEN_ERR_SW_COMPONENTS_PRESENCE,  /* expected_call_get_swc0 */
+        CTOKEN_ERR_SW_COMPONENTS_PRESENCE,  /* expected_call_get_swc1 */
+    },
+
+    {
+        12,
+        NULL_Q_USEFUL_BUF_C, /* Indicates end of list */
+        0,
+        0,
+        0,
+        0,
     }
 
 };
 
 
-
-
-
-
 static int32_t one_swc_decode_test_case(const struct decode_swc_test_config *t)
 {
-    struct ctoken_decode_ctx  decode_context;
-    enum ctoken_err_t         ctoken_result;
-    struct q_useful_buf_c     name;
-    struct q_useful_buf_c     token;
-    struct q_useful_buf_c     nonce;
-    enum ctoken_type_t        nested_token_type;
-    uint32_t                  num_submods;
+    struct ctoken_decode_ctx         decode_context;
+    enum ctoken_err_t                ctoken_result;
+    uint32_t                         num_submods;
     struct ctoken_psa_sw_component_t sw_component;
-
 
     ctoken_decode_init(&decode_context,
                        T_COSE_OPT_ALLOW_SHORT_CIRCUIT,
@@ -292,33 +298,23 @@ static int32_t one_swc_decode_test_case(const struct decode_swc_test_config *t)
 }
 
 
-
-
 int32_t decode_sw_components_test()
 {
-    struct ctoken_decode_ctx  decode_context;
-    enum ctoken_err_t         ctoken_result;
-    int32_t                   test_result;
-    int                       nest_level;
-    struct q_useful_buf_c     nonce;
-    struct q_useful_buf_c     name;
-    struct q_useful_buf_c     token;
-    enum ctoken_type_t        type;
-    uint32_t                  num;
+    int32_t                              test_result;
     const struct decode_swc_test_config *test_case;
 
-
     /* Big test over a set of input tests cases */
-    for(test_case = swc_test_inputs; !q_useful_buf_c_is_null(test_case->token); test_case++) {
-        if(test_case->test_number == 7) {
-            test_result = 99;
+    for(test_case = swc_test_inputs;
+        !q_useful_buf_c_is_null(test_case->token);
+        test_case++) {
+        if(test_case->test_number == 1) {
+            test_result = 99; /* Used only to set break points for test # */
         }
         test_result = one_swc_decode_test_case(test_case);
         if(test_result) {
             return test_result;
         }
     }
-
 
     return 0;
 }

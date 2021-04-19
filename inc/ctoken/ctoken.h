@@ -62,8 +62,8 @@ enum ctoken_err_t {
     /** CBOR Syntax not well-formed -- a CBOR syntax error. */
     CTOKEN_ERR_CBOR_NOT_WELL_FORMED = 5,
 
-    /** Bad CBOR structure, for example not a map when was is
-        required. */
+    /** Bad CBOR structure, for example not a map when a map
+        is required. */
     CTOKEN_ERR_CBOR_STRUCTURE = 6,
 
     /** Bad CBOR type, for example an not a text string, when a text
@@ -99,8 +99,8 @@ enum ctoken_err_t {
     /** Data item with label wasn't found. */
     CTOKEN_ERR_NOT_FOUND = 16,
 
-    /** SW Compoments absence not correctly indicated. */
-    CTOKEN_ERR_SW_COMPONENTS_MISSING = 17,
+    /** PSA SW Compoments absence not correctly indicated. */
+    CTOKEN_ERR_SW_COMPONENTS_PRESENCE = 17,
 
     /** Trying to nest more than \ref CTOKEN_MAX_SUBMOD_NESTING or the
      * nesting of some claim is deeper than \c QCBOR_MAX_ARRAY_NESTING.
@@ -186,7 +186,8 @@ enum ctoken_err_t {
     CTOKEN_ERR_SHOULD_BE_TAG = 41,
 
     /** When calling ctoken_decode_next_claim(), no more
-     * claims in the token or submodule. */
+     * claims in the token or submodule. May also indicate other
+     * similar errors for other calls. */
     CTOKEN_ERR_NO_MORE_CLAIMS = 42,
 
     /** A duplicate label was found in the token (two instances of the same claim).

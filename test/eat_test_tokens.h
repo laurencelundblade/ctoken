@@ -56,10 +56,22 @@ extern const unsigned char psa_swcomponents_invalid_missing_array_bytes[];
 #define psa_swcomponents_invalid_missing_array_size 81
 
 
+/* This is invalid because it has both a sw components claim and the    */
+/* indictor for no sw components.                                       */
+extern const unsigned char psa_swcomponents_invalid_no_and_claim_bytes[];
+#define psa_swcomponents_invalid_no_and_claim_size 88
+
+
 /* This is an invalid SW components claim because it is missing the */
 /* measurement value.                                               */
 extern const unsigned char psa_swcomponents_invalid_no_measurement_bytes[];
 #define psa_swcomponents_invalid_no_measurement_size 77
+
+
+/* This is invalid because it has neither a sw components claim nor the    */
+/* indictor for no sw components.  It is just an empt token.               */
+extern const unsigned char psa_swcomponents_invalid_no_nor_claim_bytes[];
+#define psa_swcomponents_invalid_no_nor_claim_size 1
 
 
 /* This is an invalid SW components claim because it is missing the signer_id */
@@ -68,7 +80,7 @@ extern const unsigned char psa_swcomponents_invalid_no_signer_id_bytes[];
 
 
 /* The value of the signer ID in sw components claim is 0x1f, an */
-/* integer with an indefinite length. This not-well-formed CBOR that */
+/* integer with an indefinite length. This not-well-formed CBOR */
 /* should be caught at the lowest layer in the decoder and bubbled up */
 /* to some top-level error. This is to test that path of bubbling up */
 /* errors. There are lots of other ways that CBOR can be invalid */
@@ -77,7 +89,7 @@ extern const unsigned char psa_swcomponents_invalid_nwf_signer_id_bytes[];
 #define psa_swcomponents_invalid_nwf_signer_id_size       50
 
 /* The value of the sw components claim is 0x1f, an integer with an */
-/* indefinite length. This not-well-formed CBOR that should be caught */
+/* indefinite length. This not-well-formed CBOR should be caught */
 /* at the lowest layer in the decoder and bubbled up to some top-level */
 /* error. This is to test that path of bubbling up errors. There are */
 /* lots of other ways that CBOR can be invalid here. This is just one */

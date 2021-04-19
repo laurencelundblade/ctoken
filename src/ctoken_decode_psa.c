@@ -170,12 +170,46 @@ Done:
 }
 
 
+
 /** Value for CTOKEN_PSA_LABEL_NO_SW_COMPONENTS when present.
  * It must be this value if present.
  * Indicates that the boot status does not contain any SW components'
  * measurement
  */
 #define NO_SW_COMPONENT_FIXED_VALUE 1
+
+static inline enum ctoken_err_t
+get_no_sw_component_indicator(struct ctoken_decode_ctx *me, bool *no_sw_components)
+{
+    QCBORItem         item;
+    enum ctoken_err_t return_value;
+
+    QCBORDecode_GetItemInMapN(&(me->qcbor_decode_context),
+                              CTOKEN_PSA_LABEL_NO_SW_COMPONENTS,
+                              QCBOR_TYPE_INT64,
+                             &item);
+
+    return_value = get_and_reset_error(&(me->qcbor_decode_context));
+
+    if(return_value == CTOKEN_ERR_SUCCESS) {
+        if(item.val.int64 == NO_SW_COMPONENT_FIXED_VALUE) {
+            /* Successful omission of SW components. Pass on the
+             * success return_value */
+            *no_sw_components = true;
+            return_value = CTOKEN_ERR_SUCCESS;
+        } else {
+            /* The no sw components indicator had the wrong value */
+            return_value = CTOKEN_ERR_CBOR_STRUCTURE;
+        }
+    } else if(return_value == CTOKEN_ERR_CLAIM_NOT_PRESENT) {
+        /* Should have been an indicator for no SW components */
+        *no_sw_components = false;
+        return_value = CTOKEN_ERR_SUCCESS;
+    }
+
+    return return_value;
+}
+
 
 /*
  * Public function.  See ctoken_decode_psa.h
@@ -186,62 +220,56 @@ ctoken_decode_psa_num_sw_components(struct ctoken_decode_ctx *me,
 {
     enum ctoken_err_t return_value;
     QCBORItem         item;
-    QCBORError        qcbor_error;
+    bool              no_sw_components;
 
     if(me->last_error != CTOKEN_ERR_SUCCESS) {
         return_value = me->last_error;
         goto Done;
     }
 
-    // TODO: test all the error conditions and qcbor error returns below
+    /* Get the no components indicator because it always must be checked */
+    return_value = get_no_sw_component_indicator(me, &no_sw_components);
+    if(return_value != QCBOR_SUCCESS) {
+        goto Done;
+    }
 
     QCBORDecode_GetItemInMapN(&(me->qcbor_decode_context),
                               CTOKEN_PSA_LABEL_SW_COMPONENTS,
                               QCBOR_TYPE_ARRAY,
                               &item);
-    qcbor_error = QCBORDecode_GetError(&(me->qcbor_decode_context));
 
-    if(qcbor_error != QCBOR_SUCCESS) {
-        if(qcbor_error != QCBOR_ERR_LABEL_NOT_FOUND) {
-            /* Something very wrong. Bail out passing on the return_value */
-            return_value = CTOKEN_ERR_CBOR_STRUCTURE; // TODO: right error code?
+    return_value = get_and_reset_error(&(me->qcbor_decode_context));
+
+    if(return_value == CTOKEN_ERR_CLAIM_NOT_PRESENT) {
+        /* No SW components claim */
+        if(no_sw_components == false) {
+            /* No indicator of no SW components and there are no sw componets
+             * so this is an error */
+            return_value = CTOKEN_ERR_SW_COMPONENTS_PRESENCE;
             goto Done;
-        } else {
-            /* Now decide if it was intentionally left out. */
-            QCBORDecode_GetItemInMapN(&(me->qcbor_decode_context),
-                                      CTOKEN_PSA_LABEL_NO_SW_COMPONENTS,
-                                      QCBOR_TYPE_INT64,
-                                      &item);
-            qcbor_error = QCBORDecode_GetError(&(me->qcbor_decode_context));
+        }
+    }
 
-            if(qcbor_error == QCBOR_SUCCESS) {
-                if(item.val.int64 == NO_SW_COMPONENT_FIXED_VALUE) {
-                    /* Successful omission of SW components. Pass on the
-                     * success return_value */
-                    *num_sw_components = 0;
-                    return_value = CTOKEN_ERR_SUCCESS;
-                } else {
-                    /* Indicator for no SW components malformed */
-                    return_value = CTOKEN_ERR_SW_COMPONENTS_MISSING;
-                }
-            } else if(qcbor_error == QCBOR_ERR_LABEL_NOT_FOUND) {
-                /* Should have been an indicator for no SW components */
-                return_value = CTOKEN_ERR_SW_COMPONENTS_MISSING;
-            } else {
-                return_value = CTOKEN_ERR_CBOR_STRUCTURE; // TODO: right error?
-            }
-        }
+    if(return_value != CTOKEN_ERR_SUCCESS) {
+        goto Done;
+    }
+
+    if(no_sw_components) {
+        return_value = CTOKEN_ERR_SW_COMPONENTS_PRESENCE;
+        goto Done;
+    }
+
+
+    if(item.val.uCount == 0) {
+        // TODO: error out on indefinite length
+         /* Empty SW component not allowed */
+         return_value = CTOKEN_ERR_SW_COMPONENTS_PRESENCE;
     } else {
-        /* The SW components claim exists */
-        if(item.val.uCount == 0) {
-            /* Empty SW component not allowed */
-            return_value = CTOKEN_ERR_SW_COMPONENTS_MISSING;
-        } else {
-            /* SUCCESSS! Pass on the success return_value */
-            /* Note that this assumes the array is definite length */
-            *num_sw_components = item.val.uCount;
-            return_value = CTOKEN_ERR_SUCCESS;
-        }
+        /* SUCCESSS! Pass on the success return_value */
+        /* Note that this assumes the array is definite length */
+        // TODO: check that this is consistent with the profile
+        *num_sw_components = item.val.uCount;
+        return_value = CTOKEN_ERR_SUCCESS;
     }
 
 Done:
@@ -253,25 +281,23 @@ Done:
  * \brief Decode a single SW component
  *
  * \param[in] decode_context    The CBOR decoder context to decode from
- * \param[in] sw_component_item The top-level map item for this SW
- *                              component.
  * \param[out] sw_component     The structure to fill in with decoded data.
  *
  * \return An error from \ref CTOKEN_ERR_t.
  *
  */
 static inline enum ctoken_err_t
-decode_psa_sw_component(QCBORDecodeContext                *decode_context,
-                        const QCBORItem                   *sw_component_item,
+decode_psa_sw_component(QCBORDecodeContext               *decode_context,
                         struct ctoken_psa_sw_component_t *sw_component)
 {
     enum ctoken_err_t  return_value;
     QCBORItem          list[CTOKEN_PSA_SW_NUMBER_OF_ITEMS+1];
-    QCBORError         cbor_error;
-
-    (void)sw_component_item; // TODO: figure out what to do with this.
 
     QCBORDecode_EnterMap(decode_context, NULL);
+    return_value = get_and_reset_error(decode_context);
+    if(return_value != CTOKEN_ERR_SUCCESS) {
+        goto Done2;
+    }
 
     list[CTOKEN_PSA_SW_MEASUREMENT_TYPE_FLAG].label.int64 = CTOKEN_PSA_SW_COMPONENT_MEASUREMENT_TYPE;
     list[CTOKEN_PSA_SW_MEASUREMENT_TYPE_FLAG].uLabelType  = QCBOR_TYPE_INT64;
@@ -300,12 +326,8 @@ decode_psa_sw_component(QCBORDecodeContext                *decode_context,
     list[CTOKEN_PSA_SW_MEASUREMENT_DESC_FLAG+1].uLabelType  = QCBOR_TYPE_NONE;
 
     QCBORDecode_GetItemsInMap(decode_context, list);
-    cbor_error = QCBORDecode_GetAndResetError(decode_context);
-    if(cbor_error == QCBOR_ERR_NO_MORE_ITEMS) {
-        return_value = CTOKEN_ERR_NOT_FOUND;
-        goto Done;
-    } else if(cbor_error != QCBOR_SUCCESS) {
-        return_value = CTOKEN_ERR_CBOR_STRUCTURE; // TODO: right error?
+    return_value = get_and_reset_error(decode_context);
+    if(return_value != CTOKEN_ERR_SUCCESS) {
         goto Done;
     }
 
@@ -326,7 +348,6 @@ decode_psa_sw_component(QCBORDecodeContext                *decode_context,
             sw_component->epoch = (uint32_t)list[CTOKEN_PSA_SW_EPOCH_FLAG].val.int64;
             sw_component->item_flags |= CLAIM_PRESENT_BIT(CTOKEN_PSA_SW_EPOCH_FLAG);
         }
-        // TODO: error here?
     }
 
     if(list[CTOKEN_PSA_SW_VERSION_FLAG].uDataType != QCBOR_TYPE_NONE) {
@@ -344,11 +365,11 @@ decode_psa_sw_component(QCBORDecodeContext                *decode_context,
         sw_component->item_flags |= CLAIM_PRESENT_BIT(CTOKEN_PSA_SW_MEASUREMENT_DESC_FLAG);
     }
 
-    const uint32_t rf =
+    const uint32_t required_item_flags =
           CLAIM_PRESENT_BIT(CTOKEN_PSA_SW_SIGNER_ID_FLAG) |
           CLAIM_PRESENT_BIT(CTOKEN_PSA_SW_MEASURMENT_VAL_FLAG);
 
-    if((sw_component->item_flags & rf) != rf) {
+    if((sw_component->item_flags & required_item_flags) != required_item_flags) {
         return_value = CTOKEN_ERROR_MISSING_REQUIRED_CLAIM;
         goto Done;
     }
@@ -356,8 +377,8 @@ decode_psa_sw_component(QCBORDecodeContext                *decode_context,
     return_value = CTOKEN_ERR_SUCCESS;
 
 Done:
-
     QCBORDecode_ExitMap(decode_context);
+Done2:
     return return_value;
 }
 
@@ -371,36 +392,48 @@ ctoken_decode_psa_sw_component(struct ctoken_decode_ctx         *me,
                                struct ctoken_psa_sw_component_t *sw_components)
 {
     enum ctoken_err_t    return_value;
-    QCBORDecodeContext   *decode_context;
+    QCBORDecodeContext  *decode_context;
     QCBORItem            sw_component_item;
+    bool                 no_sw_components;
 
     if(me->last_error != CTOKEN_ERR_SUCCESS) {
         return_value = me->last_error;
         goto Done;
     }
 
+    /* Get the no components indicator because it always must be checked */
+    return_value = get_no_sw_component_indicator(me, &no_sw_components);
+    if(return_value != QCBOR_SUCCESS) {
+        goto Done;
+    }
+
     return_value = ctoken_decode_enter_array(me,
                                              CTOKEN_PSA_LABEL_SW_COMPONENTS,
                                              &decode_context);
+    if(return_value == CTOKEN_ERR_CLAIM_NOT_PRESENT) {
+        if(no_sw_components == false) {
+            return_value = CTOKEN_ERR_SW_COMPONENTS_PRESENCE;
+            goto Done;
+        }
+    }
+
     if(return_value != CTOKEN_ERR_SUCCESS) {
         goto Done;
     }
 
-    /* Skip to the SW component index requested */
-    for(uint32_t i = 0; i < requested_index; i++) {
-        QCBORDecode_VGetNextConsume(decode_context, &sw_component_item);
-    }
-
-    if(QCBORDecode_GetError(decode_context)){
-        return_value = 99;
+    if(no_sw_components == true) {
+        return_value = CTOKEN_ERR_SW_COMPONENTS_PRESENCE;
         goto Done2;
     }
 
+    /* Skip to the SW component index requested */
+    while(requested_index >0) {
+        QCBORDecode_VGetNextConsume(decode_context, &sw_component_item);
+        requested_index--;
+    }
     /* Let error check for the above happen in decode_sw_component */
 
-    return_value = decode_psa_sw_component(decode_context,
-                                           &sw_component_item,
-                                            sw_components);
+    return_value = decode_psa_sw_component(decode_context, sw_components);
 
 Done2:
     ctoken_decode_exit_array(me);
