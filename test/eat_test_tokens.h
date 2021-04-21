@@ -79,6 +79,16 @@ extern const unsigned char psa_swcomponents_invalid_no_signer_id_bytes[];
 #define psa_swcomponents_invalid_no_signer_id_size 77
 
 
+/* The no-sw-components claim is a boolean rather than an integer */
+extern const unsigned char psa_swcomponents_invalid_no_type_bytes[];
+#define psa_swcomponents_invalid_no_type_size 7
+
+
+/* The value of the no sw components claim is 2 rather than 1 */
+extern const unsigned char psa_swcomponents_invalid_no_value_bytes[];
+#define psa_swcomponents_invalid_no_value_size 7
+
+
 /* The value of the signer ID in sw components claim is 0x1f, an */
 /* integer with an indefinite length. This not-well-formed CBOR */
 /* should be caught at the lowest layer in the decoder and bubbled up */
