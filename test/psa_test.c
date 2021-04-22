@@ -266,6 +266,15 @@ static const struct decode_swc_test_config swc_test_inputs[] = {
 
     {
         14,
+        TEST2UB(psa_swcomponents_valid_no),
+        CTOKEN_ERR_SUCCESS,  /* expected_call_num_swc */
+        0,                          /* num_swc */
+        CTOKEN_ERR_NO_MORE_CLAIMS,  /* expected_call_get_swc0 */
+        CTOKEN_ERR_NO_MORE_CLAIMS,  /* expected_call_get_swc1 */
+    },
+
+    {
+        15,
         NULL_Q_USEFUL_BUF_C, /* Indicates end of list */
         0,
         0,
@@ -325,7 +334,7 @@ int32_t decode_sw_components_test()
     for(test_case = swc_test_inputs;
         !q_useful_buf_c_is_null(test_case->token);
         test_case++) {
-        if(test_case->test_number == 12) {
+        if(test_case->test_number == 14) {
             test_result = 99; /* Used only to set break points for test # */
         }
         test_result = one_swc_decode_test_case(test_case);

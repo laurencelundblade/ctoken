@@ -241,13 +241,16 @@ ctoken_decode_psa_num_sw_components(struct ctoken_decode_ctx *me,
     return_value = get_and_reset_error(&(me->qcbor_decode_context));
 
     if(return_value == CTOKEN_ERR_CLAIM_NOT_PRESENT) {
-        /* No SW components claim */
+        /* There is no SW components claim. */
         if(no_sw_components == false) {
             /* No indicator of no SW components and there are no sw componets
              * so this is an error */
             return_value = CTOKEN_ERR_SW_COMPONENTS_PRESENCE;
             goto Done;
         }
+        return_value = CTOKEN_ERR_SUCCESS;
+        *num_sw_components = 0;
+        goto Done;
     }
 
     if(return_value != CTOKEN_ERR_SUCCESS) {
@@ -261,16 +264,20 @@ ctoken_decode_psa_num_sw_components(struct ctoken_decode_ctx *me,
 
 
     if(item.val.uCount == 0) {
-        // TODO: error out on indefinite length
          /* Empty SW component not allowed */
          return_value = CTOKEN_ERR_SW_COMPONENTS_PRESENCE;
-    } else {
-        /* SUCCESSS! Pass on the success return_value */
-        /* Note that this assumes the array is definite length */
-        // TODO: check that this is consistent with the profile
-        *num_sw_components = item.val.uCount;
-        return_value = CTOKEN_ERR_SUCCESS;
+        goto Done;
+
     }
+
+    if( item.val.uCount == UINT16_MAX) {
+        /* Encountered indefinite length array */
+        return_value = CTOKEN_ERR_SW_COMPONENTS_PRESENCE;
+        goto Done;
+    }
+
+    /* SUCCESSS! Pass on the success return_value */
+    *num_sw_components = item.val.uCount;
 
 Done:
     return return_value;
@@ -415,6 +422,8 @@ ctoken_decode_psa_sw_component(struct ctoken_decode_ctx         *me,
             return_value = CTOKEN_ERR_SW_COMPONENTS_PRESENCE;
             goto Done;
         }
+        return_value = CTOKEN_ERR_NO_MORE_CLAIMS;
+        goto Done;
     }
 
     if(return_value != CTOKEN_ERR_SUCCESS) {
