@@ -334,7 +334,7 @@ int32_t decode_sw_components_test()
     for(test_case = swc_test_inputs;
         !q_useful_buf_c_is_null(test_case->token);
         test_case++) {
-        if(test_case->test_number == 14) {
+        if(test_case->test_number == 1) {
             test_result = 99; /* Used only to set break points for test # */
         }
         test_result = one_swc_decode_test_case(test_case);

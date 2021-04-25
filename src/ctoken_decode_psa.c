@@ -212,6 +212,39 @@ get_no_sw_component_indicator(struct ctoken_decode_ctx *me, bool *no_sw_componen
 
 
 /*
+ * Count the number of items in an entered array or map.
+ * This should be made part of QCBOR. This violates
+ * layering by setting the QCBOR decoder last error. When
+ * it is part of QCBOR, this won't be a layering violation.
+ * It is helpful here so ctoken can use get_and_reset_error()
+ * with this.
+ */
+static inline void
+CountItems(QCBORDecodeContext *cbor_decoder, uint32_t *num_items)
+{
+    QCBORItem   item;
+    uint32_t    counter;
+    QCBORError  cbor_error;
+
+    counter = 0;
+    while(1) {
+        QCBORDecode_VGetNextConsume(cbor_decoder, &item);
+        cbor_error = QCBORDecode_GetAndResetError(cbor_decoder);
+        if(cbor_error == QCBOR_ERR_NO_MORE_ITEMS) {
+            cbor_decoder->uLastError = QCBOR_SUCCESS;
+            break;
+        }
+        if(cbor_error != QCBOR_SUCCESS) {
+            break;
+        }
+        counter++;
+    }
+
+    *num_items = counter;
+}
+
+
+/*
  * Public function.  See ctoken_decode_psa.h
  */
 enum ctoken_err_t
@@ -219,7 +252,6 @@ ctoken_decode_psa_num_sw_components(struct ctoken_decode_ctx *me,
                                     uint32_t                 *num_sw_components)
 {
     enum ctoken_err_t return_value;
-    QCBORItem         item;
     bool              no_sw_components;
 
     if(me->last_error != CTOKEN_ERR_SUCCESS) {
@@ -233,11 +265,7 @@ ctoken_decode_psa_num_sw_components(struct ctoken_decode_ctx *me,
         goto Done;
     }
 
-    QCBORDecode_GetItemInMapN(&(me->qcbor_decode_context),
-                              CTOKEN_PSA_LABEL_SW_COMPONENTS,
-                              QCBOR_TYPE_ARRAY,
-                              &item);
-
+    QCBORDecode_EnterArrayFromMapN(&(me->qcbor_decode_context), CTOKEN_PSA_LABEL_SW_COMPONENTS);
     return_value = get_and_reset_error(&(me->qcbor_decode_context));
 
     if(return_value == CTOKEN_ERR_CLAIM_NOT_PRESENT) {
@@ -259,25 +287,20 @@ ctoken_decode_psa_num_sw_components(struct ctoken_decode_ctx *me,
 
     if(no_sw_components) {
         return_value = CTOKEN_ERR_SW_COMPONENTS_PRESENCE;
-        goto Done;
+        goto Done2;
     }
 
+    CountItems(&(me->qcbor_decode_context), num_sw_components);
+    return_value = get_and_reset_error(&(me->qcbor_decode_context));
 
-    if(item.val.uCount == 0) {
+    if(*num_sw_components == 0) {
          /* Empty SW component not allowed */
          return_value = CTOKEN_ERR_SW_COMPONENTS_PRESENCE;
         goto Done;
-
     }
-
-    if( item.val.uCount == UINT16_MAX) {
-        /* Encountered indefinite length array */
-        return_value = CTOKEN_ERR_SW_COMPONENTS_PRESENCE;
-        goto Done;
-    }
-
-    /* SUCCESSS! Pass on the success return_value */
-    *num_sw_components = item.val.uCount;
+    
+Done2:
+    QCBORDecode_ExitArray(&(me->qcbor_decode_context));
 
 Done:
     return return_value;
