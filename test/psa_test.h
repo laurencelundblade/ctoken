@@ -25,6 +25,8 @@ extern "C" {
 int32_t psa_basic_test(void);
 
 
+int32_t decode_sw_components_test(void);
+
 
 
 // TODO: this tests a lot of the PSA layer about ctoken and needs to be removed

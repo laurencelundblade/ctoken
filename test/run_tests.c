@@ -49,6 +49,7 @@ static test_entry2 s_tests2[] = {
 #endif
 
 static test_entry s_tests[] = {
+    TEST_ENTRY(decode_sw_components_test),
     TEST_ENTRY(basic_types_decode_test),
     TEST_ENTRY(basic_types_encode_test),
     TEST_ENTRY(map_and_array_test),

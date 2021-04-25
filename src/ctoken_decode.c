@@ -67,7 +67,7 @@ void ctoken_decode_init(struct ctoken_decode_ctx *me,
  *
  * \return The ctoken error.
  */
-static enum ctoken_err_t get_and_reset_error(QCBORDecodeContext *decode_context)
+enum ctoken_err_t get_and_reset_error(QCBORDecodeContext *decode_context)
 {
     QCBORError cbor_error;
 
