@@ -307,7 +307,11 @@ int32_t eat_encode(struct t_cose_key signing_key,
     /* Initialize, telling is the option (there are none) and
      * the signing algorithm to use.
      */
-    ctoken_encode_init(&encode_ctx, 0, 0, T_COSE_ALGORITHM_ES256);
+    ctoken_encode_init(&encode_ctx,
+                       0, /* No t_cose options */
+                       0, /* No ctoken options */
+                       CTOKEN_PROTECTION_COSE_SIGN1,
+                       T_COSE_ALGORITHM_ES256);
 
     /* Next give it the signing key. No kid (key id) is given so
      * NULL_Q_USEFUL_BUF_C is passed.
@@ -367,8 +371,11 @@ int32_t eat_decode(struct t_cose_key     verification_key,
      * The algorithm in use comes from the header in the token
      * so it is not specified here
      */
-    ctoken_decode_init(&decode_context, 0, 0);
-
+    ctoken_decode_init(&decode_context,
+                       0,
+                       0,
+                       CTOKEN_PROTECTION_BY_TAG);
+    
     /* Set the verification key to use. It must be a key that works
      * with the algorithm the token was signed with. (This can be
      * be retrieved, but it is not shown here.)
@@ -409,7 +416,7 @@ int32_t eat_example()
      */
     return_value = make_psa_ecdsa_key_pair(T_COSE_ALGORITHM_ES256, &key_pair);
 
-    printf("Made EC key with curve prime256v1: %d (%s)\n", return_value, return_value ? "fail" : "success");
+    printf("Made EC key (PSA mbed) with curve prime256v1: %d (%s)\n", return_value, return_value ? "fail" : "success");
     if(return_value) {
         goto Done;
     }

@@ -291,6 +291,11 @@ int32_t eat_encode(struct t_cose_key signing_key,
     /* Initialize, telling is the option (there are none) and
      * the signing algorithm to use.
      */
+    ctoken_encode_init(&encode_ctx,
+                       0, /* No t_cose options */
+                       0, /* No ctoken options */
+                       CTOKEN_PROTECTION_COSE_SIGN1,
+                       T_COSE_ALGORITHM_ES256);
 
     
 
@@ -397,7 +402,7 @@ int32_t eat_example()
      */
     return_value = make_ossl_ecdsa_key_pair(T_COSE_ALGORITHM_ES256, &key_pair);
 
-    printf("Made EC key with curve prime256v1: %d (%s)\n", return_value, return_value ? "fail" : "success");
+    printf("Made EC key (OSSL) with curve prime256v1: %d (%s)\n", return_value, return_value ? "fail" : "success");
     if(return_value) {
         goto Done;
     }

@@ -33,6 +33,11 @@
 		0FBE2DA123FA14A000A31C46 /* eat_example_psa.c in Sources */ = {isa = PBXBuildFile; fileRef = 0FBE2D9F23FA149200A31C46 /* eat_example_psa.c */; };
 		0FBE2DA423FA17B200A31C46 /* libmbedcrypto.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0FBE2DA223FA17A700A31C46 /* libmbedcrypto.a */; };
 		E72FC2402603E0E800D07153 /* eat_test_tokens.c in Sources */ = {isa = PBXBuildFile; fileRef = E72FC23E2603E0E800D07153 /* eat_test_tokens.c */; };
+		E76671E826387E3D0076973B /* libqcbor.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E76671E726387E3D0076973B /* libqcbor.a */; };
+		E76671E926387E500076973B /* libqcbor.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E76671E726387E3D0076973B /* libqcbor.a */; };
+		E76671EA26387E520076973B /* libqcbor.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E76671E726387E3D0076973B /* libqcbor.a */; };
+		E76671EB26387EBB0076973B /* ctoken_common.c in Sources */ = {isa = PBXBuildFile; fileRef = E7697235261B2D6600F77CDF /* ctoken_common.c */; };
+		E76671EC26387EBC0076973B /* ctoken_common.c in Sources */ = {isa = PBXBuildFile; fileRef = E7697235261B2D6600F77CDF /* ctoken_common.c */; };
 		E7697236261B2D6600F77CDF /* ctoken_common.c in Sources */ = {isa = PBXBuildFile; fileRef = E7697235261B2D6600F77CDF /* ctoken_common.c */; };
 /* End PBXBuildFile section */
 
@@ -95,6 +100,7 @@
 		0FBE2DA223FA17A700A31C46 /* libmbedcrypto.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libmbedcrypto.a; path = "../../mbed-crypto/library/libmbedcrypto.a"; sourceTree = "<group>"; };
 		E72FC23E2603E0E800D07153 /* eat_test_tokens.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = eat_test_tokens.c; path = test/eat_test_tokens.c; sourceTree = "<group>"; };
 		E72FC23F2603E0E800D07153 /* eat_test_tokens.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = eat_test_tokens.h; path = test/eat_test_tokens.h; sourceTree = "<group>"; };
+		E76671E726387E3D0076973B /* libqcbor.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libqcbor.a; path = ../../../../../usr/local/lib/libqcbor.a; sourceTree = "<group>"; };
 		E769722C25EA3B8D00F77CDF /* ctoken_eat_labels.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ctoken_eat_labels.h; path = inc/ctoken/ctoken_eat_labels.h; sourceTree = "<group>"; };
 		E769722D25EA3B8D00F77CDF /* ctoken_encode_psa.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ctoken_encode_psa.h; path = inc/ctoken/ctoken_encode_psa.h; sourceTree = "<group>"; };
 		E769722E25EA3B8D00F77CDF /* ctoken_encode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ctoken_encode.h; path = inc/ctoken/ctoken_encode.h; sourceTree = "<group>"; };
@@ -120,6 +126,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E76671E826387E3D0076973B /* libqcbor.a in Frameworks */,
 				0F3AF36C23EE522A00A60561 /* libt_cose.a in Frameworks */,
 				0F3AF36E23EF5B6600A60561 /* libcrypto.a in Frameworks */,
 			);
@@ -130,6 +137,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				0F3AF38723F1BB5600A60561 /* libt_cose.a in Frameworks */,
+				E76671E926387E500076973B /* libqcbor.a in Frameworks */,
 				0F3AF38923F1BB5600A60561 /* libcrypto.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -139,6 +147,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				0FBE2D9723FA147600A31C46 /* libt_cose.a in Frameworks */,
+				E76671EA26387E520076973B /* libqcbor.a in Frameworks */,
 				0FBE2DA423FA17B200A31C46 /* libmbedcrypto.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -241,6 +250,7 @@
 		0F3AF36823EE513100A60561 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				E76671E726387E3D0076973B /* libqcbor.a */,
 				0FBE2DA223FA17A700A31C46 /* libmbedcrypto.a */,
 				0F3AF36D23EF5B6600A60561 /* libcrypto.a */,
 				0F3AF36B23EE522A00A60561 /* libt_cose.a */,
@@ -386,6 +396,7 @@
 				0F3AF38123F1BB5600A60561 /* ctoken_decode_psa.c in Sources */,
 				0F3AF38223F1BB5600A60561 /* eat_example_ossl.c in Sources */,
 				0F3AF38323F1BB5600A60561 /* ctoken_encode.c in Sources */,
+				E76671EB26387EBB0076973B /* ctoken_common.c in Sources */,
 				0F3AF38523F1BB5600A60561 /* ctoken_decode.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -398,6 +409,7 @@
 				0FBE2D8C23FA147600A31C46 /* ctoken_encode_psa.c in Sources */,
 				0FBE2D9123FA147600A31C46 /* ctoken_decode_psa.c in Sources */,
 				0FBE2D9323FA147600A31C46 /* ctoken_encode.c in Sources */,
+				E76671EC26387EBC0076973B /* ctoken_common.c in Sources */,
 				0FBE2D9523FA147600A31C46 /* ctoken_decode.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
