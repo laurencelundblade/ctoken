@@ -2118,3 +2118,114 @@ int32_t basic_types_encode_test(void)
 
     return 0;
 }
+
+
+
+struct hw_version_test_t {
+    uint32_t               test_number;
+    struct q_useful_buf_c  token;
+    enum ctoken_hw_type_t  type;
+    int32_t                expected_version_scheme;
+    enum ctoken_err_t      expected_result;
+};
+
+
+static const struct hw_version_test_t hw_version_test_inputs[] = {
+    {
+        1,
+        TEST2UB(hw_version_valid_chip_version),
+        CTOKEN_HW_TYPE_CHIP,
+        1,
+        CTOKEN_ERR_SUCCESS
+    },
+
+    {
+        999,
+        NULL_Q_USEFUL_BUF_C, /* Indicates end of list */
+        0,
+        0,
+        0
+    }
+};
+
+
+
+static int32_t test_one_hw_version(const struct hw_version_test_t *t)
+{
+    struct q_useful_buf_c     version;
+    int32_t                   version_scheme;
+    enum ctoken_err_t         result;
+    struct ctoken_decode_ctx  decode_context;
+    enum ctoken_err_t         ctoken_result;
+    uint32_t                  num_submods;
+
+    ctoken_decode_init(&decode_context,
+                       T_COSE_OPT_ALLOW_SHORT_CIRCUIT,
+                       0,
+                       CTOKEN_PROTECTION_NONE);
+
+    ctoken_result = ctoken_decode_validate_token(&decode_context, t->token);
+    if(ctoken_result != CTOKEN_ERR_SUCCESS) {
+        return test_result_code(1, t->test_number, ctoken_result);
+    }
+
+    result = ctoken_decode_hw_version(&decode_context, t->type, &version_scheme, &version);
+    if(result != t->expected_result) {
+        return test_result_code(1, t->test_number, result);
+    }
+
+    if(version_scheme != t->expected_version_scheme) {
+        return test_result_code(2, t->test_number, version_scheme);
+    }
+
+    return 0;
+}
+
+
+
+int32_t hw_version_decode_test(void)
+{
+    int32_t                         test_result;
+    const struct hw_version_test_t *test_case;
+
+    /* Big test over a set of input tests cases */
+    for(test_case = hw_version_test_inputs;
+        !q_useful_buf_c_is_null(test_case->token);
+        test_case++) {
+        if(test_case->test_number == 14) {
+            test_result = 99; /* Used only to set break points for test # */
+        }
+        test_result = test_one_hw_version(test_case);
+        if(test_result) {
+            return test_result;
+        }
+    }
+
+    return 0;
+}
+
+
+
+int32_t hw_version_encode_test(void)
+{
+    struct ctoken_encode_ctx ctoken_encode;
+    MakeUsefulBufOnStack(    buf, 100);
+    struct q_useful_buf_c    finish_token;
+
+    ctoken_encode_init(&ctoken_encode, 0, 0, CTOKEN_PROTECTION_NONE, 0);
+
+    ctoken_encode_start(&ctoken_encode, buf);
+
+    ctoken_encode_hw_version(&ctoken_encode,
+                             CTOKEN_HW_TYPE_CHIP,
+                             1,
+                             Q_USEFUL_BUF_FROM_SZ_LITERAL("1.4.5"));
+
+    ctoken_encode_finish(&ctoken_encode, &finish_token)
+
+    if(q_useful_buf_compare(TEST2UB(hw_version_valid_chip_version), finish_token)) {
+        return test_result_code(2, t->test_number, version_scheme);
+    }
+
+    return 0;
+}

@@ -16,6 +16,11 @@ extern const unsigned char some_submods_bytes[];
 #define some_submods_size 82
 
 
+/* A valid HW Chip version claim */
+extern const unsigned char hw_version_valid_chip_version_bytes[];
+#define hw_version_valid_chip_version_size 18
+
+
 /* There ae two claims with the profile label of 18 */
 extern const unsigned char profile_invalid_dup_bytes[];
 #define profile_invalid_dup_size       23
@@ -43,6 +48,90 @@ extern const unsigned char profile_valid_oid_bytes[];
 /* A valid URI-format profile claim */
 extern const unsigned char profile_valid_uri_bytes[];
 #define profile_valid_uri_size 28
+
+
+/* This is an invalid SW components claim because the measure value is */
+/* a text string rather than a byte string.                            */
+extern const unsigned char psa_swcomponents_invalid_measurement_value_bytes[];
+#define psa_swcomponents_invalid_measurement_value_size 60
+
+
+/* This is an invalid SW components because it is missing the array level. */
+extern const unsigned char psa_swcomponents_invalid_missing_array_bytes[];
+#define psa_swcomponents_invalid_missing_array_size 81
+
+
+/* This is invalid because it has both a sw components claim and the    */
+/* indictor for no sw components.                                       */
+extern const unsigned char psa_swcomponents_invalid_no_and_claim_bytes[];
+#define psa_swcomponents_invalid_no_and_claim_size 88
+
+
+/* This is an invalid SW components claim because it is missing the */
+/* measurement value.                                               */
+extern const unsigned char psa_swcomponents_invalid_no_measurement_bytes[];
+#define psa_swcomponents_invalid_no_measurement_size 77
+
+
+/* This is invalid because it has neither a sw components claim nor the    */
+/* indictor for no sw components.  It is just an empt token.               */
+extern const unsigned char psa_swcomponents_invalid_no_nor_claim_bytes[];
+#define psa_swcomponents_invalid_no_nor_claim_size 1
+
+
+/* This is an invalid SW components claim because it is missing the signer_id */
+extern const unsigned char psa_swcomponents_invalid_no_signer_id_bytes[];
+#define psa_swcomponents_invalid_no_signer_id_size 77
+
+
+/* The no-sw-components claim is a boolean rather than an integer */
+extern const unsigned char psa_swcomponents_invalid_no_type_bytes[];
+#define psa_swcomponents_invalid_no_type_size 7
+
+
+/* The value of the no sw components claim is 2 rather than 1 */
+extern const unsigned char psa_swcomponents_invalid_no_value_bytes[];
+#define psa_swcomponents_invalid_no_value_size 7
+
+
+/* The value of the signer ID in sw components claim is 0x1f, an */
+/* integer with an indefinite length. This not-well-formed CBOR */
+/* should be caught at the lowest layer in the decoder and bubbled up */
+/* to some top-level error. This is to test that path of bubbling up */
+/* errors. There are lots of other ways that CBOR can be invalid */
+/* here. This is just one to test the error propagation. */
+extern const unsigned char psa_swcomponents_invalid_nwf_signer_id_bytes[];
+#define psa_swcomponents_invalid_nwf_signer_id_size       50
+
+/* The value of the sw components claim is 0x1f, an integer with an */
+/* indefinite length. This not-well-formed CBOR should be caught */
+/* at the lowest layer in the decoder and bubbled up to some top-level */
+/* error. This is to test that path of bubbling up errors. There are */
+/* lots of other ways that CBOR can be invalid here. This is just one */
+/* to test the error propagation. */
+extern const unsigned char psa_swcomponents_invalid_nwf_swc_bytes[];
+#define psa_swcomponents_invalid_nwf_swc_size        7
+
+/* This is an invalid SW components claim because the signer ID is an */
+/* integer rather than a byte string. */
+extern const unsigned char psa_swcomponents_invalid_signer_id_bytes[];
+#define psa_swcomponents_invalid_signer_id_size 50
+
+
+/* A basic valid PSA SW components claim. It has two SW components.     */
+/*                                                                      */
+/* This is just for testing the SW components claim in isolation.  When */
+/* taken as a whole, this is actual an invalid PSA token because it is  */
+/* missing claims that PSA token requires in all tokens.                */
+extern const unsigned char psa_swcomponents_valid_basic_bytes[];
+#define psa_swcomponents_valid_basic_size 187
+
+
+/* The only valid way to have no SW components.  This is just for testing */
+/* the no SW components claim in isolation.  When taken as a whole, this  */
+/* is actual an invalid PSA token because it is missing required claims   */
+extern const unsigned char psa_swcomponents_valid_no_bytes[];
+#define psa_swcomponents_valid_no_size 7
 
 
 /* The secboot claim with a value of null which is not allowed. There are */
@@ -125,17 +214,6 @@ extern const unsigned char submods_invalid_nwf_section_bytes[];
 /* really an integer). Decoders should error out on this. */
 extern const unsigned char submods_invalid_nwf_sumbod_bytes[];
 #define submods_invalid_nwf_sumbod_size       11
-
-/* The submod section is an integer lacking its CBOR argument. That is the */
-/* integer is truncated. The CBOR decoder should find that the submodules */
-/* section is not well formed.  */
-extern const unsigned char submods_nwf_section_bytes[];
-#define submods_nwf_section_size        3
-
-/* The submod named "submod" is an not-allowed form of positive integer. */
-/* It is the byte 1f a positive integer with indefinite length. */
-extern const unsigned char submods_nwf_submod_bytes[];
-#define submods_nwf_submod_size       11
 
 /* Five nested levels of submodules with a distinct nonce at each level. */
 /* Each level also has a nested token. TODO: make the nested tokens real */

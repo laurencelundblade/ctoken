@@ -1743,6 +1743,51 @@ ctoken_decode_rewind(struct ctoken_decode_ctx   *me)
 
 
 
+static inline enum ctoken_err_t
+ctoken_decode_hw_version(struct ctoken_decode_ctx  *me,
+                         enum ctoken_hw_type_t      hw_type,
+                         int32_t                    *version_scheme,
+                         struct q_useful_buf_c      *version)
+{
+    enum ctoken_err_t return_value;
+    int64_t           version_scheme_64;
+
+    return_value =  ctoken_decode_tstr(me, CTOKEN_EAT_LABEL_CHIP_VERSION + hw_type, version);
+    if(return_value != CTOKEN_ERR_SUCCESS) {
+        goto Done;
+    }
+
+    /* -256 and 65535 are constraints from the PSA token document. */
+    return_value = ctoken_decode_int_constrained(me,
+                                                 -256,
+                                                 65535,
+                                                 CTOKEN_EAT_LABEL_CHIP_VERSION_SCHEME + hw_type,
+                                                &version_scheme_64);
+    if(return_value == CTOKEN_ERR_CLAIM_NOT_PRESENT) {
+        // TODO: what is the version scheme when it is not given?
+        *version_scheme = 99;
+        return_value = CTOKEN_ERR_SUCCESS;
+    }
+    if(return_value != CTOKEN_ERR_SUCCESS) {
+        goto Done;
+    }
+    /* cast is ok because of use of ctoken_decode_int_constrained() */
+    *version_scheme = (int32_t)version_scheme_64;
+
+    Done:
+    return return_value;
+}
+
+
+static inline enum ctoken_err_t
+ctoken_decode_hw_ean_version(struct ctoken_decode_ctx  *me,
+                             enum ctoken_hw_type_t      hw_type,
+                             struct q_useful_buf_c      *version)
+{
+    return ctoken_decode_tstr(me, CTOKEN_EAT_LABEL_EAN_CHIP_VERSION + hw_type, version);
+}
+
+
 #ifdef __cplusplus
 }
 #endif
