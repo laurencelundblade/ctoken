@@ -1742,6 +1742,11 @@ ctoken_decode_rewind(struct ctoken_decode_ctx   *me)
 }
 
 
+/* Function not for public use, but shared between implementation files.
+ This is the only one so it is stuck in here rather than making a new
+ header */
+enum ctoken_err_t get_and_reset_error(QCBORDecodeContext *decode_context);
+
 
 static inline enum ctoken_err_t
 ctoken_decode_hw_version(struct ctoken_decode_ctx  *me,

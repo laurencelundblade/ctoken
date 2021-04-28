@@ -250,7 +250,7 @@ ctoken_decode_psa_num_sw_components(struct ctoken_decode_ctx *context,
  * \param[out] sw_components  Place to return the details of the
  *                            SW component
  *
- * \retval CTOKEN_ERR_NOT_FOUND
+ * \retval CTOKEN_ERR_NO_MORE_CLAIMS
  *         There were not \c requested_index in the token.
  *
  * \retval CTOKEN_ERR_CBOR_TYPE
