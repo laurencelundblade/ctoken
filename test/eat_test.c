@@ -2124,19 +2124,19 @@ int32_t basic_types_encode_test(void)
 struct hw_version_test_t {
     uint32_t               test_number;
     struct q_useful_buf_c  token;
+    enum ctoken_err_t      expected_result;
     enum ctoken_hw_type_t  type;
     int32_t                expected_version_scheme;
-    enum ctoken_err_t      expected_result;
 };
 
 
 static const struct hw_version_test_t hw_version_test_inputs[] = {
     {
-        1,
+        1,                      /* test_number */
         TEST2UB(hw_version_valid_chip_version),
-        CTOKEN_HW_TYPE_CHIP,
-        1,
-        CTOKEN_ERR_SUCCESS
+        CTOKEN_ERR_SUCCESS,     /* expected_result */
+        CTOKEN_HW_TYPE_CHIP,    /* type */
+        1,                      /* expected_version_scheme */
     },
 
     {
@@ -2157,7 +2157,6 @@ static int32_t test_one_hw_version(const struct hw_version_test_t *t)
     enum ctoken_err_t         result;
     struct ctoken_decode_ctx  decode_context;
     enum ctoken_err_t         ctoken_result;
-    uint32_t                  num_submods;
 
     ctoken_decode_init(&decode_context,
                        T_COSE_OPT_ALLOW_SHORT_CIRCUIT,
@@ -2212,7 +2211,11 @@ int32_t hw_version_encode_test(void)
     MakeUsefulBufOnStack(    buf, 100);
     struct q_useful_buf_c    finish_token;
 
-    ctoken_encode_init(&ctoken_encode, 0, 0, CTOKEN_PROTECTION_NONE, 0);
+    ctoken_encode_init(&ctoken_encode,
+                       0,
+                       CTOKEN_OPT_TOP_LEVEL_NOT_TAG,
+                       CTOKEN_PROTECTION_NONE,
+                       0);
 
     ctoken_encode_start(&ctoken_encode, buf);
 
@@ -2221,10 +2224,10 @@ int32_t hw_version_encode_test(void)
                              1,
                              Q_USEFUL_BUF_FROM_SZ_LITERAL("1.4.5"));
 
-    ctoken_encode_finish(&ctoken_encode, &finish_token)
+    ctoken_encode_finish(&ctoken_encode, &finish_token);
 
     if(q_useful_buf_compare(TEST2UB(hw_version_valid_chip_version), finish_token)) {
-        return test_result_code(2, t->test_number, version_scheme);
+        return test_result_code(2, 1, 0);
     }
 
     return 0;

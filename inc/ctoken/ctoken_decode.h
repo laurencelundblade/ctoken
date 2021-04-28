@@ -1757,16 +1757,16 @@ ctoken_decode_hw_version(struct ctoken_decode_ctx  *me,
     enum ctoken_err_t return_value;
     int64_t           version_scheme_64;
 
-    return_value =  ctoken_decode_tstr(me, CTOKEN_EAT_LABEL_CHIP_VERSION + hw_type, version);
+    return_value =  ctoken_decode_tstr(me, (CTOKEN_EAT_LABEL_CHIP_VERSION) + (int64_t)hw_type, version);
     if(return_value != CTOKEN_ERR_SUCCESS) {
         goto Done;
     }
 
     /* -256 and 65535 are constraints from the PSA token document. */
     return_value = ctoken_decode_int_constrained(me,
+                                                 CTOKEN_EAT_LABEL_CHIP_VERSION_SCHEME + (int64_t)hw_type,
                                                  -256,
                                                  65535,
-                                                 CTOKEN_EAT_LABEL_CHIP_VERSION_SCHEME + hw_type,
                                                 &version_scheme_64);
     if(return_value == CTOKEN_ERR_CLAIM_NOT_PRESENT) {
         // TODO: what is the version scheme when it is not given?
