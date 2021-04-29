@@ -1789,7 +1789,7 @@ ctoken_decode_hw_ean_version(struct ctoken_decode_ctx  *me,
                              enum ctoken_hw_type_t      hw_type,
                              struct q_useful_buf_c      *version)
 {
-    return ctoken_decode_tstr(me, CTOKEN_EAT_LABEL_EAN_CHIP_VERSION + hw_type, version);
+    return ctoken_decode_tstr(me, CTOKEN_EAT_LABEL_EAN_CHIP_VERSION + (int64_t)hw_type, version);
 }
 
 

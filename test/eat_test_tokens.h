@@ -16,9 +16,34 @@ extern const unsigned char some_submods_bytes[];
 #define some_submods_size 82
 
 
+/* A valid HW Board version claim */
+extern const unsigned char hw_version_valid_board_version_bytes[];
+#define hw_version_valid_board_version_size 18
+
+
 /* A valid HW Chip version claim */
 extern const unsigned char hw_version_valid_chip_version_bytes[];
 #define hw_version_valid_chip_version_size 18
+
+
+/* A valid HW device version claim */
+extern const unsigned char hw_version_valid_device_version_bytes[];
+#define hw_version_valid_device_version_size 19
+
+
+/* A valid HW Board EAN version claim */
+extern const unsigned char hw_version_valid_ean_board_version_bytes[];
+#define hw_version_valid_ean_board_version_size 20
+
+
+/* A valid HW Chip EAN version claim */
+extern const unsigned char hw_version_valid_ean_chip_version_bytes[];
+#define hw_version_valid_ean_chip_version_size 20
+
+
+/* A valid HW device EAN version claim */
+extern const unsigned char hw_version_valid_ean_device_version_bytes[];
+#define hw_version_valid_ean_device_version_size 20
 
 
 /* There ae two claims with the profile label of 18 */

@@ -2127,6 +2127,8 @@ struct hw_version_test_t {
     enum ctoken_err_t      expected_result;
     enum ctoken_hw_type_t  type;
     int32_t                expected_version_scheme;
+    enum ctoken_err_t      expected_ean_result;
+
 };
 
 
@@ -2137,6 +2139,47 @@ static const struct hw_version_test_t hw_version_test_inputs[] = {
         CTOKEN_ERR_SUCCESS,     /* expected_result */
         CTOKEN_HW_TYPE_CHIP,    /* type */
         1,                      /* expected_version_scheme */
+        CTOKEN_ERR_CLAIM_NOT_PRESENT
+    },
+    {
+        2,                      /* test_number */
+        TEST2UB(hw_version_valid_board_version),
+        CTOKEN_ERR_SUCCESS,     /* expected_result */
+        CTOKEN_HW_TYPE_BOARD,    /* type */
+        3,                      /* expected_version_scheme */
+        CTOKEN_ERR_CLAIM_NOT_PRESENT,
+    },
+    {
+        3,                      /* test_number */
+        TEST2UB(hw_version_valid_device_version),
+        CTOKEN_ERR_SUCCESS,     /* expected_result */
+        CTOKEN_HW_TYPE_DEVICE,    /* type */
+        2,                      /* expected_version_scheme */
+        CTOKEN_ERR_CLAIM_NOT_PRESENT,
+    },
+    {
+        4,                      /* test_number */
+        TEST2UB(hw_version_valid_ean_chip_version),
+        CTOKEN_ERR_CLAIM_NOT_PRESENT,     /* expected_result */
+        CTOKEN_HW_TYPE_CHIP,    /* type */
+        1,                      /* expected_version_scheme */
+        CTOKEN_ERR_SUCCESS,
+    },
+    {
+        5,                      /* test_number */
+        TEST2UB(hw_version_valid_ean_board_version),
+        CTOKEN_ERR_CLAIM_NOT_PRESENT,     /* expected_result */
+        CTOKEN_HW_TYPE_BOARD,    /* type */
+        1,                      /* expected_version_scheme */
+        CTOKEN_ERR_SUCCESS
+    },
+    {
+        6,                      /* test_number */
+        TEST2UB(hw_version_valid_ean_device_version),
+        CTOKEN_ERR_CLAIM_NOT_PRESENT,     /* expected_result */
+        CTOKEN_HW_TYPE_DEVICE,    /* type */
+        1,                      /* expected_version_scheme */
+        CTOKEN_ERR_SUCCESS
     },
 
     {
@@ -2173,10 +2216,16 @@ static int32_t test_one_hw_version(const struct hw_version_test_t *t)
         return test_result_code(1, t->test_number, result);
     }
 
-    if(version_scheme != t->expected_version_scheme) {
-        return test_result_code(2, t->test_number, version_scheme);
+    if(t->expected_result == CTOKEN_ERR_SUCCESS) {
+        if(version_scheme != t->expected_version_scheme) {
+            return test_result_code(2, t->test_number, version_scheme);
+        }
     }
 
+    result = ctoken_decode_hw_ean_version(&decode_context, t->type, &version);
+    if(result != t->expected_ean_result) {
+        return test_result_code(3, t->test_number, result);
+    }
     return 0;
 }
 
@@ -2191,7 +2240,7 @@ int32_t hw_version_decode_test(void)
     for(test_case = hw_version_test_inputs;
         !q_useful_buf_c_is_null(test_case->token);
         test_case++) {
-        if(test_case->test_number == 14) {
+        if(test_case->test_number == 4) {
             test_result = 99; /* Used only to set break points for test # */
         }
         test_result = test_one_hw_version(test_case);
