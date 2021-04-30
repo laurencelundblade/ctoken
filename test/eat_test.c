@@ -2169,7 +2169,7 @@ static const struct hw_version_test_t hw_version_test_inputs[] = {
         5,                      /* test_number */
         TEST2UB(hw_version_valid_ean_board_version),
         CTOKEN_ERR_CLAIM_NOT_PRESENT,     /* expected_result */
-        CTOKEN_HW_TYPE_BOARD,    /* type */
+        CTOKEN_HW_TYPE_BOARD,   /* type */
         1,                      /* expected_version_scheme */
         CTOKEN_ERR_SUCCESS
     },
@@ -2177,9 +2177,82 @@ static const struct hw_version_test_t hw_version_test_inputs[] = {
         6,                      /* test_number */
         TEST2UB(hw_version_valid_ean_device_version),
         CTOKEN_ERR_CLAIM_NOT_PRESENT,     /* expected_result */
-        CTOKEN_HW_TYPE_DEVICE,    /* type */
+        CTOKEN_HW_TYPE_DEVICE,  /* type */
         1,                      /* expected_version_scheme */
         CTOKEN_ERR_SUCCESS
+    },
+    {
+        7,                      /* test_number */
+        TEST2UB(hw_version_invalid_board_version),
+        CTOKEN_ERR_CBOR_TYPE,   /* expected_result */
+        CTOKEN_HW_TYPE_BOARD,   /* type */
+        1,                      /* expected_version_scheme */
+        CTOKEN_ERR_CLAIM_NOT_PRESENT
+    },
+    {
+        8,                      /* test_number */
+        TEST2UB(hw_version_invalid_chip_version),
+        CTOKEN_ERR_CBOR_TYPE,   /* expected_result */
+        CTOKEN_HW_TYPE_CHIP,    /* type */
+        1,                      /* expected_version_scheme */
+        CTOKEN_ERR_CLAIM_NOT_PRESENT
+    },
+    {
+        9,                      /* test_number */
+        TEST2UB(hw_version_invalid_device_version),
+        CTOKEN_ERR_CBOR_TYPE,   /* expected_result */
+        CTOKEN_HW_TYPE_DEVICE,  /* type */
+        1,                      /* expected_version_scheme */
+        CTOKEN_ERR_CLAIM_NOT_PRESENT
+    },
+    {
+        10,                      /* test_number */
+        TEST2UB(hw_version_invalid_ean_board_version),
+        CTOKEN_ERR_CLAIM_NOT_PRESENT, /* expected_result */
+        CTOKEN_HW_TYPE_BOARD,    /* type */
+        1,                       /* expected_version_scheme */
+        CTOKEN_ERR_CBOR_TYPE
+    },
+    {
+        11,                      /* test_number */
+        TEST2UB(hw_version_invalid_nwf),
+        CTOKEN_ERR_CBOR_NOT_WELL_FORMED, /* expected_result */
+        CTOKEN_HW_TYPE_BOARD,    /* type */
+        1,                       /* expected_version_scheme */
+        CTOKEN_ERR_CLAIM_NOT_PRESENT
+    },
+    {
+        12,                      /* test_number */
+        TEST2UB(hw_version_invalid_ean_board_version),
+        CTOKEN_ERR_CLAIM_NOT_PRESENT, /* expected_result */
+        CTOKEN_HW_TYPE_BOARD,    /* type */
+        1,                       /* expected_version_scheme */
+        CTOKEN_ERR_CBOR_TYPE
+    },
+    {
+        13,                      /* test_number */
+        TEST2UB(hw_version_invalid_version_scheme),
+        CTOKEN_ERR_CLAIM_NOT_PRESENT, /* expected_result */
+        CTOKEN_HW_TYPE_DEVICE,   /* type */
+        1,                       /* expected_version_scheme */
+        CTOKEN_ERR_CLAIM_NOT_PRESENT
+    },
+    {
+        14,                      /* test_number */
+        TEST2UB(hw_version_invalid_version_scheme_type),
+        CTOKEN_ERR_CLAIM_NOT_PRESENT, /* expected_result */
+        CTOKEN_HW_TYPE_DEVICE,   /* type */
+        1,                       /* expected_version_scheme */
+        CTOKEN_ERR_CLAIM_NOT_PRESENT
+    },
+
+    {
+        15,                      /* test_number */
+        TEST2UB(hw_version_invalid_version_scheme_value),
+        CTOKEN_ERR_CLAIM_NOT_PRESENT, /* expected_result */
+        CTOKEN_HW_TYPE_DEVICE,   /* type */
+        1,                       /* expected_version_scheme */
+        CTOKEN_ERR_CLAIM_NOT_PRESENT
     },
 
     {
@@ -2240,7 +2313,7 @@ int32_t hw_version_decode_test(void)
     for(test_case = hw_version_test_inputs;
         !q_useful_buf_c_is_null(test_case->token);
         test_case++) {
-        if(test_case->test_number == 4) {
+        if(test_case->test_number == 11) {
             test_result = 99; /* Used only to set break points for test # */
         }
         test_result = test_one_hw_version(test_case);

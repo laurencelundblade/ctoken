@@ -16,6 +16,50 @@ extern const unsigned char some_submods_bytes[];
 #define some_submods_size 82
 
 
+/* An invalid HW Board version claim -- bstr instead of tstr */
+extern const unsigned char hw_version_invalid_board_version_bytes[];
+#define hw_version_invalid_board_version_size 16
+
+
+/* An invalid HW Chip version claim; float instead of tstr */
+extern const unsigned char hw_version_invalid_chip_version_bytes[];
+#define hw_version_invalid_chip_version_size 21
+
+
+/* An invalid HW device version claim; array instead of tstr */
+extern const unsigned char hw_version_invalid_device_version_bytes[];
+#define hw_version_invalid_device_version_size 16
+
+
+/* EAN HW version is a byte string rather than a text string */
+extern const unsigned char hw_version_invalid_ean_board_version_bytes[];
+#define hw_version_invalid_ean_board_version_size 14
+
+
+/* The value of the hw version is 0x1f an integer with an indefinite */
+/* length. This not-well-formed CBOR that should be caught at the lowest */
+/* layer in the decoder and bubbled up to some top-level error. This is */
+/* to test that path of bubbling up errors. There are lots of other ways */
+/* that CBOR can be invalid here. This is just one to test the error */
+/* propagation. */
+extern const unsigned char hw_version_invalid_nwf_bytes[];
+#define hw_version_invalid_nwf_size        7
+
+/* A valid HW Board version claim */
+extern const unsigned char hw_version_invalid_version_scheme_bytes[];
+#define hw_version_invalid_version_scheme_size 18
+
+
+/* Version scheme is invalid because it is 'true' rather than an integer */
+extern const unsigned char hw_version_invalid_version_scheme_type_bytes[];
+#define hw_version_invalid_version_scheme_type_size 18
+
+
+/* Version scheme is -257. It should be greater than -256 */
+extern const unsigned char hw_version_invalid_version_scheme_value_bytes[];
+#define hw_version_invalid_version_scheme_value_size 20
+
+
 /* A valid HW Board version claim */
 extern const unsigned char hw_version_valid_board_version_bytes[];
 #define hw_version_valid_board_version_size 18

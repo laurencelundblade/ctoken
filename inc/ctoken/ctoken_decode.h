@@ -1186,6 +1186,19 @@ ctoken_decode_profile(struct ctoken_decode_ctx *context,
                       struct q_useful_buf_c    *profile);
 
 
+// TODO: document these
+enum ctoken_err_t
+ctoken_decode_hw_version(struct ctoken_decode_ctx  *me,
+                         enum ctoken_hw_type_t      hw_type,
+                         int32_t                    *version_scheme,
+                         struct q_useful_buf_c      *version);
+
+
+static enum ctoken_err_t
+ctoken_decode_hw_ean_version(struct ctoken_decode_ctx  *me,
+                             enum ctoken_hw_type_t      hw_type,
+                             struct q_useful_buf_c      *version);
+
 /**
  * \brief Decode next claim in token or submodule
  *
@@ -1742,48 +1755,6 @@ ctoken_decode_rewind(struct ctoken_decode_ctx   *me)
 }
 
 
-/* Function not for public use, but shared between implementation files.
- This is the only one so it is stuck in here rather than making a new
- header */
-enum ctoken_err_t get_and_reset_error(QCBORDecodeContext *decode_context);
-
-
-static inline enum ctoken_err_t
-ctoken_decode_hw_version(struct ctoken_decode_ctx  *me,
-                         enum ctoken_hw_type_t      hw_type,
-                         int32_t                    *version_scheme,
-                         struct q_useful_buf_c      *version)
-{
-    enum ctoken_err_t return_value;
-    int64_t           version_scheme_64;
-
-    return_value =  ctoken_decode_tstr(me, (CTOKEN_EAT_LABEL_CHIP_VERSION) + (int64_t)hw_type, version);
-    if(return_value != CTOKEN_ERR_SUCCESS) {
-        goto Done;
-    }
-
-    /* -256 and 65535 are constraints from the PSA token document. */
-    return_value = ctoken_decode_int_constrained(me,
-                                                 CTOKEN_EAT_LABEL_CHIP_VERSION_SCHEME + (int64_t)hw_type,
-                                                 -256,
-                                                 65535,
-                                                &version_scheme_64);
-    if(return_value == CTOKEN_ERR_CLAIM_NOT_PRESENT) {
-        // TODO: what is the version scheme when it is not given?
-        *version_scheme = 99;
-        return_value = CTOKEN_ERR_SUCCESS;
-    }
-    if(return_value != CTOKEN_ERR_SUCCESS) {
-        goto Done;
-    }
-    /* cast is ok because of use of ctoken_decode_int_constrained() */
-    *version_scheme = (int32_t)version_scheme_64;
-
-    Done:
-    return return_value;
-}
-
-
 static inline enum ctoken_err_t
 ctoken_decode_hw_ean_version(struct ctoken_decode_ctx  *me,
                              enum ctoken_hw_type_t      hw_type,
@@ -1792,6 +1763,11 @@ ctoken_decode_hw_ean_version(struct ctoken_decode_ctx  *me,
     return ctoken_decode_tstr(me, CTOKEN_EAT_LABEL_EAN_CHIP_VERSION + (int64_t)hw_type, version);
 }
 
+
+/* Function not for public use, but shared between implementation files.
+ This is the only one so it is stuck in here rather than making a new
+ header */
+enum ctoken_err_t get_and_reset_error(QCBORDecodeContext *decode_context);
 
 #ifdef __cplusplus
 }
