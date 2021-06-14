@@ -87,6 +87,44 @@ extern "C" {
  *
  * \anchor decode-errors
  *
+ * The error handling model for for fetching claims makes use of ctokens internal error state.
+ * The claims are fetched one after another with the error check only being performed after the last one is fetched
+ * by a call to get_error() before any of the claim values are referenced. This makes the decoding implementation neat.
+ *
+ * If there is some dependency where the value of one claim needs to be used to know what other
+ * claims there should be the error check can be performed early. Fetching the error status is
+ * very inexpensive.
+ *
+ * The fetching of one claim is independent of fetching other claims because claim fetching is
+ * just map seaching by label. As long as the errors encountered are not because the
+ * CBOR is not-well-formed or in the structure of the token, the internal error can be reset
+ * so that more fetching can happen. This is done by calling xxxxx
+ *
+ * For example, if the latitude in the location claim is a boolean value, the retrieval of the
+ * location claim will fail, but that error can be reset and decoding for other claims will be fine.
+ *
+ * On the other hand, if the CBOR of the location claim is not-well formed, then the whole
+ * CBOR parse of the token will fail and no other claims can be fetched. This is because
+ * CBOR is not a redundant data format. You have to be able to decode every item.
+ *
+ * When searching a CBOR map by label, every item in the map has to be successfully decoded
+ * in order to complete the traversal. Thus, even if the item that you are trying to decode is
+ * good and correct, it will not be possible to retrive it is the ones next to it are
+ * not well fored because the CBOR tree traversl can't be performed. If the ones next to
+ * it are invalid (invalid has a specific meaning in CBOR), then the traversal can complete
+ * and your value can be retrieved.
+ *
+ * There is no FInish method like QCBOR has because it is unnecssary. It is unneccesary to re
+ * trive all the claims in a token when decoding. Retrrieval of any claim in a token will cause
+ * the general validation of the CBOR of the whole token to happen. All that is necessary is to
+ * check the error before referenceing any decoded claim values.
+ *
+ *
+ *
+ *
+ *
+ *
+ *
  * TODO: fill in error handling
  */
 
@@ -300,6 +338,11 @@ static enum ctoken_err_t
 ctoken_decode_get_error(struct ctoken_decode_ctx *context);
 
 
+
+// TODO: document this
+static inline enum ctoken_err_t
+ctoken_decode_get_and_reset_error(struct ctoken_decode_ctx *me);
+
 /**
  * \brief Return unprocessed tags from most recent token validation
  *
@@ -396,7 +439,7 @@ ctoken_decode_borrow_context(struct ctoken_decode_ctx *context);
  * If an error occurs the value 0 will be returned and the error
  * inside the \c ctoken_decode_ctx will be set.
  */
-enum ctoken_err_t
+void
 ctoken_decode_int(struct ctoken_decode_ctx *context,
                   int64_t                   label,
                   int64_t                  *claim);
@@ -420,7 +463,7 @@ ctoken_decode_int(struct ctoken_decode_ctx *context,
  * This is useful for claims that are a range of integer values that
  * usually fit into an enumerated type.
  */
-enum ctoken_err_t
+void
 ctoken_decode_int_constrained(struct ctoken_decode_ctx *context,
                               int64_t                   label,
                               int64_t                   min,
@@ -770,7 +813,7 @@ ctoken_decode_audience(struct ctoken_decode_ctx *context,
  * [RFC 8392](https://tools.ietf.org/html/rfc8392#section-3.1.4)
  * and [RFC 7519] (https://tools.ietf.org/html/rfc7519#section-4.1.4).
  */
-static inline enum ctoken_err_t
+static inline void
 ctoken_decode_expiration(struct ctoken_decode_ctx *context,
                          int64_t                  *expiration);
 
@@ -804,7 +847,7 @@ ctoken_decode_expiration(struct ctoken_decode_ctx *context,
  * [RFC 8392](https://tools.ietf.org/html/rfc8392#section-3.1.5)
  * and [RFC 7519] (https://tools.ietf.org/html/rfc7519#section-4.1.5).
  */
-static inline enum ctoken_err_t
+static inline void
 ctoken_decode_not_before(struct ctoken_decode_ctx *context,
                          int64_t                  *not_before);
 
@@ -841,7 +884,7 @@ ctoken_decode_not_before(struct ctoken_decode_ctx *context,
  * and [RFC 7519] (https://tools.ietf.org/html/rfc7519#section-4.1.6).
  * This claim is also used by (EAT)[https://tools.ietf.org/html/draft-ietf-rats-eat-04].
  */
-static inline enum ctoken_err_t
+static inline void
 ctoken_decode_iat(struct ctoken_decode_ctx *context,
                   int64_t                  *iat);
 
@@ -1012,7 +1055,7 @@ ctoken_decode_origination(struct ctoken_decode_ctx *context,
  * The security level gives a rough indication of how security
  * the HW and SW are.  See \ref ctoken_security_level_t.
  */
-static enum ctoken_err_t
+static void
 ctoken_decode_security_level(struct ctoken_decode_ctx         *context,
                              enum ctoken_security_level_t *security_level);
 
@@ -1072,7 +1115,7 @@ ctoken_decode_secure_boot(struct ctoken_decode_ctx *context,
  * The security level gives a rough indication of how security
  * the HW and SW are.  See \ref ctoken_security_level_t.
  */
-static enum ctoken_err_t
+static void
 ctoken_decode_debug_state(struct ctoken_decode_ctx  *context,
                           enum ctoken_debug_level_t *debug_state);
 
@@ -1129,7 +1172,7 @@ ctoken_decode_uptime(struct ctoken_decode_ctx *context,
  * the error state is entered. It is returned later when
  * ctoken_encode_finish() is called.
  */
-static enum ctoken_err_t
+static void
 ctoken_decode_intended_use(struct ctoken_decode_ctx   *context,
                            enum ctoken_intended_use_t *use);
 
@@ -1483,6 +1526,15 @@ ctoken_decode_get_error(struct ctoken_decode_ctx *me)
 }
 
 
+static inline enum ctoken_err_t
+ctoken_decode_get_and_reset_error(struct ctoken_decode_ctx *me)
+{
+    enum ctoken_err_t error =  me->last_error;
+    me->last_error = CTOKEN_ERR_SUCCESS;
+    return error;
+}
+
+
 static inline enum ctoken_protection_t
 ctoken_decode_get_protection_type(const struct ctoken_decode_ctx *me)
 {
@@ -1521,26 +1573,26 @@ ctoken_decode_audience(struct ctoken_decode_ctx *me,
 }
 
 
-static inline enum ctoken_err_t
+void
 ctoken_decode_expiration(struct ctoken_decode_ctx *me,
                          int64_t                  *expiration)
 {
-    return ctoken_decode_int(me, CTOKEN_CWT_LABEL_EXPIRATION, expiration);
+    ctoken_decode_int(me, CTOKEN_CWT_LABEL_EXPIRATION, expiration);
 }
 
-static inline enum ctoken_err_t
+static inline void
 ctoken_decode_not_before(struct ctoken_decode_ctx *me,
                          int64_t                  *not_before)
 {
-    return ctoken_decode_int(me, CTOKEN_CWT_LABEL_NOT_BEFORE, not_before);
+    ctoken_decode_int(me, CTOKEN_CWT_LABEL_NOT_BEFORE, not_before);
 }
 
 
-static inline enum ctoken_err_t
+static inline void
 ctoken_decode_iat(struct ctoken_decode_ctx *me,
                   int64_t                  *iat)
 {
-    return ctoken_decode_int(me, CTOKEN_CWT_LABEL_NOT_BEFORE, iat);
+    ctoken_decode_int(me, CTOKEN_CWT_LABEL_NOT_BEFORE, iat);
 }
 
 
@@ -1612,28 +1664,25 @@ ctoken_decode_origination(struct ctoken_decode_ctx *me,
 }
 
 
-static inline enum ctoken_err_t
+static inline void
 ctoken_decode_security_level(struct ctoken_decode_ctx         *me,
                              enum ctoken_security_level_t *security_level)
 {
-    enum ctoken_err_t return_value;
-
-    return_value = ctoken_decode_int_constrained(me,
+    ctoken_decode_int_constrained(me,
                                              CTOKEN_EAT_LABEL_SECURITY_LEVEL,
                                              EAT_SL_UNRESTRICTED,
                                              EAT_SL_HARDWARE,
                                              (int64_t *)security_level);
 
 #ifndef CTOKEN_DISABLE_TEMP_LABELS
-    if(return_value == CTOKEN_ERR_CLAIM_NOT_PRESENT) {
-        return_value = ctoken_decode_int_constrained(me,
+    if(ctoken_decode_get_and_reset_error(me) == CTOKEN_ERR_CLAIM_NOT_PRESENT) {
+        ctoken_decode_int_constrained(me,
                                              CTOKEN_TEMP_EAT_LABEL_SECURITY_LEVEL,
                                              EAT_SL_UNRESTRICTED,
                                              EAT_SL_HARDWARE,
                                              (int64_t *)security_level);
     }
 #endif
-    return return_value;
 }
 
 
@@ -1666,35 +1715,32 @@ ctoken_decode_secure_boot(struct ctoken_decode_ctx *me,
 }
 
 
-static inline enum ctoken_err_t
+static inline void
 ctoken_decode_debug_state(struct ctoken_decode_ctx  *me,
                           enum ctoken_debug_level_t *debug_level)
 {
-    enum ctoken_err_t return_value;
-
-    return_value = ctoken_decode_int_constrained(me,
-                                             CTOKEN_TEMP_EAT_LABEL_DEBUG_STATE,
+    ctoken_decode_int_constrained(me,
+                                             CTOKEN_EAT_LABEL_DEBUG_STATE,
                                              CTOKEN_DEBUG_ENABLED,
                                              CTOKEN_DEBUG_DISABLED_FULL_PERMANENT,
                                              (int64_t *)debug_level);
 #ifndef CTOKEN_DISABLE_TEMP_LABELS
-    if(return_value == CTOKEN_ERR_CLAIM_NOT_PRESENT) {
-        return ctoken_decode_int_constrained(me,
-                                             CTOKEN_EAT_LABEL_DEBUG_STATE,
+    if(ctoken_decode_get_and_reset_error(me) == CTOKEN_ERR_CLAIM_NOT_PRESENT) {
+        ctoken_decode_int_constrained(me,
+                                             CTOKEN_TEMP_EAT_LABEL_DEBUG_STATE,
                                              CTOKEN_DEBUG_ENABLED,
                                              CTOKEN_DEBUG_DISABLED_FULL_PERMANENT,
                                              (int64_t *)debug_level);
     }
 #endif
-    return return_value;
 }
 
 
-static inline enum ctoken_err_t
+static inline void
 ctoken_decode_intended_use(struct ctoken_decode_ctx    *me,
                            enum ctoken_intended_use_t  *use)
 {
-    return ctoken_decode_int_constrained(me,
+    ctoken_decode_int_constrained(me,
                                          CTOKEN_EAT_LABEL_INTENDED_USE,
                                          CTOKEN_USE_GENERAL,
                                          CTOKEN_USE_PROOF_OF_POSSSION,

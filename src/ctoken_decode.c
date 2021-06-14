@@ -330,51 +330,39 @@ Done:
 /*
  * Public function. See ctoken_decode.h
  */
-enum ctoken_err_t
+void
 ctoken_decode_int(struct ctoken_decode_ctx *me,
                   int64_t                   label,
                   int64_t                  *integer)
 {
-    enum ctoken_err_t return_value;
-
     if(me->last_error != CTOKEN_ERR_SUCCESS) {
-        return_value = me->last_error;
-        *integer = 0;
-        goto Done;
+        return;
     }
 
     QCBORDecode_GetInt64InMapN(&(me->qcbor_decode_context), label, integer);
 
-    return_value = get_and_reset_error(&(me->qcbor_decode_context));
-
-Done:
-    return return_value;
+    me->last_error = get_and_reset_error(&(me->qcbor_decode_context));
 }
 
 
 /*
  * Public function. See ctoken_eat_encode.h
  */
-enum ctoken_err_t
+void
 ctoken_decode_int_constrained(struct ctoken_decode_ctx *me,
                               int64_t                   label,
                               int64_t                   min,
                               int64_t                   max,
                               int64_t                  *claim)
 {
-    enum ctoken_err_t return_value;
-
-    return_value = ctoken_decode_int(me, label, claim);
-    if(return_value != CTOKEN_ERR_SUCCESS) {
-        goto Done;
+    ctoken_decode_int(me, label, claim);
+    if(me->last_error != CTOKEN_ERR_SUCCESS) {
+        return;
     }
 
     if(*claim < min || *claim > max) {
-        return_value = CTOKEN_ERR_CLAIM_RANGE;
+        me->last_error = CTOKEN_ERR_CLAIM_RANGE;
     }
-
-Done:
-    return return_value;
 }
 
 

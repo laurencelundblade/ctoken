@@ -83,7 +83,8 @@ int32_t cwt_test()
     }
 
     /* Get the expiration and see that it is what was expected */
-    result = ctoken_decode_expiration(&decode_context, &expiration);
+    ctoken_decode_expiration(&decode_context, &expiration);
+    result = ctoken_decode_get_error(&decode_context);
     if(result) {
         return 400 +(int32_t)result;
     }

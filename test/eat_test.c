@@ -182,7 +182,8 @@ int32_t basic_eat_test(void)
         return 799;
     }
 
-    result = ctoken_decode_security_level(&decode_context, &security_level);
+    ctoken_decode_security_level(&decode_context, &security_level);
+    result = ctoken_decode_get_error(&decode_context);
     if(result) {
         return 800 + (int32_t)result;
     }
@@ -198,7 +199,8 @@ int32_t basic_eat_test(void)
         return 999;
     }
 
-    result = ctoken_decode_debug_state(&decode_context, &debug_level);
+    ctoken_decode_debug_state(&decode_context, &debug_level);
+    result = ctoken_decode_get_error(&decode_context);
     if(result) {
         return 900 + (int32_t)result;
     }
@@ -231,7 +233,8 @@ int32_t basic_eat_test(void)
         return 1299;
     }
 
-    result = ctoken_decode_intended_use(&decode_context, &use);
+    ctoken_decode_intended_use(&decode_context, &use);
+    result = ctoken_decode_get_error(&decode_context);
     if(result) {
         return 1500 + (int32_t)result;
     }
@@ -1350,7 +1353,8 @@ int32_t debug_and_boot_test()
         return 500 + (int32_t)error;
     }
 
-    error = ctoken_decode_debug_state(&decode_context, &debug_state);
+    ctoken_decode_debug_state(&decode_context, &debug_state);
+    error = ctoken_decode_get_error(&decode_context);
     if(error != CTOKEN_ERR_SUCCESS || debug_state != CTOKEN_DEBUG_DISABLED_SINCE_BOOT) {
         return 600 + (int32_t)error;
     }
@@ -1394,15 +1398,17 @@ int32_t debug_and_boot_test()
 
 
     /* --- decode debug state that is wrong type --- */
-    setup_decode_test(UsefulBuf_FROM_BYTE_ARRAY_LITERAL(bad_debug1),  out, &decode_context);
-    error = ctoken_decode_debug_state(&decode_context, &debug_state);
+    setup_decode_test(UsefulBuf_FROM_BYTE_ARRAY_LITERAL(bad_debug1), out, &decode_context);
+    ctoken_decode_debug_state(&decode_context, &debug_state);
+    error = ctoken_decode_get_error(&decode_context);
     if(error != CTOKEN_ERR_CBOR_TYPE) {
         return 1100 + (int32_t)error;
     }
 
     /* --- decode debug state that is not well formed --- */
     setup_decode_test(UsefulBuf_FROM_BYTE_ARRAY_LITERAL(bad_debug2),  out, &decode_context);
-    error = ctoken_decode_debug_state(&decode_context, &debug_state);
+    ctoken_decode_debug_state(&decode_context, &debug_state);
+    error = ctoken_decode_get_error(&decode_context);
     if(error != CTOKEN_ERR_CBOR_NOT_WELL_FORMED) {
         return 1200 + (int32_t)error;
     }
@@ -1410,7 +1416,8 @@ int32_t debug_and_boot_test()
 
     /* --- decode debug state that is not a valid value --- */
     setup_decode_test(UsefulBuf_FROM_BYTE_ARRAY_LITERAL(bad_debug3),  out, &decode_context);
-    error = ctoken_decode_debug_state(&decode_context, &debug_state);
+    ctoken_decode_debug_state(&decode_context, &debug_state);
+    error = ctoken_decode_get_error(&decode_context);
     if(error != CTOKEN_ERR_CLAIM_RANGE) {
         return 1300 + (int32_t)error;
     }

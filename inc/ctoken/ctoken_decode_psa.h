@@ -157,7 +157,7 @@ ctoken_decode_psa_profile_definition(struct ctoken_decode_ctx *context,
  *
  * Also called the caller ID.
  */
-static enum ctoken_err_t
+static void
 ctoken_decode_psa_client_id(struct ctoken_decode_ctx *context,
                             int32_t                  *client_id);
 
@@ -293,25 +293,21 @@ ctoken_decode_psa_implementation_id(struct ctoken_decode_ctx *me,
 }
 
 
-static inline enum ctoken_err_t
+static inline void
 ctoken_decode_psa_client_id(struct ctoken_decode_ctx *me,
                             int32_t                  *caller_id)
 {
-    enum ctoken_err_t return_value;
     int64_t caller_id_64;
 
-    return_value = ctoken_decode_int(me, CTOKEN_PSA_LABEL_CLIENT_ID, &caller_id_64);
-    if(return_value != CTOKEN_ERR_SUCCESS) {
-        goto Done;
+    ctoken_decode_int(me, CTOKEN_PSA_LABEL_CLIENT_ID, &caller_id_64);
+    if(me->last_error != CTOKEN_ERR_SUCCESS) {
+        return;
     }
     if(caller_id_64 > INT32_MAX || caller_id_64 < INT32_MIN) {
-        return_value = CTOKEN_ERR_INTEGER_VALUE;
-        goto Done;
+        me->last_error = CTOKEN_ERR_INTEGER_VALUE;
+        return;
     }
     *caller_id = (int32_t)caller_id_64;
-
-Done:
-    return return_value;
 }
 
 
