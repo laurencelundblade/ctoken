@@ -505,7 +505,7 @@ ctoken_decode_int_constrained(struct ctoken_decode_ctx *context,
  *  If an error occurs the value 0 will be returned and the error
  *  inside the \c ctoken_decode_ctx will be set.
  */
-enum ctoken_err_t
+void
 ctoken_decode_uint(struct ctoken_decode_ctx *context,
                    int64_t                  label,
                    uint64_t                *claim);
@@ -538,7 +538,7 @@ ctoken_decode_uint(struct ctoken_decode_ctx *context,
  * and the error state inside \c ctoken_decode_ctx will
  * be set.
  */
-enum ctoken_err_t
+void
 ctoken_decode_bstr(struct ctoken_decode_ctx  *context,
                    int64_t                    label,
                    struct q_useful_buf_c     *claim);
@@ -573,7 +573,7 @@ ctoken_decode_bstr(struct ctoken_decode_ctx  *context,
  * and the error state inside \c ctoken_decode_ctx will
  * be set.
  */
-enum ctoken_err_t
+void
 ctoken_decode_tstr(struct ctoken_decode_ctx *context,
                    int64_t                   label,
                    struct q_useful_buf_c    *claim);
@@ -588,7 +588,7 @@ ctoken_decode_tstr(struct ctoken_decode_ctx *context,
  *
  * \return An error from \ref CTOKEN_ERR_t.
  */
-enum ctoken_err_t
+void
 ctoken_decode_bool(struct ctoken_decode_ctx *context,
                    int64_t                   label,
                    bool                     *claim);
@@ -603,7 +603,7 @@ ctoken_decode_bool(struct ctoken_decode_ctx *context,
  *
  * \return An error from \ref CTOKEN_ERR_t.
  */
-enum ctoken_err_t
+void
 ctoken_decode_double(struct ctoken_decode_ctx *context,
                      int64_t                  label,
                      double                  *claim);
@@ -722,7 +722,7 @@ ctoken_decode_exit_map(struct ctoken_decode_ctx *context);
  *  [RFC 8392](https://tools.ietf.org/html/rfc8392#section-3.1.1)
  * and [RFC 7519] (https://tools.ietf.org/html/rfc7519#section-4.1.1).
  */
-static inline enum ctoken_err_t
+static inline void
 ctoken_decode_issuer(struct ctoken_decode_ctx *context,
                      struct q_useful_buf_c    *issuer);
 
@@ -750,7 +750,7 @@ ctoken_decode_issuer(struct ctoken_decode_ctx *context,
  * [RFC 8392](https://tools.ietf.org/html/rfc8392#section-3.1.2)
  * and [RFC 7519] (https://tools.ietf.org/html/rfc7519#section-4.1.2).
  */
-static inline enum ctoken_err_t
+static inline void
 ctoken_decode_subject(struct ctoken_decode_ctx *context,
                       struct q_useful_buf_c    *subject);
 
@@ -779,7 +779,7 @@ ctoken_decode_subject(struct ctoken_decode_ctx *context,
  * described in [RFC 8392](https://tools.ietf.org/html/rfc8392#section-3.1.3)
  * and [RFC 7519] (https://tools.ietf.org/html/rfc7519#section-4.1.3).
  */
-static inline enum ctoken_err_t
+static inline void
 ctoken_decode_audience(struct ctoken_decode_ctx *context,
                        struct q_useful_buf_c    *audience);
 
@@ -914,7 +914,7 @@ ctoken_decode_iat(struct ctoken_decode_ctx *context,
  * and [RFC 7519] (https://tools.ietf.org/html/rfc7519#section-4.1.7).
  * This claim is also used by (EAT)[https://tools.ietf.org/html/draft-ietf-rats-eat-04].
  */
-static inline enum ctoken_err_t
+static inline void
 ctoken_decode_cti(struct ctoken_decode_ctx *context,
                   struct q_useful_buf_c    *cti);
 
@@ -940,7 +940,7 @@ ctoken_decode_cti(struct ctoken_decode_ctx *context,
  *
  * This gets the nonce claim out of the token.
  */
-static inline enum ctoken_err_t
+static inline void
 ctoken_decode_nonce(struct ctoken_decode_ctx *context,
                     struct q_useful_buf_c    *nonce);
 
@@ -969,7 +969,7 @@ ctoken_decode_nonce(struct ctoken_decode_ctx *context,
  * The UEID is the Universal Entity ID, an opaque binary blob that uniquely
  * identifies the device.
  */
-static inline enum ctoken_err_t
+static inline void
 ctoken_decode_ueid(struct ctoken_decode_ctx *context,
                    struct q_useful_buf_c    *ueid);
 
@@ -997,7 +997,7 @@ ctoken_decode_ueid(struct ctoken_decode_ctx *context,
  *
  * The OEMID is an opaque binary blob that identifies the manufacturer.
  */
-static inline enum ctoken_err_t
+static inline void
 ctoken_decode_oemid(struct ctoken_decode_ctx *context,
                     struct q_useful_buf_c    *oemid);
 
@@ -1026,7 +1026,7 @@ ctoken_decode_oemid(struct ctoken_decode_ctx *context,
  * This describes the part of the device that created the token. It
  * is a text string or a URI.
  */
-static inline enum ctoken_err_t
+static inline void
 ctoken_decode_origination(struct ctoken_decode_ctx *context,
                           struct q_useful_buf_c    *origination);
 
@@ -1085,7 +1085,7 @@ ctoken_decode_security_level(struct ctoken_decode_ctx         *context,
  * The security level gives a rough indication of how security
  * the HW and SW are.  See \ref ctoken_security_level_t.
  */
-static enum ctoken_err_t
+static void
 ctoken_decode_secure_boot(struct ctoken_decode_ctx *context,
                           bool                     *secure_boot_enabled);
 
@@ -1155,7 +1155,7 @@ ctoken_decode_location(struct ctoken_decode_ctx     *context,
  * the error state is entered. It is returned later when
  * ctoken_encode_finish() is called.
  */
-static enum ctoken_err_t
+static void
 ctoken_decode_uptime(struct ctoken_decode_ctx *context,
                      uint64_t                 *uptime);
 
@@ -1187,7 +1187,7 @@ ctoken_decode_intended_use(struct ctoken_decode_ctx   *context,
  *
  * See also ctoken_decode_profile_uri() and ctoken_decode_profile().
  */
-static inline enum ctoken_err_t
+static inline void
 ctoken_decode_profile_oid(struct ctoken_decode_ctx *context,
                           struct q_useful_buf_c    *uri);
 
@@ -1202,7 +1202,7 @@ ctoken_decode_profile_oid(struct ctoken_decode_ctx *context,
  *
  * See also ctoken_decode_profile_oid() and ctoken_decode_profile().
  */
-static inline enum ctoken_err_t
+static inline void
 ctoken_decode_profile_uri(struct ctoken_decode_ctx *context,
                           struct q_useful_buf_c    *uri);
 
@@ -1223,7 +1223,7 @@ ctoken_decode_profile_uri(struct ctoken_decode_ctx *context,
  * See also ctoken_decode_profile_oid() and
  * ctoken_decode_profile_uri().
  */
-static inline enum ctoken_err_t
+static inline void
 ctoken_decode_profile(struct ctoken_decode_ctx *context,
                       bool                     *is_oid_format,
                       struct q_useful_buf_c    *profile);
@@ -1549,27 +1549,27 @@ ctoken_decode_borrow_context(struct ctoken_decode_ctx *me)
 }
 
 
-static inline enum ctoken_err_t
+static inline void
 ctoken_decode_issuer(struct ctoken_decode_ctx *me,
                      struct q_useful_buf_c    *issuer)
 {
-    return ctoken_decode_tstr(me, CTOKEN_CWT_LABEL_ISSUER, issuer);
+    ctoken_decode_tstr(me, CTOKEN_CWT_LABEL_ISSUER, issuer);
 }
 
 
-static inline enum ctoken_err_t
+static inline void
 ctoken_decode_subject(struct ctoken_decode_ctx *me,
                       struct q_useful_buf_c    *subject)
 {
-    return ctoken_decode_tstr(me, CTOKEN_CWT_LABEL_SUBJECT, subject);
+    ctoken_decode_tstr(me, CTOKEN_CWT_LABEL_SUBJECT, subject);
 }
 
 
-static inline enum ctoken_err_t
+static inline void
 ctoken_decode_audience(struct ctoken_decode_ctx *me,
                        struct q_useful_buf_c    *audience)
 {
-    return ctoken_decode_tstr(me, CTOKEN_CWT_LABEL_AUDIENCE, audience);
+    ctoken_decode_tstr(me, CTOKEN_CWT_LABEL_AUDIENCE, audience);
 }
 
 
@@ -1596,71 +1596,64 @@ ctoken_decode_iat(struct ctoken_decode_ctx *me,
 }
 
 
-static inline enum ctoken_err_t
+static inline void
 ctoken_decode_cti(struct ctoken_decode_ctx *me,
                   struct q_useful_buf_c    *cti)
 {
-    return ctoken_decode_bstr(me, CTOKEN_CWT_LABEL_CTI,  cti);
+    ctoken_decode_bstr(me, CTOKEN_CWT_LABEL_CTI,  cti);
 }
 
 
-static inline enum ctoken_err_t
+static inline void
 ctoken_decode_nonce(struct ctoken_decode_ctx *me,
                     struct q_useful_buf_c    *nonce)
 {
-    enum ctoken_err_t return_value;
-
-    return_value = ctoken_decode_bstr(me, CTOKEN_EAT_LABEL_NONCE, nonce);
+    ctoken_decode_bstr(me, CTOKEN_EAT_LABEL_NONCE, nonce);
 
 #ifndef CTOKEN_DISABLE_TEMP_LABELS
-    if(return_value == CTOKEN_ERR_CLAIM_NOT_PRESENT) {
-       return_value = ctoken_decode_bstr(me, CTOKEN_TEMP_EAT_LABEL_NONCE, nonce);
+    if(me->last_error == CTOKEN_ERR_CLAIM_NOT_PRESENT) {
+        me->last_error = CTOKEN_ERR_SUCCESS;
+        ctoken_decode_bstr(me, CTOKEN_TEMP_EAT_LABEL_NONCE, nonce);
     }
 #endif
-
-    return return_value;
 }
 
 
-static inline enum ctoken_err_t
+static inline void
 ctoken_decode_ueid(struct ctoken_decode_ctx *me,
                    struct q_useful_buf_c    *ueid)
 {
-    enum ctoken_err_t return_value;
-
-    return_value = ctoken_decode_bstr(me, CTOKEN_EAT_LABEL_UEID, ueid);
+    ctoken_decode_bstr(me, CTOKEN_EAT_LABEL_UEID, ueid);
 
 #ifndef CTOKEN_DISABLE_TEMP_LABELS
-    if(return_value == CTOKEN_ERR_CLAIM_NOT_PRESENT) {
-        return_value = ctoken_decode_bstr(me, CTOKEN_TEMP_EAT_LABEL_UEID, ueid);
+    if(me->last_error == CTOKEN_ERR_CLAIM_NOT_PRESENT) {
+        me->last_error = CTOKEN_ERR_SUCCESS;
+        ctoken_decode_bstr(me, CTOKEN_TEMP_EAT_LABEL_UEID, ueid);
     }
 #endif
-    return return_value;
 }
 
 
-static inline enum ctoken_err_t
+static inline void
 ctoken_decode_oemid(struct ctoken_decode_ctx *me,
                     struct q_useful_buf_c    *oemid)
 {
-    enum ctoken_err_t return_value;
-
-    return_value = ctoken_decode_bstr(me, CTOKEN_EAT_LABEL_OEMID, oemid);
+    ctoken_decode_bstr(me, CTOKEN_EAT_LABEL_OEMID, oemid);
 
 #ifndef CTOKEN_DISABLE_TEMP_LABELS
-    if(return_value == CTOKEN_ERR_CLAIM_NOT_PRESENT) {
-        return_value = ctoken_decode_bstr(me, CTOKEN_TEMP_EAT_LABEL_OEMID, oemid);
+    if(me->last_error == CTOKEN_ERR_CLAIM_NOT_PRESENT) {
+        me->last_error = CTOKEN_ERR_SUCCESS;
+        ctoken_decode_bstr(me, CTOKEN_TEMP_EAT_LABEL_OEMID, oemid);
     }
 #endif
-    return return_value;
 }
 
 
-static inline enum ctoken_err_t
+static inline void
 ctoken_decode_origination(struct ctoken_decode_ctx *me,
                           struct q_useful_buf_c    *origination)
 {
-    return ctoken_decode_tstr(me, CTOKEN_EAT_LABEL_ORIGINATION, origination);
+    ctoken_decode_tstr(me, CTOKEN_EAT_LABEL_ORIGINATION, origination);
 }
 
 
@@ -1686,32 +1679,29 @@ ctoken_decode_security_level(struct ctoken_decode_ctx         *me,
 }
 
 
-static inline enum ctoken_err_t
+static inline void
 ctoken_decode_uptime(struct ctoken_decode_ctx *me,
                      uint64_t                 *uptime)
 {
-    return ctoken_decode_uint(me, CTOKEN_EAT_LABEL_UPTIME, uptime);
+    ctoken_decode_uint(me, CTOKEN_EAT_LABEL_UPTIME, uptime);
 }
 
 
-static inline enum ctoken_err_t
+static inline void
 ctoken_decode_secure_boot(struct ctoken_decode_ctx *me,
                           bool                     *secure_boot_enabled)
 {
-    enum ctoken_err_t return_value;
+    ctoken_decode_bool(me, CTOKEN_EAT_LABEL_SECURE_BOOT, secure_boot_enabled);
 
-    return_value = ctoken_decode_bool(me,
-                                      CTOKEN_EAT_LABEL_SECURE_BOOT,
-                                      secure_boot_enabled);
 #ifndef CTOKEN_DISABLE_TEMP_LABELS
-    if(return_value == CTOKEN_ERR_CLAIM_NOT_PRESENT) {
-        return_value = ctoken_decode_bool(me,
+    if(ctoken_decode_get_error(me) == CTOKEN_ERR_CLAIM_NOT_PRESENT) {
+        // TODO: fix all the other occurances of this construct
+        (void)ctoken_decode_get_and_reset_error(me);
+        ctoken_decode_bool(me,
                                           CTOKEN_TEMP_EAT_LABEL_SECURE_BOOT,
                                           secure_boot_enabled);
     }
 #endif
-
-    return return_value;
 }
 
 
@@ -1748,36 +1738,33 @@ ctoken_decode_intended_use(struct ctoken_decode_ctx    *me,
 }
 
 
-static inline enum ctoken_err_t
+static inline void
 ctoken_decode_profile_uri(struct ctoken_decode_ctx *me,
                           struct q_useful_buf_c    *profile)
 {
-    return ctoken_decode_tstr(me, CTOKEN_EAT_LABEL_PROFILE, profile);
+    ctoken_decode_tstr(me, CTOKEN_EAT_LABEL_PROFILE, profile);
 }
 
 
-static inline enum ctoken_err_t
+static inline void
 ctoken_decode_profile_oid(struct ctoken_decode_ctx *me,
                           struct q_useful_buf_c    *profile)
 {
-    return ctoken_decode_bstr(me, CTOKEN_EAT_LABEL_PROFILE, profile);
+    ctoken_decode_bstr(me, CTOKEN_EAT_LABEL_PROFILE, profile);
 }
 
-static inline enum ctoken_err_t
+static inline void
 ctoken_decode_profile(struct ctoken_decode_ctx *me,
                       bool                     *is_oid_format,
                       struct q_useful_buf_c    *profile)
 {
-    enum ctoken_err_t err;
-
     *is_oid_format = false;
-    err = ctoken_decode_profile_uri(me, profile);
-    if(err == CTOKEN_ERR_CBOR_TYPE) {
+    ctoken_decode_profile_uri(me, profile);
+    if(ctoken_decode_get_error(me) == CTOKEN_ERR_CBOR_TYPE) {
+        ctoken_decode_get_and_reset_error(me);
         *is_oid_format = true;
-        err = ctoken_decode_profile_oid(me, profile);
+        ctoken_decode_profile_oid(me, profile);
     }
-
-    return err;
 }
 
 

@@ -150,7 +150,8 @@ int32_t basic_eat_test(void)
         return 300 + (int32_t)result;
     }
 
-    result = ctoken_decode_nonce(&decode_context, &nonce);
+    ctoken_decode_nonce(&decode_context, &nonce);
+    result = ctoken_decode_get_and_reset_error(&decode_context);
     if(result) {
         return 400 + (int32_t)result;
     }
@@ -158,7 +159,9 @@ int32_t basic_eat_test(void)
         return 499;
     }
 
-    result = ctoken_decode_ueid(&decode_context, &ueid);
+    ctoken_decode_ueid(&decode_context, &ueid);
+    result = ctoken_decode_get_and_reset_error(&decode_context);
+
     if(result) {
         return 500 + (int32_t)result;
     }
@@ -166,7 +169,9 @@ int32_t basic_eat_test(void)
         return 599;
     }
 
-    result = ctoken_decode_oemid(&decode_context, &oemid);
+    ctoken_decode_oemid(&decode_context, &oemid);
+    result = ctoken_decode_get_and_reset_error(&decode_context);
+
     if(result) {
         return 600 + (int32_t)result;
     }
@@ -174,7 +179,8 @@ int32_t basic_eat_test(void)
         return 699;
     }
 
-    result = ctoken_decode_origination(&decode_context, &origination);
+    ctoken_decode_origination(&decode_context, &origination);
+    result = ctoken_decode_get_and_reset_error(&decode_context);
     if(result) {
         return 700 + (int32_t)result;
     }
@@ -191,7 +197,8 @@ int32_t basic_eat_test(void)
         return 899;
     }
 
-    result = ctoken_decode_secure_boot(&decode_context, &secure_boot);
+    ctoken_decode_secure_boot(&decode_context, &secure_boot);
+    result = ctoken_decode_get_error(&decode_context);
     if(result) {
         return 900 + (int32_t)result;
     }
@@ -225,7 +232,8 @@ int32_t basic_eat_test(void)
     }
 
 
-    result = ctoken_decode_uptime(&decode_context, &uptime);
+    ctoken_decode_uptime(&decode_context, &uptime);
+    result = ctoken_decode_get_and_reset_error(&decode_context);
     if(result) {
         return 1200 + (int32_t)result;
     }
@@ -354,7 +362,9 @@ int32_t submods_test(void)
          return 300 + (int32_t)result;
      }
 
-     result = ctoken_decode_nonce(&decode_context, &nonce);
+     ctoken_decode_nonce(&decode_context, &nonce);
+     result = ctoken_decode_get_and_reset_error(&decode_context);
+
      if(result) {
          return 400 + (int32_t)result;
      }
@@ -364,7 +374,8 @@ int32_t submods_test(void)
 
     ctoken_decode_enter_named_submod(&decode_context, "sub1");
 
-    result = ctoken_decode_ueid(&decode_context, &ueid);
+    ctoken_decode_ueid(&decode_context, &ueid);
+    result = ctoken_decode_get_and_reset_error(&decode_context);
     if(result) {
         return 500 + (int32_t)result;
     }
@@ -402,7 +413,9 @@ int32_t submods_test(void)
         return 540;
     }
 
-    result = ctoken_decode_oemid(&decode_context, &oemid);
+    ctoken_decode_oemid(&decode_context, &oemid);
+    result = ctoken_decode_get_and_reset_error(&decode_context);
+
     if(result) {
         return 600 + (int32_t)result;
     }
@@ -416,7 +429,8 @@ int32_t submods_test(void)
     
 
     /* Get nonce against to know we are back at the top level */
-    result = ctoken_decode_nonce(&decode_context, &nonce);
+    ctoken_decode_nonce(&decode_context, &nonce);
+    result = ctoken_decode_get_and_reset_error(&decode_context);
     if(result) {
         return 400 + (int32_t)result;
     }
@@ -861,7 +875,8 @@ static int32_t one_decode_errors_test_case(const struct decode_submod_test_confi
     }
 
     if(ctoken_result == CTOKEN_ERR_SUCCESS) {
-        ctoken_result = ctoken_decode_nonce(&decode_context, &nonce);
+        ctoken_decode_nonce(&decode_context, &nonce);
+        ctoken_result = ctoken_decode_get_and_reset_error(&decode_context);
         if(ctoken_result != t->expected_decode_nonce) {
             return test_result_code(5, t->test_number, ctoken_result);
         }
@@ -969,7 +984,8 @@ int32_t submod_decode_errors_test()
     }
 
     for(nest_level = 0; nest_level < 20; nest_level++) {
-        ctoken_result = ctoken_decode_nonce(&decode_context, &nonce);
+        ctoken_decode_nonce(&decode_context, &nonce);
+        ctoken_result = ctoken_decode_get_and_reset_error(&decode_context);
         if(ctoken_result) {
             break;
         }
@@ -1348,7 +1364,8 @@ int32_t debug_and_boot_test()
         return 400 + (int32_t)error;
     }
 
-    error = ctoken_decode_secure_boot(&decode_context, &secure_boot);
+    ctoken_decode_secure_boot(&decode_context, &secure_boot);
+    error = ctoken_decode_get_error(&decode_context);
     if(error != CTOKEN_ERR_SUCCESS || secure_boot != true) {
         return 500 + (int32_t)error;
     }
@@ -1425,7 +1442,8 @@ int32_t debug_and_boot_test()
 
     /* --- decode secure boot that is not a valid value --- */
     setup_decode_test(UsefulBuf_FROM_BYTE_ARRAY_LITERAL(bad_secure_boot1),  out, &decode_context);
-    error = ctoken_decode_secure_boot(&decode_context, &secure_boot);
+    ctoken_decode_secure_boot(&decode_context, &secure_boot);
+    error = ctoken_decode_get_error(&decode_context);
     if(error != CTOKEN_ERR_CBOR_TYPE) {
         return 1400 + (int32_t)error;
     }
@@ -1433,7 +1451,8 @@ int32_t debug_and_boot_test()
 
     /* --- decode secure boot that is not well formed --- */
     setup_decode_test(UsefulBuf_FROM_BYTE_ARRAY_LITERAL(bad_secure_boot2),  out, &decode_context);
-    error = ctoken_decode_secure_boot(&decode_context, &secure_boot);
+    ctoken_decode_secure_boot(&decode_context, &secure_boot);
+    error = ctoken_decode_get_error(&decode_context);
     /* Only check for fail as QCBOR error codes for getting bool needs work */
     if(error == CTOKEN_ERR_SUCCESS) {
         return 1500 + (int32_t)error;
@@ -1653,7 +1672,8 @@ int32_t secboot_test(void)
         return test_result_code(1, 0, result);;
     }
 
-    result = ctoken_decode_secure_boot(&decode_context, &sec_boot);
+    ctoken_decode_secure_boot(&decode_context, &sec_boot);
+    result = ctoken_decode_get_error(&decode_context);
     if(result != CTOKEN_ERR_SUCCESS || sec_boot != true) {
         return test_result_code(1, 1, result);
     }
@@ -1664,7 +1684,8 @@ int32_t secboot_test(void)
         return test_result_code(1, 0, result);;
     }
 
-    result = ctoken_decode_secure_boot(&decode_context, &sec_boot);
+    ctoken_decode_secure_boot(&decode_context, &sec_boot);
+    result = ctoken_decode_get_error(&decode_context);
     if(result != CTOKEN_ERR_SUCCESS || sec_boot != false) {
         return test_result_code(2, 1, result);
     }
@@ -1675,7 +1696,8 @@ int32_t secboot_test(void)
         return test_result_code(3, 0, result);;
     }
 
-    result = ctoken_decode_secure_boot(&decode_context, &sec_boot);
+    ctoken_decode_secure_boot(&decode_context, &sec_boot);
+    result = ctoken_decode_get_error(&decode_context);
     if(result != CTOKEN_ERR_CBOR_TYPE) {
         return test_result_code(2, 1, result);
     }
@@ -1686,7 +1708,8 @@ int32_t secboot_test(void)
         return test_result_code(3, 0, result);;
     }
 
-    result = ctoken_decode_secure_boot(&decode_context, &sec_boot);
+    ctoken_decode_secure_boot(&decode_context, &sec_boot);
+    result = ctoken_decode_get_error(&decode_context);
     if(result != CTOKEN_ERR_CBOR_TYPE) {
         return test_result_code(2, 1, result);
     }
@@ -1696,7 +1719,8 @@ int32_t secboot_test(void)
         return test_result_code(3, 0, result);;
     }
 
-    result = ctoken_decode_secure_boot(&decode_context, &sec_boot);
+    ctoken_decode_secure_boot(&decode_context, &sec_boot);
+    result = ctoken_decode_get_error(&decode_context);
     if(result != CTOKEN_ERR_CBOR_NOT_WELL_FORMED) {
         return test_result_code(2, 1, result);
     }
@@ -1707,7 +1731,8 @@ int32_t secboot_test(void)
         return test_result_code(3, 0, result);;
     }
 
-    result = ctoken_decode_secure_boot(&decode_context, &sec_boot);
+    ctoken_decode_secure_boot(&decode_context, &sec_boot);
+    result = ctoken_decode_get_error(&decode_context);
     if(result != CTOKEN_ERR_CBOR_TYPE) {
         return test_result_code(2, 1, result);
     }
@@ -1717,7 +1742,8 @@ int32_t secboot_test(void)
         return test_result_code(3, 0, result);;
     }
 
-    result = ctoken_decode_secure_boot(&decode_context, &sec_boot);
+    ctoken_decode_secure_boot(&decode_context, &sec_boot);
+    result = ctoken_decode_get_error(&decode_context);
     if(result != CTOKEN_ERR_CBOR_TYPE) {
         return test_result_code(2, 1, result);
     }
@@ -1906,11 +1932,13 @@ int32_t profile_decode_test(void)
         return test_result_code(1, 0, result);;
     }
 
-    result = ctoken_decode_profile_uri(&decode_context, &profile);
+    ctoken_decode_profile_uri(&decode_context, &profile);
+    result = ctoken_decode_get_and_reset_error(&decode_context);
     if(result != CTOKEN_ERR_SUCCESS) {
         return test_result_code(1, 1, result);
     }
-    result = ctoken_decode_profile_oid(&decode_context, &profile);
+    ctoken_decode_profile_oid(&decode_context, &profile);
+    result = ctoken_decode_get_and_reset_error(&decode_context);
     if(result != CTOKEN_ERR_CBOR_TYPE) {
         return test_result_code(1, 2, result);
     }
@@ -1920,11 +1948,13 @@ int32_t profile_decode_test(void)
         return test_result_code(2, 1, result);;
     }
 
-    result = ctoken_decode_profile_oid(&decode_context, &profile);
+    ctoken_decode_profile_oid(&decode_context, &profile);
+    result = ctoken_decode_get_and_reset_error(&decode_context);
     if(result != CTOKEN_ERR_SUCCESS) {
         return test_result_code(2, 2, result);
     }
-    result = ctoken_decode_profile_uri(&decode_context, &profile);
+    ctoken_decode_profile_uri(&decode_context, &profile);
+    result = ctoken_decode_get_and_reset_error(&decode_context);
     if(result != CTOKEN_ERR_CBOR_TYPE) {
         return test_result_code(2, 3, result);
     }
@@ -1935,12 +1965,14 @@ int32_t profile_decode_test(void)
         return test_result_code(3, 0, result);;
     }
 
-    result = ctoken_decode_profile_oid(&decode_context, &profile);
+    ctoken_decode_profile_oid(&decode_context, &profile);
+    result = ctoken_decode_get_and_reset_error(&decode_context);
     if(result != CTOKEN_ERR_CBOR_TYPE) {
         return test_result_code(3, 1, result);
     }
 
-    result = ctoken_decode_profile_uri(&decode_context, &profile);
+    ctoken_decode_profile_uri(&decode_context, &profile);
+    result = ctoken_decode_get_and_reset_error(&decode_context);
     if(result != CTOKEN_ERR_CBOR_TYPE) {
         return test_result_code(3, 2, result);
     }
@@ -1951,12 +1983,14 @@ int32_t profile_decode_test(void)
         return test_result_code(4, 0, result);;
     }
 
-    result = ctoken_decode_profile_oid(&decode_context, &profile);
+    ctoken_decode_profile_oid(&decode_context, &profile);
+    result = ctoken_decode_get_and_reset_error(&decode_context);
     if(result != CTOKEN_ERR_CBOR_NOT_WELL_FORMED) {
         return test_result_code(4, 1, result);
     }
 
-    result = ctoken_decode_profile_uri(&decode_context, &profile);
+    ctoken_decode_profile_uri(&decode_context, &profile);
+    result = ctoken_decode_get_and_reset_error(&decode_context);
     if(result != CTOKEN_ERR_CBOR_NOT_WELL_FORMED) {
         return test_result_code(4, 2, result);
     }
@@ -1968,12 +2002,14 @@ int32_t profile_decode_test(void)
         return test_result_code(5, 0, result);;
     }
 
-    result = ctoken_decode_profile_oid(&decode_context, &profile);
+    ctoken_decode_profile_oid(&decode_context, &profile);
+    result = ctoken_decode_get_and_reset_error(&decode_context);
     if(result != CTOKEN_ERR_DUPLICATE_LABEL) {
         return test_result_code(5, 1, result);
     }
 
-    result = ctoken_decode_profile_uri(&decode_context, &profile);
+    ctoken_decode_profile_uri(&decode_context, &profile);
+    result = ctoken_decode_get_and_reset_error(&decode_context);
     if(result != CTOKEN_ERR_DUPLICATE_LABEL) {
         return test_result_code(5, 2, result);
     }
@@ -2051,7 +2087,8 @@ int32_t basic_types_decode_test(void)
         return test_result_code(1, 0, result);;
     }
 
-    result = ctoken_decode_bool(&decode_context, 22, &b);
+    ctoken_decode_bool(&decode_context, 22, &b);
+    result = ctoken_decode_get_and_reset_error(&decode_context);
     if(result != CTOKEN_ERR_SUCCESS) {
         return test_result_code(1, 1, result);
     }
@@ -2064,7 +2101,8 @@ int32_t basic_types_decode_test(void)
         return test_result_code(2, 0, result);;
     }
 
-    result = ctoken_decode_double(&decode_context, 22, &d);
+    ctoken_decode_double(&decode_context, 22, &d);
+    result = ctoken_decode_get_and_reset_error(&decode_context);
     if(result != CTOKEN_ERR_SUCCESS) {
         return test_result_code(2, 1, result);
     }
