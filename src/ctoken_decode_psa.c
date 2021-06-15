@@ -437,9 +437,10 @@ ctoken_decode_psa_sw_component(struct ctoken_decode_ctx         *me,
         goto Done;
     }
 
-    return_value = ctoken_decode_enter_array(me,
+    ctoken_decode_enter_array(me,
                                              CTOKEN_PSA_LABEL_SW_COMPONENTS,
                                              &decode_context);
+    return_value = ctoken_decode_get_and_reset_error(me);
     if(return_value == CTOKEN_ERR_CLAIM_NOT_PRESENT) {
         if(no_sw_components == false) {
             return_value = CTOKEN_ERR_SW_COMPONENTS_PRESENCE;

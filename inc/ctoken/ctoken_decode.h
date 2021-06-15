@@ -399,6 +399,8 @@ ctoken_decode_get_payload(struct ctoken_decode_ctx *context,
  * data items in the map works well. The CBOR nesting
  * level must be left the same as it was before the
  * claim(s) were decoded.
+
+ // TODO: what about error state?
  */
 static QCBORDecodeContext *
 ctoken_decode_borrow_context(struct ctoken_decode_ctx *context);
@@ -629,7 +631,7 @@ ctoken_decode_double(struct ctoken_decode_ctx *context,
  * QCBOR_ERR_NO_MORE_ITEMS.  The array may contain other arrays and
  * maps.
  */
-enum ctoken_err_t
+void
 ctoken_decode_enter_array(struct ctoken_decode_ctx *context,
                           int64_t                   label,
                           QCBORDecodeContext      **decoder);
@@ -650,7 +652,7 @@ ctoken_decode_enter_array(struct ctoken_decode_ctx *context,
  * the claim must be exitied if they were entered before this is
  * called.
  */
-enum ctoken_err_t
+void
 ctoken_decode_exit_array(struct ctoken_decode_ctx *context);
 
 
@@ -674,7 +676,7 @@ ctoken_decode_exit_array(struct ctoken_decode_ctx *context);
  * QCBORDecode_EnterArrayFromMapN() can then be called.  The map may
  * contain other arrays and maps.
  */
-enum ctoken_err_t
+void
 ctoken_decode_enter_map(struct ctoken_decode_ctx *context,
                         int64_t                   label,
                         QCBORDecodeContext      **decoder);
@@ -695,7 +697,7 @@ ctoken_decode_enter_map(struct ctoken_decode_ctx *context,
  * the claim must be exitied if they were entered before this is
  * called.
  */
-enum ctoken_err_t
+void
 ctoken_decode_exit_map(struct ctoken_decode_ctx *context);
 
 
@@ -1136,7 +1138,7 @@ ctoken_decode_debug_state(struct ctoken_decode_ctx  *context,
  * Only some of the values in the location claim may be present. See
  * \ref ctoken_location_t for how the data is returned.
  */
-enum ctoken_err_t
+void
 ctoken_decode_location(struct ctoken_decode_ctx     *context,
                        struct ctoken_location_t *location);
 

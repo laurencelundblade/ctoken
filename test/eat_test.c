@@ -219,8 +219,9 @@ int32_t basic_eat_test(void)
     /* zero out to make sure results are tested correctly */
     memset(&location, 0, sizeof(location));
 
-    result = ctoken_decode_location(&decode_context,
+    ctoken_decode_location(&decode_context,
                                         &location);
+    result = ctoken_decode_get_and_reset_error(&decode_context);
     if(result) {
         return 1000 + (int32_t)result;
     }
@@ -1153,7 +1154,8 @@ int32_t location_test()
 
     setup_decode_test(UsefulBuf_FROM_BYTE_ARRAY_LITERAL(bad_location),  out, &decode_context);
 
-    error = ctoken_decode_location(&decode_context, &location);
+    ctoken_decode_location(&decode_context, &location);
+    error = ctoken_decode_get_and_reset_error(&decode_context);
     if(error != CTOKEN_ERR_CBOR_TYPE) {
         return test_result_code(1, 0, error);
     }
@@ -1161,7 +1163,8 @@ int32_t location_test()
 
     setup_decode_test(UsefulBuf_FROM_BYTE_ARRAY_LITERAL(no_location),  out, &decode_context);
 
-    error = ctoken_decode_location(&decode_context, &location);
+    ctoken_decode_location(&decode_context, &location);
+    error = ctoken_decode_get_and_reset_error(&decode_context);
     if(error != CTOKEN_ERR_CLAIM_NOT_PRESENT) {
         return test_result_code(1, 1, error);
     }
@@ -1169,7 +1172,8 @@ int32_t location_test()
 
     setup_decode_test(UsefulBuf_FROM_BYTE_ARRAY_LITERAL(empty_location),  out, &decode_context);
 
-    error = ctoken_decode_location(&decode_context, &location);
+    ctoken_decode_location(&decode_context, &location);
+    error = ctoken_decode_get_and_reset_error(&decode_context);
     if(error != CTOKEN_ERR_CLAIM_FORMAT) {
         return test_result_code(1, 2, error);
     }
@@ -1177,7 +1181,8 @@ int32_t location_test()
 
     setup_decode_test(UsefulBuf_FROM_BYTE_ARRAY_LITERAL(location_not_well_formed),  out, &decode_context);
 
-    error = ctoken_decode_location(&decode_context, &location);
+    ctoken_decode_location(&decode_context, &location);
+    error = ctoken_decode_get_and_reset_error(&decode_context);
     if(error != CTOKEN_ERR_CBOR_NOT_WELL_FORMED) {
         return test_result_code(1, 3, error);
     }
@@ -1255,7 +1260,8 @@ int32_t location_test()
         return test_result_code(3, 0, error);
     }
     memset(&location, 0x44, sizeof(struct ctoken_location_t)); /* initialize to something incorrect */
-    error = ctoken_decode_location(&decode_context, &location);
+    ctoken_decode_location(&decode_context, &location);
+    error = ctoken_decode_get_and_reset_error(&decode_context);
     if(error != CTOKEN_ERR_SUCCESS ||
        !ctoken_location_is_item_present(&location, CTOKEN_EAT_LABEL_LATITUDE) ||
        !ctoken_location_is_item_present(&location, CTOKEN_EAT_LABEL_LONGITUDE) ||
@@ -1798,12 +1804,14 @@ int32_t map_and_array_test()
     if(ctoken_err != CTOKEN_ERR_SUCCESS) {
         return test_result_code(2, 1, ctoken_err);;
     }
-    ctoken_err = ctoken_decode_enter_map(&de, 665, &cbor_de);
+    ctoken_decode_enter_map(&de, 665, &cbor_de);
+    ctoken_err = ctoken_decode_get_and_reset_error(&de);
     if(ctoken_err != CTOKEN_ERR_SUCCESS) {
         return test_result_code(3, 1, ctoken_err);;
     }
     QCBORDecode_GetInt64InMapN(cbor_de, 1, &iii);
-    ctoken_err = ctoken_decode_exit_map(&de);
+    ctoken_decode_exit_map(&de);
+    ctoken_err = ctoken_decode_get_and_reset_error(&de);
     if(ctoken_err != CTOKEN_ERR_SUCCESS) {
          return test_result_code(4, 1, ctoken_err);
      }
@@ -1815,26 +1823,31 @@ int32_t map_and_array_test()
             return test_result_code(5, i, 0);
         }
     }
-    ctoken_err = ctoken_decode_exit_array(&de);
+    ctoken_decode_exit_array(&de);
+    ctoken_err = ctoken_decode_get_and_reset_error(&de);
     if(ctoken_err != CTOKEN_ERR_SUCCESS) {
         return test_result_code(6, 1, ctoken_err);
     }
     /* Completed test decoding the token */
 
     /* Test array not found */
-    ctoken_err = ctoken_decode_enter_array(&de, 45, &cbor_de);
+    ctoken_decode_enter_array(&de, 45, &cbor_de);
+    ctoken_err = ctoken_decode_get_and_reset_error(&de);
+
     if(ctoken_err != CTOKEN_ERR_CLAIM_NOT_PRESENT) {
         return test_result_code(7, 1, ctoken_err);
     }
 
     /* Test map not found */
-    ctoken_err = ctoken_decode_enter_array(&de, 666, &cbor_de);
+    ctoken_decode_enter_array(&de, 666, &cbor_de);
+    ctoken_err = ctoken_decode_get_and_reset_error(&de);
     if(ctoken_err != CTOKEN_ERR_CLAIM_NOT_PRESENT) {
         return test_result_code(8, 1, ctoken_err);
     }
 
     /* Test closing an array that is not open */
-    ctoken_err = ctoken_decode_exit_array(&de);
+    ctoken_decode_exit_array(&de);
+    ctoken_err = ctoken_decode_get_and_reset_error(&de);
     if(ctoken_err != CTOKEN_ERR_CBOR_DECODE) {
         return test_result_code(9, 1, ctoken_err);
     }

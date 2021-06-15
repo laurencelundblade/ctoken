@@ -410,85 +410,65 @@ ctoken_decode_bool(struct ctoken_decode_ctx *me,
 /*
  * Public function. See ctoken_decode.h
  */
-enum ctoken_err_t
+void
 ctoken_decode_enter_map(struct ctoken_decode_ctx *me,
                        int64_t                   label,
                         QCBORDecodeContext     **decoder)
 {
-    enum ctoken_err_t return_value;
-
     if(me->last_error != CTOKEN_ERR_SUCCESS) {
-        return_value = me->last_error;
-        goto Done;
+    return;
     }
 
     QCBORDecode_EnterMapFromMapN(&(me->qcbor_decode_context), label);
-    return_value = get_and_reset_error(&(me->qcbor_decode_context));
+    me->last_error = get_and_reset_error(&(me->qcbor_decode_context));
     *decoder = &(me->qcbor_decode_context);
-
-Done:
-    return return_value;
 }
 
 
 /*
  * Public function. See ctoken_decode.h
  */
-enum ctoken_err_t
+void
 ctoken_decode_exit_map(struct ctoken_decode_ctx *me)
 {
-    enum ctoken_err_t return_value;
-
     QCBORDecode_ExitMap(&(me->qcbor_decode_context));
-    return_value = get_and_reset_error(&(me->qcbor_decode_context));
-
-    return return_value;
+    me->last_error = get_and_reset_error(&(me->qcbor_decode_context));
 }
 
 
 /*
  * Public function. See ctoken_decode.h
  */
-enum ctoken_err_t
+void
 ctoken_decode_enter_array(struct ctoken_decode_ctx *me,
                           int64_t                   label,
                           QCBORDecodeContext     **decoder)
 {
-    enum ctoken_err_t return_value;
-
     if(me->last_error != CTOKEN_ERR_SUCCESS) {
-        return_value = me->last_error;
-        goto Done;
+        return;
     }
 
     QCBORDecode_EnterArrayFromMapN(&(me->qcbor_decode_context), label);
-    return_value = get_and_reset_error(&(me->qcbor_decode_context));
+    me->last_error = get_and_reset_error(&(me->qcbor_decode_context));
     *decoder = &(me->qcbor_decode_context);
-
-Done:
-    return return_value;
 }
 
 
 /*
  * Public function. See ctoken_decode.h
  */
-enum ctoken_err_t
+void
 ctoken_decode_exit_array(struct ctoken_decode_ctx *me)
 {
-    enum ctoken_err_t return_value;
-
     QCBORDecode_ExitArray(&(me->qcbor_decode_context));
-    return_value = get_and_reset_error(&(me->qcbor_decode_context));
-
-    return return_value;
+    me->last_error = get_and_reset_error(&(me->qcbor_decode_context));
 }
 
 
 /*
  * Public function. See ctoken_eat_encode.h
  */
-enum ctoken_err_t
+void
 ctoken_decode_location(struct ctoken_decode_ctx   *me,
                        struct ctoken_location_t   *location)
 {
@@ -499,26 +479,28 @@ ctoken_decode_location(struct ctoken_decode_ctx   *me,
 
     location->item_flags = 0;
 
-    return_value = ctoken_decode_enter_map(me, CTOKEN_EAT_LABEL_LOCATION, &decoder);
+    ctoken_decode_enter_map(me, CTOKEN_EAT_LABEL_LOCATION, &decoder);
+    return_value = ctoken_decode_get_error(me);
 
 #ifndef CTOKEN_DISABLE_TEMP_LABELS
     if(return_value == CTOKEN_ERR_CLAIM_NOT_PRESENT) {
-        return_value = ctoken_decode_enter_map(me, CTOKEN_TEMP_EAT_LABEL_LOCATION, &decoder);
+        (void)ctoken_decode_get_and_reset_error(me);
+        ctoken_decode_enter_map(me, CTOKEN_TEMP_EAT_LABEL_LOCATION, &decoder);
     }
 #endif
 
-    if(return_value != CTOKEN_ERR_SUCCESS) {
-        goto Done;
+    if(ctoken_decode_get_error(me) != CTOKEN_ERR_SUCCESS) {
+        return;
     }
 
     for(label = CTOKEN_EAT_LABEL_LATITUDE; label <= NUM_FLOAT_LOCATION_ITEMS; label++) {
         QCBORDecode_GetDoubleInMapN(decoder, label, &d);
-        return_value = get_and_reset_error(decoder);
-        if(return_value == CTOKEN_ERR_CLAIM_NOT_PRESENT) {
+        me->last_error = get_and_reset_error(decoder);
+        if(me->last_error == CTOKEN_ERR_CLAIM_NOT_PRESENT) {
             continue;
         }
-        if(return_value != CTOKEN_ERR_SUCCESS) {
-            goto Done;
+        if(me->last_error != CTOKEN_ERR_SUCCESS) {
+            return;
         }
 
         location->items[label-1] = d;
@@ -528,31 +510,28 @@ ctoken_decode_location(struct ctoken_decode_ctx   *me,
     if(!ctoken_location_is_item_present(location, CTOKEN_EAT_LABEL_LATITUDE) ||
         !ctoken_location_is_item_present(location, CTOKEN_EAT_LABEL_LONGITUDE)) {
         /* Per EAT and W3C specs, the latitude and longitude must be present */
-        return_value = CTOKEN_ERR_CLAIM_FORMAT;
-        goto Done;
+        me->last_error = CTOKEN_ERR_CLAIM_FORMAT;
+        return;
     }
 
     QCBORDecode_GetUInt64InMapN(decoder, CTOKEN_EAT_LABEL_TIME_STAMP, &(location->time_stamp));
-    return_value = get_and_reset_error(decoder);
-    if(return_value == CTOKEN_ERR_SUCCESS) {
+    me->last_error = get_and_reset_error(decoder);
+    if(me->last_error == CTOKEN_ERR_SUCCESS) {
         ctoken_location_mark_item_present(location, CTOKEN_EAT_LABEL_TIME_STAMP);
-    } else if(return_value != CTOKEN_ERR_CLAIM_NOT_PRESENT) {
-        goto Done;
+    } else if(me->last_error != CTOKEN_ERR_CLAIM_NOT_PRESENT) {
+        return;
     }
 
     QCBORDecode_GetUInt64InMapN(decoder, CTOKEN_EAT_LABEL_AGE, &(location->age));
-    return_value = get_and_reset_error(decoder);
-    if(return_value == CTOKEN_ERR_SUCCESS) {
+    me->last_error = get_and_reset_error(decoder);
+    if(me->last_error == CTOKEN_ERR_SUCCESS) {
         ctoken_location_mark_item_present(location, CTOKEN_EAT_LABEL_AGE);
-    } else if(return_value != CTOKEN_ERR_CLAIM_NOT_PRESENT) {
-        goto Done;
+    } else if(me->last_error != CTOKEN_ERR_CLAIM_NOT_PRESENT) {
+        return;
     }
 
-    return_value = ctoken_decode_exit_map(me);
-
-Done:
-    me->last_error = return_value;
-    return return_value;
+    ctoken_decode_exit_map(me);
+    me->last_error = ctoken_decode_get_and_reset_error(me);
 }
 
 
