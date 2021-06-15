@@ -714,12 +714,16 @@ Done:
 /*
  * Public function. See ctoken_decode.h
  */
-enum ctoken_err_t
+void
 ctoken_decode_get_num_submods(struct ctoken_decode_ctx *me,
                               uint32_t                 *num_submods)
 {
     enum ctoken_err_t return_value;
     enum ctoken_err_t return_value2;
+
+    if(me->last_error) {
+        return;
+    }
 
     return_value = enter_submod_section(me);
     if(return_value == CTOKEN_ERR_CLAIM_NOT_PRESENT) {
@@ -739,14 +743,14 @@ ctoken_decode_get_num_submods(struct ctoken_decode_ctx *me,
     }
 
 Done:
-    return return_value;
+    me->last_error = return_value;
 }
 
 
 /*
  * Public function. See ctoken_decode.h
  */
-enum ctoken_err_t
+void
 ctoken_decode_enter_nth_submod(struct ctoken_decode_ctx *me,
                                uint32_t                  submod_index,
                                struct q_useful_buf_c    *name)
@@ -756,6 +760,9 @@ ctoken_decode_enter_nth_submod(struct ctoken_decode_ctx *me,
     uint32_t          num_submods;
     QCBORError        cbor_error;
 
+    if(me->last_error) {
+        return;
+    }
 
     return_value = enter_submod_section(me);
     if(return_value == CTOKEN_ERR_CLAIM_NOT_PRESENT) {
@@ -846,19 +853,23 @@ Done:
     }
 
 Done2:
-    return return_value;
+    me->last_error = return_value;
 }
 
 
 /*
  * Public function. See ctoken_decode.h
  */
-enum ctoken_err_t
+void
 ctoken_decode_enter_named_submod(struct ctoken_decode_ctx *me,
                                  const char               *name)
 {
     enum ctoken_err_t     return_value;
     QCBORItem             item;
+
+    if(me->last_error) {
+        return;
+    }
 
     return_value = enter_submod_section(me);
     if(return_value == CTOKEN_ERR_CLAIM_NOT_PRESENT) {
@@ -913,17 +924,21 @@ Done:
         leave_submod_section(me);
     }
 Done2:
-    return return_value;
+    me->last_error = return_value;
 }
 
 
 /*
  * Public function. See ctoken_decode.h
  */
-enum ctoken_err_t
+void
 ctoken_decode_exit_submod(struct ctoken_decode_ctx *me)
 {
     enum ctoken_err_t return_value;
+
+    if(me->last_error) {
+        return;
+    }
 
     if(me->submod_nest_level == 0) {
         return_value = CTOKEN_ERR_NO_SUBMOD_OPEN;
@@ -944,7 +959,7 @@ ctoken_decode_exit_submod(struct ctoken_decode_ctx *me)
     }
 
 Done:
-    return return_value;
+    me->last_error = return_value;
 }
 
 
@@ -996,7 +1011,7 @@ Done:
 /*
  * Public function. See ctoken_decode.h
  */
-enum ctoken_err_t
+void
 ctoken_decode_get_named_nested_token(struct ctoken_decode_ctx *me,
                                      struct q_useful_buf_c     submod_name,
                                      enum ctoken_type_t       *type,
@@ -1006,6 +1021,9 @@ ctoken_decode_get_named_nested_token(struct ctoken_decode_ctx *me,
     enum ctoken_err_t return_value2;
     QCBORItem         search[2];
 
+    if(me->last_error) {
+        return;
+    }
 
     return_value = enter_submod_section(me);
     if(return_value == CTOKEN_ERR_CLAIM_NOT_PRESENT) {
@@ -1033,14 +1051,14 @@ ctoken_decode_get_named_nested_token(struct ctoken_decode_ctx *me,
     }
 
 Done:
-    return return_value;
+    me->last_error = return_value;
 }
 
 
 /*
  * Public function. See ctoken_decode.h
  */
-enum ctoken_err_t
+void
 ctoken_decode_get_nth_nested_token(struct ctoken_decode_ctx *me,
                                    uint32_t                  submod_index,
                                    enum ctoken_type_t       *type,
@@ -1051,6 +1069,10 @@ ctoken_decode_get_nth_nested_token(struct ctoken_decode_ctx *me,
     enum ctoken_err_t return_value;
     enum ctoken_err_t return_value2;
     uint32_t          returned_index;
+
+    if(me->last_error) {
+        return;
+    }
 
     return_value = enter_submod_section(me);
     if(return_value == CTOKEN_ERR_CLAIM_NOT_PRESENT) {
@@ -1090,6 +1112,6 @@ Done:
     }
 
 Done2:
-    return return_value;
+    me->last_error = return_value;
 }
 

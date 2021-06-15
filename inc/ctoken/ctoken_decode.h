@@ -1306,7 +1306,7 @@ ctoken_decode_rewind(struct ctoken_decode_ctx   *context);
  * empty the error code returned is CTOKEN_ERR_SUCCESS and the
  * num_submods returned is 0.
  */
-enum ctoken_err_t
+void
 ctoken_decode_get_num_submods(struct ctoken_decode_ctx *context,
                               uint32_t                 *num_submods);
 
@@ -1360,7 +1360,7 @@ ctoken_decode_get_num_submods(struct ctoken_decode_ctx *context,
  * The \c name parameter may be NULL if the submodule name is not of
  * interest.
  */
-enum ctoken_err_t
+void
 ctoken_decode_enter_nth_submod(struct ctoken_decode_ctx *context,
                                uint32_t                  submod_index,
                                struct q_useful_buf_c    *submod_name);
@@ -1402,7 +1402,7 @@ ctoken_decode_enter_nth_submod(struct ctoken_decode_ctx *context,
  * If the submodule with the given name is a nested token, then it is
  * not entered and \ref CTOKEN_ERR_SUBMOD_IS_A_TOKEN is returned.
  */
-enum ctoken_err_t
+void
 ctoken_decode_enter_named_submod(struct ctoken_decode_ctx *context,
                                  const char               *submod_name);
 
@@ -1416,7 +1416,7 @@ ctoken_decode_enter_named_submod(struct ctoken_decode_ctx *context,
  *
  * Pop up one level of submodule nesting.
  */
-enum ctoken_err_t
+void
 ctoken_decode_exit_submod(struct ctoken_decode_ctx *context);
 
 
@@ -1460,7 +1460,7 @@ ctoken_decode_exit_submod(struct ctoken_decode_ctx *context);
  * verification keys and process it like the superior token it came
  * from. JWT format tokens must be processed by a JWT token decoder.
  */
-enum ctoken_err_t
+void
 ctoken_decode_get_nth_nested_token(struct ctoken_decode_ctx *context,
                                    uint32_t                  submod_index,
                                    enum ctoken_type_t       *type,
@@ -1499,7 +1499,7 @@ ctoken_decode_get_nth_nested_token(struct ctoken_decode_ctx *context,
  * See ctoken_decode_get_nth_nested_token() for discussion on the
  * token returned.
  */
-enum ctoken_err_t
+void
 ctoken_decode_get_named_nested_token(struct ctoken_decode_ctx *context,
                                      struct q_useful_buf_c     submod_name,
                                      enum ctoken_type_t       *type,

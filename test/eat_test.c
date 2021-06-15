@@ -252,7 +252,8 @@ int32_t basic_eat_test(void)
     }
 
     struct q_useful_buf_c submod_name;
-    result = ctoken_decode_enter_nth_submod(&decode_context, 0, &submod_name);
+    ctoken_decode_enter_nth_submod(&decode_context, 0, &submod_name);
+    result = ctoken_decode_get_and_reset_error(&decode_context);
     if(result) {
         return 1300 + (uint32_t)result;
     }
@@ -262,7 +263,8 @@ int32_t basic_eat_test(void)
         return 1399;
     }
 
-    result = ctoken_decode_exit_submod(&decode_context);
+    ctoken_decode_exit_submod(&decode_context);
+    result = ctoken_decode_get_and_reset_error(&decode_context);
     if(result) {
         return 1400 + (uint32_t)result;
     }
@@ -384,22 +386,25 @@ int32_t submods_test(void)
         return 599;
     }
 
-    ctoken_result = ctoken_decode_get_named_nested_token(&decode_context,
+    ctoken_decode_get_named_nested_token(&decode_context,
                                                          Q_USEFUL_BUF_FROM_SZ_LITERAL("json"),
                                                          &type,
                                                          &submod_token);
+    ctoken_result = ctoken_decode_get_and_reset_error(&decode_context);
     if(ctoken_result != CTOKEN_ERR_SUCCESS ||
        ub_compare_sz("{ \"ueid\", \"xyz\"}", submod_token) ||
        type != CTOKEN_TYPE_JSON) {
         return 550;
     }
 
-    ctoken_result = ctoken_decode_enter_named_submod(&decode_context, "json");
+    ctoken_decode_enter_named_submod(&decode_context, "json");
+    ctoken_result = ctoken_decode_get_and_reset_error(&decode_context);
     if(ctoken_result != CTOKEN_ERR_SUBMOD_IS_A_TOKEN) {
         return 555;
     }
 
-    ctoken_result = ctoken_decode_enter_nth_submod(&decode_context, 0, &submod_name);
+    ctoken_decode_enter_nth_submod(&decode_context, 0, &submod_name);
+    ctoken_result = ctoken_decode_get_and_reset_error(&decode_context);
     if(ctoken_result != CTOKEN_ERR_SUBMOD_IS_A_TOKEN) {
         return 556;
     }
@@ -861,7 +866,8 @@ static int32_t one_decode_errors_test_case(const struct decode_submod_test_confi
         return test_result_code(1, t->test_number, ctoken_result);
     }
 
-    ctoken_result = ctoken_decode_get_num_submods(&decode_context, &num_submods);
+    ctoken_decode_get_num_submods(&decode_context, &num_submods);
+    ctoken_result = ctoken_decode_get_and_reset_error(&decode_context);
     if(ctoken_result != t->expected_call_num_submods) {
         return test_result_code(2, t->test_number, ctoken_result);
     }
@@ -870,7 +876,8 @@ static int32_t one_decode_errors_test_case(const struct decode_submod_test_confi
         return test_result_code(3, t->test_number, ctoken_result);
     }
 
-    ctoken_result = ctoken_decode_enter_nth_submod(&decode_context, 0, &name);
+    ctoken_decode_enter_nth_submod(&decode_context, 0, &name);
+    ctoken_result = ctoken_decode_get_and_reset_error(&decode_context);
     if(ctoken_result != t->expected_enter_0th) {
         return test_result_code(4, t->test_number, ctoken_result);
     }
@@ -882,64 +889,77 @@ static int32_t one_decode_errors_test_case(const struct decode_submod_test_confi
             return test_result_code(5, t->test_number, ctoken_result);
         }
 
-        ctoken_result = ctoken_decode_exit_submod(&decode_context);
+        ctoken_decode_exit_submod(&decode_context);
+        ctoken_result = ctoken_decode_get_and_reset_error(&decode_context);
         if(ctoken_result != t->expected_exit_0th) {
             return test_result_code(6, t->test_number, ctoken_result);
         }
     }
 
-    ctoken_result = ctoken_decode_get_nth_nested_token(&decode_context, 0, &nested_token_type, &name, &token);
+    ctoken_decode_get_nth_nested_token(&decode_context, 0, &nested_token_type, &name, &token);
+    ctoken_result = ctoken_decode_get_and_reset_error(&decode_context);
     if(ctoken_result != t->expected_nested_0th) {
         return test_result_code(7, t->test_number, ctoken_result);
     }
 
-    ctoken_result = ctoken_decode_enter_named_submod(&decode_context, "submod");
+    ctoken_decode_enter_named_submod(&decode_context, "submod");
+    ctoken_result = ctoken_decode_get_and_reset_error(&decode_context);
     if(ctoken_result != t->expected_enter_named) {
         return test_result_code(8, t->test_number, ctoken_result);
     }
 
     if(ctoken_result == CTOKEN_ERR_SUCCESS) {
-        ctoken_result = ctoken_decode_exit_submod(&decode_context);
+        ctoken_decode_exit_submod(&decode_context);
+        ctoken_result = ctoken_decode_get_and_reset_error(&decode_context);
         if(ctoken_result != t->expected_exit_named) {
             return test_result_code(9, t->test_number, ctoken_result);
         }
     }
 
-    ctoken_result = ctoken_decode_get_named_nested_token(&decode_context,
+    ctoken_decode_get_named_nested_token(&decode_context,
                                                          Q_USEFUL_BUF_FROM_SZ_LITERAL("nested"),
                                                          &nested_token_type,
                                                          &token);
+    ctoken_result = ctoken_decode_get_and_reset_error(&decode_context);
     if(ctoken_result != t->expected_named_nested) {
         return test_result_code(10, t->test_number, ctoken_result);
     }
 
-    ctoken_result = ctoken_decode_enter_nth_submod(&decode_context, 1, &name);
+    ctoken_decode_enter_nth_submod(&decode_context, 1, &name);
+    ctoken_result = ctoken_decode_get_and_reset_error(&decode_context);
     if(ctoken_result != t->expected_enter_1st) {
         return test_result_code(11, t->test_number, ctoken_result);
     }
 
     if(ctoken_result == CTOKEN_ERR_SUCCESS) {
-        ctoken_result = ctoken_decode_exit_submod(&decode_context);
+        ctoken_decode_exit_submod(&decode_context);
+        ctoken_result = ctoken_decode_get_and_reset_error(&decode_context);
+
         if(ctoken_result != t->expected_exit_1st) {
             return test_result_code(12, t->test_number, ctoken_result);
         }
     }
 
-    ctoken_result = ctoken_decode_get_nth_nested_token(&decode_context, 1, &nested_token_type, &name, &token);
+    ctoken_decode_get_nth_nested_token(&decode_context, 1, &nested_token_type, &name, &token);
+    ctoken_result = ctoken_decode_get_and_reset_error(&decode_context);
     if(ctoken_result != t->expected_nested_1st) {
         return test_result_code(13, t->test_number, ctoken_result);
     }
 
-    ctoken_result = ctoken_decode_enter_nth_submod(&decode_context, 2, &name);
+    ctoken_decode_enter_nth_submod(&decode_context, 2, &name);
+    ctoken_result = ctoken_decode_get_and_reset_error(&decode_context);
     if(ctoken_result != t->expected_enter_2nd) {
         return test_result_code(14, t->test_number, ctoken_result);
     }
     if(ctoken_result == CTOKEN_ERR_SUCCESS) {
-        ctoken_result = ctoken_decode_exit_submod(&decode_context);
+        ctoken_decode_exit_submod(&decode_context);
+        ctoken_result = ctoken_decode_get_and_reset_error(&decode_context);
+
         /* Don't bother with error check here */
     }
 
-    ctoken_result = ctoken_decode_get_nth_nested_token(&decode_context, 2, &nested_token_type, &name, &token);
+    ctoken_decode_get_nth_nested_token(&decode_context, 2, &nested_token_type, &name, &token);
+    ctoken_result = ctoken_decode_get_and_reset_error(&decode_context);
     if(ctoken_result != t->expected_nested_2nd) {
         return test_result_code(15, t->test_number, ctoken_result);
     }
@@ -995,17 +1015,20 @@ int32_t submod_decode_errors_test()
             return test_result_code(21, nest_level, 0);
         }
 
-        ctoken_result = ctoken_decode_get_num_submods(&decode_context, &num);
+        ctoken_decode_get_num_submods(&decode_context, &num);
+        ctoken_result = ctoken_decode_get_and_reset_error(&decode_context);
         if(num == 0) {
             break;
         }
 
-        ctoken_result = ctoken_decode_get_nth_nested_token(&decode_context, 1, &type, &name, &token);
+        ctoken_decode_get_nth_nested_token(&decode_context, 1, &type, &name, &token);
+        ctoken_result = ctoken_decode_get_and_reset_error(&decode_context);
         if(ctoken_result) {
             return test_result_code(22, nest_level, ctoken_result);
         }
 
-        ctoken_result = ctoken_decode_enter_nth_submod(&decode_context, 0, &name);
+        ctoken_decode_enter_nth_submod(&decode_context, 0, &name);
+        ctoken_result = ctoken_decode_get_and_reset_error(&decode_context);
         if(ctoken_result) {
             return test_result_code(23, nest_level, ctoken_result);
         }
@@ -1017,7 +1040,8 @@ int32_t submod_decode_errors_test()
     if(ctoken_result) {
         return test_result_code(25, 0, ctoken_result);
     }
-    ctoken_result = ctoken_decode_exit_submod(&decode_context);
+    ctoken_decode_exit_submod(&decode_context);
+    ctoken_result = ctoken_decode_get_and_reset_error(&decode_context);
     if(ctoken_result != CTOKEN_ERR_NO_SUBMOD_OPEN) {
         return test_result_code(25, 0, ctoken_result);
     }
@@ -1028,7 +1052,9 @@ int32_t submod_decode_errors_test()
     if(ctoken_result) {
         return test_result_code(25, 0, ctoken_result);
     }
-    ctoken_result = ctoken_decode_enter_nth_submod(&decode_context, 0, &name);
+    ctoken_decode_enter_nth_submod(&decode_context, 0, &name);
+    ctoken_result = ctoken_decode_get_and_reset_error(&decode_context);
+
     /* Exit map prematurely to cause error condition inside
      * ctoken_decode_exit_submod(). These three all succeed and undo
      * entry into the submod, the submod section and the UCCS.
@@ -1037,7 +1063,8 @@ int32_t submod_decode_errors_test()
     QCBORDecode_ExitMap(&(decode_context.qcbor_decode_context));
     QCBORDecode_ExitMap(&(decode_context.qcbor_decode_context));
 
-    ctoken_result = ctoken_decode_exit_submod(&decode_context);
+    ctoken_decode_exit_submod(&decode_context);
+    ctoken_result = ctoken_decode_get_and_reset_error(&decode_context);
     if(ctoken_result != CTOKEN_ERR_CBOR_DECODE) {
         return test_result_code(25, 0, ctoken_result);
     }
@@ -1586,13 +1613,15 @@ int32_t get_next_test()
         return test_result_code(8, 0, result);
     }
 
-    result = ctoken_decode_get_num_submods(&decode_context, &num_sub_mods);
+    ctoken_decode_get_num_submods(&decode_context, &num_sub_mods);
+    result = ctoken_decode_get_and_reset_error(&decode_context);
     if(result != CTOKEN_ERR_SUCCESS ||
        num_sub_mods != 3) {
        return test_result_code(9, 0, result);
     }
 
-    result = ctoken_decode_enter_nth_submod(&decode_context, 0, &submod_name);
+    ctoken_decode_enter_nth_submod(&decode_context, 0, &submod_name);
+    result = ctoken_decode_get_and_reset_error(&decode_context);
     if(result != CTOKEN_ERR_SUCCESS) {
         return test_result_code(10, 0, result);
     }
@@ -1615,17 +1644,21 @@ int32_t get_next_test()
         return test_result_code(12, 0, result);
     }
 
-    result = ctoken_decode_exit_submod(&decode_context);
+    ctoken_decode_exit_submod(&decode_context);
+    result = ctoken_decode_get_and_reset_error(&decode_context);
+
     if(result != CTOKEN_ERR_SUCCESS) {
-         return test_result_code(14, 0, result);
-     }
+        return test_result_code(14, 0, result);
+    }
 
-     result = ctoken_decode_enter_nth_submod(&decode_context, 1, &submod_name);
-     if(result != CTOKEN_ERR_SUBMOD_IS_A_TOKEN) {
-         return test_result_code(15, 0, result);
-     }
+    ctoken_decode_enter_nth_submod(&decode_context, 1, &submod_name);
+    result = ctoken_decode_get_and_reset_error(&decode_context);
+    if(result != CTOKEN_ERR_SUBMOD_IS_A_TOKEN) {
+        return test_result_code(15, 0, result);
+    }
 
-    result = ctoken_decode_enter_nth_submod(&decode_context, 2, &submod_name);
+    ctoken_decode_enter_nth_submod(&decode_context, 2, &submod_name);
+    result = ctoken_decode_get_and_reset_error(&decode_context);
     if(result != CTOKEN_ERR_SUCCESS) {
         return test_result_code(16, 0, result);
     }
@@ -1648,7 +1681,8 @@ int32_t get_next_test()
         return test_result_code(18, 0, result);
     }
 
-    result = ctoken_decode_exit_submod(&decode_context);
+    ctoken_decode_exit_submod(&decode_context);
+    result = ctoken_decode_get_and_reset_error(&decode_context);
     if(result != CTOKEN_ERR_SUCCESS) {
           return test_result_code(19, 0, result);
     }
