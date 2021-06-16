@@ -85,47 +85,56 @@ extern "C" {
  * include more general facilities for handling claims with complex
  * structures made up of maps and arrays.
  *
- * \anchor decode-errors
+ *  \anchor Token-Decode-Errors-Overview
+ * # Token Decode Errors Overview
  *
- * The error handling model for for fetching claims makes use of ctokens internal error state.
- * The claims are fetched one after another with the error check only being performed after the last one is fetched
- * by a call to get_error() before any of the claim values are referenced. This makes the decoding implementation neat.
+ * The main validation and decoding of claims is designed so that
+ * there is only an error check at the end of fetching all the
+ * claims. The error state is tracked inside the decode context, so
+ * the caller doesn't need to check a return value on the decode of
+ * every claim. Once ctoken encounters an error it enters an error
+ * state and further decode calls don't do anything, so it is safe to
+ * call them. In many cases the only error check is calling
+ * ctoken_decode_get_error() once after all claims have been decoded
+ * making the decode implementation very neat.
  *
- * If there is some dependency where the value of one claim needs to be used to know what other
- * claims there should be the error check can be performed early. Fetching the error status is
- * very inexpensive.
+ * Sometimes claim values need to be referenced before all claims have
+ * been decoded. In those cases the error state must be checked before
+ * the all claim values have been decoded. Fetching the error status
+ * is very inexpensive.
  *
- * The fetching of one claim is independent of fetching other claims because claim fetching is
- * just map seaching by label. As long as the errors encountered are not because the
- * CBOR is not-well-formed or in the structure of the token, the internal error can be reset
- * so that more fetching can happen. This is done by calling xxxxx
+ * CBOR is not a redundant data format. To traverse a token to find a
+ * requested claim all the claims the token must be well-formed CBOR.
+ * Thus, even if a claim requested is well-formed and valid, it will
+ * not be possible to retrieve it or any other claim if any single
+ * claim in the token is not well-formed.
  *
- * For example, if the latitude in the location claim is a boolean value, the retrieval of the
- * location claim will fail, but that error can be reset and decoding for other claims will be fine.
+ * CBOR and this implementation distinguish not well-formed CBOR from
+ * invalid CBOR.  It is possible to traverse invalid CBOR and continue
+ * on to decode claims. That is, if a claim is invalid, it will not
+ * prevent the decoding of other claims, but will cause an error when
+ * a call is made to decode it.
  *
- * On the other hand, if the CBOR of the location claim is not-well formed, then the whole
- * CBOR parse of the token will fail and no other claims can be fetched. This is because
- * CBOR is not a redundant data format. You have to be able to decode every item.
+ * The decoding of any particular claim is partially independent of
+ * decoding other claims. As long as all the claims are well-formed
+ * the error state resulting from one invalid claim can be reset so
+ * that other claims can be decoded. This is by calling
+ * ctoken_decode_get_and_reset_error().
  *
- * When searching a CBOR map by label, every item in the map has to be successfully decoded
- * in order to complete the traversal. Thus, even if the item that you are trying to decode is
- * good and correct, it will not be possible to retrive it is the ones next to it are
- * not well fored because the CBOR tree traversl can't be performed. If the ones next to
- * it are invalid (invalid has a specific meaning in CBOR), then the traversal can complete
- * and your value can be retrieved.
+ * For example, if the latitude in the location claim is a boolean
+ * value, the retrieval of the location claim will fail, but that
+ * error can be reset and decoding for other claims is possible.
  *
- * There is no FInish method like QCBOR has because it is unnecssary. It is unneccesary to re
- * trive all the claims in a token when decoding. Retrrieval of any claim in a token will cause
- * the general validation of the CBOR of the whole token to happen. All that is necessary is to
- * check the error before referenceing any decoded claim values.
+ * On the other hand, if the CBOR of the location claim is not-well
+ * formed, then the whole CBOR decode of the token will fail and no
+ * other claims can be fetched.
  *
- *
- *
- *
- *
- *
- *
- * TODO: fill in error handling
+ * There is no finish method like QCBOR has because it is
+ * unnecessary. It is unnecessary to retrieve all the claims in a
+ * token when decoding. Retrieval of any claim in a token will cause
+ * the general validation of the CBOR of the whole token to
+ * happen. All that is necessary is to check the error before
+ * referencing any decoded claim values.
  */
 
 /** The maximum number of tag numbers on the token that were not processed.
