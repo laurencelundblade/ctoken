@@ -77,7 +77,8 @@ int32_t cwt_test()
     /* Pass in the token and have it validated. If the token was corrupt
      * or the signature check failed, it will be returned here
      */
-    result = ctoken_decode_validate_token(&decode_context, completed_token);
+    ctoken_decode_validate_token(&decode_context, completed_token);
+    result = ctoken_decode_get_and_reset_error(&decode_context);
     if(result) {
         return 300 + (int32_t)result;
     }
@@ -488,7 +489,8 @@ int32_t cwt_tags_test()
                            test->top_level_tag,
                            test->protection_type);
 
-        result = ctoken_decode_validate_token(&decode_context, test->token_to_decode);
+        ctoken_decode_validate_token(&decode_context, test->token_to_decode);
+        result = ctoken_decode_get_and_reset_error(&decode_context);
 
         if(result != test->expected_error) {
             return test_result_code(5, test->test_number, result);

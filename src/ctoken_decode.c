@@ -145,7 +145,7 @@ get_nth_tag(struct ctoken_decode_ctx *me, int protection_type, QCBORItem *item, 
 /*
  * Public function. See ctoken_decode.h
  */
-enum ctoken_err_t
+void
 ctoken_decode_validate_token(struct ctoken_decode_ctx *me,
                              struct q_useful_buf_c     token)
 {
@@ -245,7 +245,6 @@ Done:
     if(return_value != CTOKEN_ERR_SUCCESS) {
         me->actual_protection_type = CTOKEN_PROTECTION_UNKNOWN;
     }
-    return return_value;
 }
 
 
@@ -554,11 +553,15 @@ static bool is_submod_section(const QCBORItem *claim)
 /*
  * Public function. See ctoken_eat_encode.h
  */
-enum ctoken_err_t
+void
 ctoken_decode_next_claim(struct ctoken_decode_ctx   *me,
                          QCBORItem                  *claim)
 {
     enum ctoken_err_t return_value;
+
+    if(me->last_error) {
+        return;
+    }
 
     /* Loop is only to skip the submods section and executes only
      * once in most cases. It executes twice if there is a submods section.
@@ -578,7 +581,7 @@ ctoken_decode_next_claim(struct ctoken_decode_ctx   *me,
     claim->uNextNestLevel = 0;
 
 Done:
-    return return_value;
+    me->last_error = return_value;
 }
 
 

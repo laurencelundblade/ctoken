@@ -145,7 +145,8 @@ int32_t basic_eat_test(void)
     /* Pass in the token and have it validated. If the token was corrupt
      * or the signature check failed, it will be returned here
      */
-    result = ctoken_decode_validate_token(&decode_context, completed_token);
+    ctoken_decode_validate_token(&decode_context, completed_token);
+    result = ctoken_decode_get_and_reset_error(&decode_context);
     if(result) {
         return 300 + (int32_t)result;
     }
@@ -360,7 +361,8 @@ int32_t submods_test(void)
                         CTOKEN_PROTECTION_BY_TAG,
                         0);
 
-     result = ctoken_decode_validate_token(&decode_context, completed_token);
+    ctoken_decode_validate_token(&decode_context, completed_token);
+    result = ctoken_decode_get_and_reset_error(&decode_context);
      if(result) {
          return 300 + (int32_t)result;
      }
@@ -861,7 +863,8 @@ static int32_t one_decode_errors_test_case(const struct decode_submod_test_confi
                        0,
                        CTOKEN_PROTECTION_NONE);
 
-    ctoken_result = ctoken_decode_validate_token(&decode_context, t->token);
+    ctoken_decode_validate_token(&decode_context, t->token);
+    ctoken_result = ctoken_decode_get_and_reset_error(&decode_context);
     if(ctoken_result) {
         return test_result_code(1, t->test_number, ctoken_result);
     }
@@ -999,7 +1002,8 @@ int32_t submod_decode_errors_test()
                        0,
                        CTOKEN_PROTECTION_NONE);
 
-    ctoken_result = ctoken_decode_validate_token(&decode_context, TEST2UB(submods_valid_deeply_nested));
+    ctoken_decode_validate_token(&decode_context, TEST2UB(submods_valid_deeply_nested));
+    ctoken_result = ctoken_decode_get_and_reset_error(&decode_context);
     if(ctoken_result) {
         return test_result_code(20, 0, ctoken_result);
     }
@@ -1036,7 +1040,8 @@ int32_t submod_decode_errors_test()
 
 
     /* Try calling exit without entering */
-    ctoken_result = ctoken_decode_validate_token(&decode_context, TEST2UB(submods_valid_deeply_nested));
+    ctoken_decode_validate_token(&decode_context, TEST2UB(submods_valid_deeply_nested));
+    ctoken_result = ctoken_decode_get_and_reset_error(&decode_context);
     if(ctoken_result) {
         return test_result_code(25, 0, ctoken_result);
     }
@@ -1048,7 +1053,8 @@ int32_t submod_decode_errors_test()
 
 
     /* Trigger an unusual error ctoken_decode_exit_submod */
-    ctoken_result = ctoken_decode_validate_token(&decode_context, TEST2UB(submods_valid_deeply_nested));
+    ctoken_decode_validate_token(&decode_context, TEST2UB(submods_valid_deeply_nested));
+    ctoken_result = ctoken_decode_get_and_reset_error(&decode_context);
     if(ctoken_result) {
         return test_result_code(25, 0, ctoken_result);
     }
@@ -1098,7 +1104,8 @@ static int32_t setup_decode_test(struct q_useful_buf_c     cbor_input,
                        CTOKEN_PROTECTION_BY_TAG,
                        0);
 
-     ctoken_result = ctoken_decode_validate_token(decode_context, completed_token);
+    ctoken_decode_validate_token(decode_context, completed_token);
+    ctoken_result = ctoken_decode_get_and_reset_error(decode_context);
      if(ctoken_result) {
          return 1;
      }
@@ -1282,7 +1289,8 @@ int32_t location_test()
                        CTOKEN_PROTECTION_BY_TAG,
                        0);
 
-    error = ctoken_decode_validate_token(&decode_context, Q_USEFUL_BUF_FROM_BYTE_ARRAY_LITERAL(expected_full_location));
+    ctoken_decode_validate_token(&decode_context, Q_USEFUL_BUF_FROM_BYTE_ARRAY_LITERAL(expected_full_location));
+    error = ctoken_decode_get_and_reset_error(&decode_context);
     if(error) {
         return test_result_code(3, 0, error);
     }
@@ -1392,7 +1400,8 @@ int32_t debug_and_boot_test()
                        T_COSE_OPT_ALLOW_SHORT_CIRCUIT,
                        CTOKEN_PROTECTION_BY_TAG,
                        0);
-    error = ctoken_decode_validate_token(&decode_context, Q_USEFUL_BUF_FROM_BYTE_ARRAY_LITERAL(expected_boot_and_debug));
+    ctoken_decode_validate_token(&decode_context, Q_USEFUL_BUF_FROM_BYTE_ARRAY_LITERAL(expected_boot_and_debug));
+    error = ctoken_decode_get_and_reset_error(&decode_context);
     if(error != CTOKEN_ERR_SUCCESS) {
         return 400 + (int32_t)error;
     }
@@ -1550,13 +1559,15 @@ int32_t get_next_test()
                        0,
                        CTOKEN_PROTECTION_NONE);
 
-    result = ctoken_decode_validate_token(&decode_context,
+    ctoken_decode_validate_token(&decode_context,
                                  Q_USEFUL_BUF_FROM_BYTE_ARRAY_LITERAL(submods_uccs));
+    result = ctoken_decode_get_and_reset_error(&decode_context);
     if(result) {
         return test_result_code(1, 0, result);;
     }
 
-    result = ctoken_decode_next_claim(&decode_context, &claim);
+    ctoken_decode_next_claim(&decode_context, &claim);
+    result = ctoken_decode_get_and_reset_error(&decode_context);
     if(result != CTOKEN_ERR_SUCCESS ||
        claim.uLabelType != QCBOR_TYPE_INT64 ||
        claim.label.int64 != 10 ||
@@ -1565,7 +1576,8 @@ int32_t get_next_test()
         return test_result_code(2, 0, result);
     }
 
-    result = ctoken_decode_next_claim(&decode_context, &claim);
+    ctoken_decode_next_claim(&decode_context, &claim);
+    result = ctoken_decode_get_and_reset_error(&decode_context);
     if(result != CTOKEN_ERR_SUCCESS ||
        claim.uLabelType != QCBOR_TYPE_INT64 ||
        claim.label.int64 != 11 ||
@@ -1573,7 +1585,8 @@ int32_t get_next_test()
         return test_result_code(3, 0, result);
     }
 
-    result = ctoken_decode_next_claim(&decode_context, &claim);
+    ctoken_decode_next_claim(&decode_context, &claim);
+    result = ctoken_decode_get_and_reset_error(&decode_context);
     if(result != CTOKEN_ERR_SUCCESS ||
        claim.uLabelType != QCBOR_TYPE_INT64 ||
        claim.label.int64 != 15 ||
@@ -1581,7 +1594,8 @@ int32_t get_next_test()
         return test_result_code(4, 0, result);
     }
 
-    result = ctoken_decode_next_claim(&decode_context, &claim);
+    ctoken_decode_next_claim(&decode_context, &claim);
+    result = ctoken_decode_get_and_reset_error(&decode_context);
     if(result != CTOKEN_ERR_SUCCESS ||
        claim.uLabelType != QCBOR_TYPE_INT64 ||
        claim.label.int64 != 16 ||
@@ -1590,7 +1604,8 @@ int32_t get_next_test()
         return test_result_code(5, 0, result);
     }
 
-    result = ctoken_decode_next_claim(&decode_context, &claim);
+    ctoken_decode_next_claim(&decode_context, &claim);
+    result = ctoken_decode_get_and_reset_error(&decode_context);
     if(result != CTOKEN_ERR_SUCCESS ||
        claim.uLabelType != QCBOR_TYPE_INT64 ||
        claim.label.int64 != 6 ||
@@ -1599,7 +1614,8 @@ int32_t get_next_test()
         return test_result_code(6, 0, result);
     }
 
-    result = ctoken_decode_next_claim(&decode_context, &claim);
+    ctoken_decode_next_claim(&decode_context, &claim);
+    result = ctoken_decode_get_and_reset_error(&decode_context);
     if(result != CTOKEN_ERR_SUCCESS ||
        claim.uLabelType != QCBOR_TYPE_INT64 ||
        claim.label.int64 != 14 ||
@@ -1608,7 +1624,8 @@ int32_t get_next_test()
         return test_result_code(7, 0, result);
     }
 
-    result = ctoken_decode_next_claim(&decode_context, &claim);
+    ctoken_decode_next_claim(&decode_context, &claim);
+    result = ctoken_decode_get_and_reset_error(&decode_context);
     if(result != CTOKEN_ERR_NO_MORE_CLAIMS) {
         return test_result_code(8, 0, result);
     }
@@ -1630,7 +1647,8 @@ int32_t get_next_test()
         return test_result_code(110, 0, 0);
     }
 
-    result = ctoken_decode_next_claim(&decode_context, &claim);
+    ctoken_decode_next_claim(&decode_context, &claim);
+    result = ctoken_decode_get_and_reset_error(&decode_context);
     if(result != CTOKEN_ERR_SUCCESS ||
        claim.uLabelType != QCBOR_TYPE_INT64 ||
        claim.label.int64 != 14 ||
@@ -1639,7 +1657,8 @@ int32_t get_next_test()
         return test_result_code(11, 0, result);
     }
 
-    result = ctoken_decode_next_claim(&decode_context, &claim);
+    ctoken_decode_next_claim(&decode_context, &claim);
+    result = ctoken_decode_get_and_reset_error(&decode_context);
     if(result != CTOKEN_ERR_NO_MORE_CLAIMS) {
         return test_result_code(12, 0, result);
     }
@@ -1667,7 +1686,8 @@ int32_t get_next_test()
          return test_result_code(111, 0, 0);
      }
 
-    result = ctoken_decode_next_claim(&decode_context, &claim);
+    ctoken_decode_next_claim(&decode_context, &claim);
+    result = ctoken_decode_get_and_reset_error(&decode_context);
     if(result != CTOKEN_ERR_SUCCESS ||
        claim.uLabelType != QCBOR_TYPE_INT64 ||
        claim.label.int64 != 14 ||
@@ -1676,7 +1696,8 @@ int32_t get_next_test()
         return test_result_code(17, 0, result);
     }
 
-    result = ctoken_decode_next_claim(&decode_context, &claim);
+    ctoken_decode_next_claim(&decode_context, &claim);
+    result = ctoken_decode_get_and_reset_error(&decode_context);
     if(result != CTOKEN_ERR_NO_MORE_CLAIMS) {
         return test_result_code(18, 0, result);
     }
@@ -1687,7 +1708,8 @@ int32_t get_next_test()
           return test_result_code(19, 0, result);
     }
 
-    result = ctoken_decode_next_claim(&decode_context, &claim);
+    ctoken_decode_next_claim(&decode_context, &claim);
+    result = ctoken_decode_get_and_reset_error(&decode_context);
     if(result != CTOKEN_ERR_NO_MORE_CLAIMS) {
         return test_result_code(20, 0, result);
     }
@@ -1707,7 +1729,8 @@ int32_t secboot_test(void)
                        0,
                        CTOKEN_PROTECTION_NONE);
 
-    result = ctoken_decode_validate_token(&decode_context, TEST2UB(secboot_valid1));
+    ctoken_decode_validate_token(&decode_context, TEST2UB(secboot_valid1));
+    result = ctoken_decode_get_and_reset_error(&decode_context);
     if(result) {
         return test_result_code(1, 0, result);;
     }
@@ -1719,7 +1742,8 @@ int32_t secboot_test(void)
     }
 
 
-    result = ctoken_decode_validate_token(&decode_context, TEST2UB(secboot_valid2));
+    ctoken_decode_validate_token(&decode_context, TEST2UB(secboot_valid2));
+    result = ctoken_decode_get_and_reset_error(&decode_context);
     if(result) {
         return test_result_code(1, 0, result);;
     }
@@ -1731,7 +1755,8 @@ int32_t secboot_test(void)
     }
 
 
-    result = ctoken_decode_validate_token(&decode_context, TEST2UB(secboot_invalid1));
+    ctoken_decode_validate_token(&decode_context, TEST2UB(secboot_invalid1));
+    result = ctoken_decode_get_and_reset_error(&decode_context);
     if(result) {
         return test_result_code(3, 0, result);;
     }
@@ -1743,7 +1768,8 @@ int32_t secboot_test(void)
     }
 
 
-    result = ctoken_decode_validate_token(&decode_context, TEST2UB(secboot_invalid2));
+    ctoken_decode_validate_token(&decode_context, TEST2UB(secboot_invalid2));
+    result = ctoken_decode_get_and_reset_error(&decode_context);
     if(result) {
         return test_result_code(3, 0, result);;
     }
@@ -1754,7 +1780,8 @@ int32_t secboot_test(void)
         return test_result_code(2, 1, result);
     }
 
-    result = ctoken_decode_validate_token(&decode_context, TEST2UB(secboot_invalid3));
+    ctoken_decode_validate_token(&decode_context, TEST2UB(secboot_invalid3));
+    result = ctoken_decode_get_and_reset_error(&decode_context);
     if(result) {
         return test_result_code(3, 0, result);;
     }
@@ -1766,7 +1793,8 @@ int32_t secboot_test(void)
     }
 
 
-    result = ctoken_decode_validate_token(&decode_context, TEST2UB(secboot_invalid4));
+    ctoken_decode_validate_token(&decode_context, TEST2UB(secboot_invalid4));
+    result = ctoken_decode_get_and_reset_error(&decode_context);
     if(result) {
         return test_result_code(3, 0, result);;
     }
@@ -1777,7 +1805,8 @@ int32_t secboot_test(void)
         return test_result_code(2, 1, result);
     }
 
-    result = ctoken_decode_validate_token(&decode_context, TEST2UB(secboot_invalid5));
+    ctoken_decode_validate_token(&decode_context, TEST2UB(secboot_invalid5));
+    result = ctoken_decode_get_and_reset_error(&decode_context);
     if(result) {
         return test_result_code(3, 0, result);;
     }
@@ -1834,7 +1863,8 @@ int32_t map_and_array_test()
 
     /* Decode the token just made */
     ctoken_decode_init(&de, 0, 0, CTOKEN_PROTECTION_NONE);
-    ctoken_err = ctoken_decode_validate_token(&de, completed_token);
+    ctoken_decode_validate_token(&de, completed_token);
+    ctoken_err = ctoken_decode_get_and_reset_error(&de);
     if(ctoken_err != CTOKEN_ERR_SUCCESS) {
         return test_result_code(2, 1, ctoken_err);;
     }
@@ -1974,7 +2004,8 @@ int32_t profile_decode_test(void)
                        0,
                        CTOKEN_PROTECTION_NONE);
 
-    result = ctoken_decode_validate_token(&decode_context, TEST2UB(profile_valid_uri));
+    ctoken_decode_validate_token(&decode_context, TEST2UB(profile_valid_uri));
+    result = ctoken_decode_get_and_reset_error(&decode_context);
     if(result) {
         return test_result_code(1, 0, result);;
     }
@@ -1990,7 +2021,8 @@ int32_t profile_decode_test(void)
         return test_result_code(1, 2, result);
     }
 
-    result = ctoken_decode_validate_token(&decode_context, TEST2UB(profile_valid_oid));
+    ctoken_decode_validate_token(&decode_context, TEST2UB(profile_valid_oid));
+    result = ctoken_decode_get_and_reset_error(&decode_context);
     if(result) {
         return test_result_code(2, 1, result);;
     }
@@ -2007,7 +2039,8 @@ int32_t profile_decode_test(void)
     }
 
 
-    result = ctoken_decode_validate_token(&decode_context, TEST2UB(profile_invalid_type));
+    ctoken_decode_validate_token(&decode_context, TEST2UB(profile_invalid_type));
+    result = ctoken_decode_get_and_reset_error(&decode_context);
     if(result != CTOKEN_ERR_SUCCESS) {
         return test_result_code(3, 0, result);;
     }
@@ -2025,7 +2058,8 @@ int32_t profile_decode_test(void)
     }
 
 
-    result = ctoken_decode_validate_token(&decode_context, TEST2UB(profile_invalid_nwf));
+    ctoken_decode_validate_token(&decode_context, TEST2UB(profile_invalid_nwf));
+    result = ctoken_decode_get_and_reset_error(&decode_context);
     if(result != CTOKEN_ERR_SUCCESS) {
         return test_result_code(4, 0, result);;
     }
@@ -2044,7 +2078,8 @@ int32_t profile_decode_test(void)
 
 
 
-    result = ctoken_decode_validate_token(&decode_context, TEST2UB(profile_invalid_dup));
+    ctoken_decode_validate_token(&decode_context, TEST2UB(profile_invalid_dup));
+    result = ctoken_decode_get_and_reset_error(&decode_context);
     if(result != CTOKEN_ERR_SUCCESS) {
         return test_result_code(5, 0, result);;
     }
@@ -2129,7 +2164,8 @@ int32_t basic_types_decode_test(void)
                        0,
                        CTOKEN_PROTECTION_NONE);
 
-    result = ctoken_decode_validate_token(&decode_context, Q_USEFUL_BUF_FROM_BYTE_ARRAY_LITERAL(valid_bool));
+    ctoken_decode_validate_token(&decode_context, Q_USEFUL_BUF_FROM_BYTE_ARRAY_LITERAL(valid_bool));
+    result = ctoken_decode_get_and_reset_error(&decode_context);
     if(result) {
         return test_result_code(1, 0, result);;
     }
@@ -2143,7 +2179,8 @@ int32_t basic_types_decode_test(void)
         return test_result_code(1, 2, 0);
     }
 
-    result = ctoken_decode_validate_token(&decode_context, Q_USEFUL_BUF_FROM_BYTE_ARRAY_LITERAL(valid_double));
+    ctoken_decode_validate_token(&decode_context, Q_USEFUL_BUF_FROM_BYTE_ARRAY_LITERAL(valid_double));
+    result = ctoken_decode_get_and_reset_error(&decode_context);
     if(result) {
         return test_result_code(2, 0, result);;
     }

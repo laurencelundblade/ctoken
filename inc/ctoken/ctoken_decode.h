@@ -297,6 +297,7 @@ ctoken_decode_get_kid(struct ctoken_decode_ctx *context,
  * can be called and they will just return this error. The \c
  * ctoken_decode_get_xxx() functions will generally return 0 or
  * \c NULL if the token is in error.
+ * TODO: rewrite error handling
  *
  * It is thus possible to call ctoken_decode_validate_token()
  * and all the \c ctoken_decode_get_xxx() functions to parse the
@@ -308,7 +309,7 @@ ctoken_decode_get_kid(struct ctoken_decode_ctx *context,
  * token without signature verification because the info to look
  * up the verification key is the token, not the COSE key id.
  */
-enum ctoken_err_t
+void
 ctoken_decode_validate_token(struct ctoken_decode_ctx *context,
                              struct q_useful_buf_c     token);
 
@@ -1270,7 +1271,7 @@ ctoken_decode_profile(struct ctoken_decode_ctx *context,
  * other functions for getting claims so calls to this can be
  * intermixed with the other calls.
 */
-enum ctoken_err_t
+void
 ctoken_decode_next_claim(struct ctoken_decode_ctx   *context,
                          QCBORItem                  *claim);
 
