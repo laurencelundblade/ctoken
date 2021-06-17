@@ -64,9 +64,13 @@ ctoken_decode_psa_simple_claims(struct ctoken_decode_ctx          *context,
  * \param[in]  context         The token decoder context.
  * \param[out] boot_seed  Returned pointer and length of boot_seed.
  *
- * \return An error from \ref CTOKEN_ERR_t.
- *
  * The boot seed is a byte string.
+ *
+ * The error result is saved in the @ref ctoken_decode_ctx and can be
+ * obtained by calling ctoken_decode_get_error(). The error must
+ * be checked before the claim's value is used, but that check can be
+ * after decoding other claims.  See
+ * [Token Decode Error Overview](#Token-Decode-Errors-Overview).
  */
 static void
 ctoken_decode_psa_boot_seed(struct ctoken_decode_ctx *context,
@@ -80,12 +84,16 @@ ctoken_decode_psa_boot_seed(struct ctoken_decode_ctx *context,
  * \param[out] hw_version  Returned pointer and length of
  *                         \c hw_version.
  *
- * \return An error from \ref CTOKEN_ERR_t.
- *
  * This is also known as the HW ID.
  *
  * The HW Version is a UTF-8 text string. It is returned as a pointer
  * and length. It is NOT \c NULL terminated.
+ *
+ * The error result is saved in the @ref ctoken_decode_ctx and can be
+ * obtained by calling ctoken_decode_get_error(). The error must
+ * be checked before the claim's value is used, but that check can be
+ * after decoding other claims.  See
+ * [Token Decode Error Overview](#Token-Decode-Errors-Overview).
  */
 static void
 ctoken_decode_psa_hw_version(struct ctoken_decode_ctx *context,
@@ -99,9 +107,13 @@ ctoken_decode_psa_hw_version(struct ctoken_decode_ctx *context,
  * \param[out] implementation_id  Returned pointer and length of
  *                                implementation_id.
  *
- * \return An error from \ref CTOKEN_ERR_t.
- *
  * The implementation ID is a byte string.
+ *
+ * The error result is saved in the @ref ctoken_decode_ctx and can be
+ * obtained by calling ctoken_decode_get_error(). The error must
+ * be checked before the claim's value is used, but that check can be
+ * after decoding other claims.  See
+ * [Token Decode Error Overview](#Token-Decode-Errors-Overview).
  */
 static void
 ctoken_decode_psa_implementation_id(struct ctoken_decode_ctx *context,
@@ -114,12 +126,16 @@ ctoken_decode_psa_implementation_id(struct ctoken_decode_ctx *context,
  * \param[in]  context           The token decoder context.
  * \param[out] origination  Returned pointer and length of origination.
  *
- * \return An error from \ref CTOKEN_ERR_t.
- *
  * This is also known as the Verification Service Indicator.
  *
  * The \c origination is a UTF-8 text string. It is returned as a
  * pointer and length. It is NOT \c NULL terminated.
+ *
+ * The error result is saved in the @ref ctoken_decode_ctx and can be
+ * obtained by calling ctoken_decode_get_error(). The error must
+ * be checked before the claim's value is used, but that check can be
+ * after decoding other claims.  See
+ * [Token Decode Error Overview](#Token-Decode-Errors-Overview).
  */
 static void
 ctoken_decode_psa_origination(struct ctoken_decode_ctx *context,
@@ -133,10 +149,14 @@ ctoken_decode_psa_origination(struct ctoken_decode_ctx *context,
  * \param[out] profile_definition  Returned pointer and length of
  *                                 profile_definition.
  *
- * \return An error from \ref CTOKEN_ERR_t.
- *
  * The profile definition is a UTF-8 text string. It is returned as a
  * pointer and length. It is NOT \c NULL terminated.
+ *
+ * The error result is saved in the @ref ctoken_decode_ctx and can be
+ * obtained by calling ctoken_decode_get_error(). The error must
+ * be checked before the claim's value is used, but that check can be
+ * after decoding other claims.  See
+ * [Token Decode Error Overview](#Token-Decode-Errors-Overview).
  */
 static void
 ctoken_decode_psa_profile_definition(struct ctoken_decode_ctx *context,
@@ -149,13 +169,17 @@ ctoken_decode_psa_profile_definition(struct ctoken_decode_ctx *context,
  * \param[in]  context         The token decoder context.
  * \param[out] client_id  Returned pointer and length of client_id.
  *
- * \return An error from \ref CTOKEN_ERR_t.
- *
  * \retval CTOKEN_ERR_INTEGER_VALUE
  *         If integer is larger or smaller than will fit
  *         in an \c int32_t.
  *
  * Also called the caller ID.
+ *
+ * The error result is saved in the @ref ctoken_decode_ctx and can be
+ * obtained by calling ctoken_decode_get_error(). The error must
+ * be checked before the claim's value is used, but that check can be
+ * after decoding other claims.  See
+ * [Token Decode Error Overview](#Token-Decode-Errors-Overview).
  */
 static void
 ctoken_decode_psa_client_id(struct ctoken_decode_ctx *context,
@@ -168,11 +192,15 @@ ctoken_decode_psa_client_id(struct ctoken_decode_ctx *context,
  * \param[in]  context         The token decoder context.
  * \param[out] lifecycle  Returned pointer and length of lifecycle.
  *
- * \return An error from \ref CTOKEN_ERR_t.
- *
  * \retval CTOKEN_ERR_INTEGER_VALUE
  *         If integer is larger
  *         or smaller than will fit in a \c uint32_t.
+ *
+ * The error result is saved in the @ref ctoken_decode_ctx and can be
+ * obtained by calling ctoken_decode_get_error(). The error must
+ * be checked before the claim's value is used, but that check can be
+ * after decoding other claims.  See
+ * [Token Decode Error Overview](#Token-Decode-Errors-Overview).
  */
 static void
 ctoken_decode_psa_security_lifecycle(struct ctoken_decode_ctx *context,

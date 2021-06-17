@@ -415,13 +415,16 @@ ctoken_decode_enter_map(struct ctoken_decode_ctx *me,
                         QCBORDecodeContext     **decoder)
 {
     if(me->last_error != CTOKEN_ERR_SUCCESS) {
-    return;
+        return;
     }
 
     QCBORDecode_EnterMapFromMapN(&(me->qcbor_decode_context), label);
     me->last_error = get_and_reset_error(&(me->qcbor_decode_context));
-    *decoder = &(me->qcbor_decode_context);
-}
+    if(me->last_error == CTOKEN_ERR_SUCCESS) {
+        *decoder = &(me->qcbor_decode_context);
+    } else {
+        *decoder = NULL;
+    }}
 
 
 /*
@@ -449,7 +452,11 @@ ctoken_decode_enter_array(struct ctoken_decode_ctx *me,
 
     QCBORDecode_EnterArrayFromMapN(&(me->qcbor_decode_context), label);
     me->last_error = get_and_reset_error(&(me->qcbor_decode_context));
-    *decoder = &(me->qcbor_decode_context);
+    if(me->last_error == CTOKEN_ERR_SUCCESS) {
+        *decoder = &(me->qcbor_decode_context);
+    } else {
+        *decoder = NULL;
+    }
 }
 
 

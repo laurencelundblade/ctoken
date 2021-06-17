@@ -89,12 +89,12 @@ extern "C" {
  * # Token Decode Errors Overview
  *
  * The main validation and decoding of claims is designed so that
- * there is only an error check at the end of fetching all the
+ * there can be only an error check at the end of fetching all the
  * claims. The error state is tracked inside the decode context, so
  * the caller doesn't need to check a return value on the decode of
  * every claim. Once ctoken encounters an error it enters an error
  * state and further decode calls don't do anything, so it is safe to
- * call them. In many cases the only error check is calling
+ * continue decoding as if there was no error. In many uses the only error check is calling
  * ctoken_decode_get_error() once after all claims have been decoded
  * making the decode implementation very neat.
  *
@@ -289,8 +289,6 @@ ctoken_decode_get_kid(struct ctoken_decode_ctx *context,
  * \param[in] context           The token decoder context to validate with.
  * \param[in] token             The CBOR-encoded token to validate and decode.
  *
- * \return An error from \ref CTOKEN_ERR_t.
- *
  * The signature on the token is validated. If it is successful the
  * token and its payload is remembered in the \ref
  * ctoken_decode_ctx \c context so the \c
@@ -404,11 +402,14 @@ ctoken_decode_get_payload(struct ctoken_decode_ctx *context,
  * functions.
  *
  * Some care is needed when using this to avoid confusing
- * ctokens internal state, particularly when decoding
+ * ctoken's internal state, particularly when decoding
  * submodules. Use of spiffy decode functions to find
  * data items in the map works well. The CBOR nesting
  * level must be left the same as it was before the
  * claim(s) were decoded.
+ *
+ * See also ctoken_decode_enter_array() and
+ * ctoken_decode_enter_map()
 
  // TODO: what about error state?
  */
@@ -421,35 +422,19 @@ ctoken_decode_borrow_context(struct ctoken_decode_ctx *context);
  *
  * \param[in]  context    The token decoder context.
  * \param[in]  label The integer label identifying the claim.
- * \param[out] claim The signed integer or 0.
- *
- * \return An error from \ref CTOKEN_ERR_t.
- *
- * \retval CTOKEN_ERR_CBOR_STRUCTURE
- *         General structure of the token is incorrect, for example
- *         the top level is not a map or some map wasn't closed.
- *
- * \retval CTOKEN_ERR_CBOR_NOT_WELL_FORMED
- *         CBOR syntax is wrong and it is not decodable.
- *
- * \retval CTOKEN_ERR_CBOR_TYPE
- *         Returned if the claim is not a byte string.
- *
- * \retval CTOKEN_ERR_NOT_FOUND
- *         Data item for \c label was not found in token.
- *
- * \retval CTOKEN_ERR_INTEGER_VALUE
- *         Returned if the integer value is larger
- *         than \c INT64_MAX.
+ * \param[out] claim The signed integer.
  *
  * This will succeed if the CBOR type of the claim is either a
  * positive or negative integer as long as the value is between \c
  * INT64_MIN and \c INT64_MAX.
  *
- * See also ctoken_decode_get_uint().
+ * See also ctoken_decode_get_uint() and ctoken_decode_int_constrained().
  *
- * If an error occurs the value 0 will be returned and the error
- * inside the \c ctoken_decode_ctx will be set.
+ * The error result is saved in the @ref ctoken_decode_ctx and can be
+ * obtained by calling ctoken_decode_get_error(). The error must
+ * be checked before the claim's value is used, but that check can be
+ * after decoding other claims.  See
+ * [Token Decode Error Overview](#Token-Decode-Errors-Overview).
  */
 void
 ctoken_decode_int(struct ctoken_decode_ctx *context,
@@ -466,14 +451,18 @@ ctoken_decode_int(struct ctoken_decode_ctx *context,
  * \param[in]  max      The decoded claim must be larger than this.
  * \param[out] claim    Place to return the claim value.
  *
- * \return An error from \ref CTOKEN_ERR_t.
- *
  * This is the same as ctoken_decode_get_int() except the error \ref
  * CTOKEN_ERR_CLAIM_RANGE is returned if the decoded value is less
  * than \c min or more than \c max.
  *
  * This is useful for claims that are a range of integer values that
  * usually fit into an enumerated type.
+ *
+ * The error result is saved in the @ref ctoken_decode_ctx and can be
+ * obtained by calling ctoken_decode_get_error(). The error must
+ * be checked before the claim's value is used, but that check can be
+ * after decoding other claims.  See
+ * [Token Decode Error Overview](#Token-Decode-Errors-Overview).
  */
 void
 ctoken_decode_int_constrained(struct ctoken_decode_ctx *context,
@@ -488,25 +477,7 @@ ctoken_decode_int_constrained(struct ctoken_decode_ctx *context,
  *
  * \param[in]  context    The token decoder context.
  * \param[in]  label The integer label identifying the claim.
- * \param[out] claim The unsigned integer or 0.
- *
- * \return An error from \ref CTOKEN_ERR_t.
- *
- * \retval CTOKEN_ERR_CBOR_STRUCTURE
- *         General structure of the token is incorrect, for example
- *         the top level is not a map or some map wasn't closed.
- *
- * \retval CTOKEN_ERR_CBOR_NOT_WELL_FORMED
- *         CBOR syntax is wrong and it is not decodable.
- *
- * \retval CTOKEN_ERR_CBOR_TYPE
- *         Returned if the claim is not a byte string.
- *
- * \retval CTOKEN_ERR_NOT_FOUND
- *         Data item for \c label was not found in token.
- *
- * \retval CTOKEN_ERR_INTEGER_VALUE
- *         Returned if the integer value is negative.
+ * \param[out] claim The unsigned integer.
  *
  * This will succeed if the CBOR type of the claim is either a
  * positive or negative integer as long as the value is between 0 and
@@ -514,8 +485,11 @@ ctoken_decode_int_constrained(struct ctoken_decode_ctx *context,
  *
  * See also ctoken_decode_get_int().
  *
- *  If an error occurs the value 0 will be returned and the error
- *  inside the \c ctoken_decode_ctx will be set.
+ * The error result is saved in the @ref ctoken_decode_ctx and can be
+ * obtained by calling ctoken_decode_get_error(). The error must
+ * be checked before the claim's value is used, but that check can be
+ * after decoding other claims.  See
+ * [Token Decode Error Overview](#Token-Decode-Errors-Overview).
  */
 void
 ctoken_decode_uint(struct ctoken_decode_ctx *context,
@@ -531,24 +505,10 @@ ctoken_decode_uint(struct ctoken_decode_ctx *context,
  * \param[in]  label The integer label identifying the claim.
  * \param[out] claim The byte string or \c NULL_Q_USEFUL_BUF_C.
  *
- * \return An error from \ref CTOKEN_ERR_t.
- *
- * \retval CTOKEN_ERR_CBOR_STRUCTURE
- *         General structure of the token is incorrect, for example
- *         the top level is not a map or some map wasn't closed.
- *
- * \retval CTOKEN_ERR_CBOR_NOT_WELL_FORMED
- *         CBOR syntax is wrong and it is not decodable.
- *
- * \retval CTOKEN_ERR_CBOR_TYPE
- *         Returned if the claim is not a byte string.
- *
- * \retval CTOKEN_ERR_NOT_FOUND
- *         Data item for \c label was not found in token.
- *
- * If an error occurs, the claim will be set to \c NULL_Q_USEFUL_BUF_C
- * and the error state inside \c ctoken_decode_ctx will
- * be set.
+ * The error result is saved in the @ref ctoken_decode_ctx and can be
+ * obtained by calling ctoken_decode_get_error(). Also, on error
+ * \c NULL_Q_USEFUL_BUF_C will be returned for the claim value.  See
+ * [Token Decode Error Overview](#Token-Decode-Errors-Overview).
  */
 void
 ctoken_decode_bstr(struct ctoken_decode_ctx  *context,
@@ -562,28 +522,14 @@ ctoken_decode_bstr(struct ctoken_decode_ctx  *context,
  *
  * \param[in] context     The token decoder context.
  * \param[in] label  The integer label identifying the claim.
- * \param[out] claim The byte string or \c NULL_Q_USEFUL_BUF_C.
- *
- * \return An error from \ref CTOKEN_ERR_t.
- *
- * \retval CTOKEN_ERR_CBOR_STRUCTURE
- *         General structure of the token is incorrect, for example
- *         the top level is not a map or some map wasn't closed.
- *
- * \retval CTOKEN_ERR_CBOR_NOT_WELL_FORMED
- *         CBOR syntax is wrong and it is not decodable.
- *
- * \retval CTOKEN_ERR_CBOR_TYPE
- *         Returned if the claim is not a byte string.
- *
- * \retval CTOKEN_ERR_NOT_FOUND
- *         Data item for \c label was not found in token.
+ * \param[out] claim The text string or \c NULL_Q_USEFUL_BUF_C.
  *
  * Even though this is a text string, it is not NULL-terminated.
  *
- * If an error occurs, the claim will be set to \c NULL_Q_USEFUL_BUF_C
- * and the error state inside \c ctoken_decode_ctx will
- * be set.
+ * The error result is saved in the @ref ctoken_decode_ctx and can be
+ * obtained by calling ctoken_decode_get_error(). Also, on error
+ * \c NULL_Q_USEFUL_BUF_C will be returned for the claim value.  See
+ * [Token Decode Error Overview](#Token-Decode-Errors-Overview).
  */
 void
 ctoken_decode_tstr(struct ctoken_decode_ctx *context,
@@ -598,7 +544,11 @@ ctoken_decode_tstr(struct ctoken_decode_ctx *context,
  * \param[in]  label The integer label identifying the claim.
  * \param[out] claim The boolean value tha t is returned.
  *
- * \return An error from \ref CTOKEN_ERR_t.
+ * The error result is saved in the @ref ctoken_decode_ctx and can be
+ * obtained by calling ctoken_decode_get_error(). The error must
+ * be checked before the claim's value is used, but that check can be
+ * after decoding other claims.  See
+ * [Token Decode Error Overview](#Token-Decode-Errors-Overview).
  */
 void
 ctoken_decode_bool(struct ctoken_decode_ctx *context,
@@ -607,13 +557,17 @@ ctoken_decode_bool(struct ctoken_decode_ctx *context,
 
 
 /**
- * \brief Get a claim of type double
+ * \brief Get a claim of type double.
  *
  * \param[in]  context    The token decoder context.
  * \param[in]  label The integer label identifying the claim.
  * \param[out] claim The double value tha t is returned.
  *
- * \return An error from \ref CTOKEN_ERR_t.
+ * The error result is saved in the @ref ctoken_decode_ctx and can be
+ * obtained by calling ctoken_decode_get_error(). The error must
+ * be checked before the claim's value is used, but that check can be
+ * after decoding other claims.  See
+ * [Token Decode Error Overview](#Token-Decode-Errors-Overview).
  */
 void
 ctoken_decode_double(struct ctoken_decode_ctx *context,
@@ -627,9 +581,7 @@ ctoken_decode_double(struct ctoken_decode_ctx *context,
  * \param[in]  context  The token decoder context.
  * \param[in]  label    The integer label identifying the claim.
  * \param[out] decoder  Instance of the CBOR decoder from which to
- *                      get array items.
- *
- * \return An error from \ref CTOKEN_ERR_t
+ *                      get array items or \c NULL on error.
  *
  * After some or all the items in the array have been retrieved, call
  * ctoken_decode_exit_array().
@@ -640,6 +592,11 @@ ctoken_decode_double(struct ctoken_decode_ctx *context,
  * QCBORDecode_GetTextString() can then be called until one returns \ref
  * QCBOR_ERR_NO_MORE_ITEMS.  The array may contain other arrays and
  * maps.
+ *
+ * The error result is saved in the @ref ctoken_decode_ctx and can be
+ * obtained by calling ctoken_decode_get_error(). Also, on error
+ * \c NULL will be returned for decoder context.  See
+ * [Token Decode Error Overview](#Token-Decode-Errors-Overview).
  */
 void
 ctoken_decode_enter_array(struct ctoken_decode_ctx *context,
@@ -652,8 +609,6 @@ ctoken_decode_enter_array(struct ctoken_decode_ctx *context,
  *
  * \param[in]  context  The token decoder context.
  *
- * \return An error from \ref CTOKEN_ERR_t
- *
  * This ends decoding of a claim that is an array started by
  * ctoken_decode_enter_array().
  *
@@ -661,6 +616,11 @@ ctoken_decode_enter_array(struct ctoken_decode_ctx *context,
  * spiffy decode.  Any maps or arrays subordinate to the main array of
  * the claim must be exitied if they were entered before this is
  * called.
+ *
+ * The error result is saved in the @ref ctoken_decode_ctx and can be
+ * obtained by calling ctoken_decode_get_error(). The error result
+ * should be checked to know the array was well-formed and valid.  See
+ * [Token Decode Error Overview](#Token-Decode-Errors-Overview).
  */
 void
 ctoken_decode_exit_array(struct ctoken_decode_ctx *context);
@@ -672,9 +632,7 @@ ctoken_decode_exit_array(struct ctoken_decode_ctx *context);
  * \param[in]  context  The token decoder context.
  * \param[in]  label    The integer label identifying the claim.
  * \param[out] decoder  Instance of the CBOR decoder from which to
- *                      get map items.
- *
- * \return An error from \ref CTOKEN_ERR_t
+ *                      get map items or \c NULL.
  *
  * After some or all the items in the map have been retrieved, call
  * ctoken_decode_exit_map().
@@ -685,6 +643,11 @@ ctoken_decode_exit_array(struct ctoken_decode_ctx *context);
  * QCBORDecode_GetTextStringInMapN() and
  * QCBORDecode_EnterArrayFromMapN() can then be called.  The map may
  * contain other arrays and maps.
+ *
+ * The error result is saved in the @ref ctoken_decode_ctx and can be
+ * obtained by calling ctoken_decode_get_error(). Also, on error
+ * \c NULL will be returned for decoder context.  See
+ * [Token Decode Error Overview](#Token-Decode-Errors-Overview).
  */
 void
 ctoken_decode_enter_map(struct ctoken_decode_ctx *context,
@@ -697,8 +660,6 @@ ctoken_decode_enter_map(struct ctoken_decode_ctx *context,
  *
  * \param[in]  context  The token decoder context.
  *
- * \return An error from \ref CTOKEN_ERR_t
- *
  * This ends decoding of a claim that is an array started by
  * ctoken_decode_enter_map().
  *
@@ -706,6 +667,11 @@ ctoken_decode_enter_map(struct ctoken_decode_ctx *context,
  * spiffy decode.  Any maps or arrays subordinate to the main array of
  * the claim must be exitied if they were entered before this is
  * called.
+ *
+ * The error result is saved in the @ref ctoken_decode_ctx and can be
+ * obtained by calling ctoken_decode_get_error(). The error result
+ * should be checked to know the map was well-formed and valid.  See
+ * [Token Decode Error Overview](#Token-Decode-Errors-Overview).
  */
 void
 ctoken_decode_exit_map(struct ctoken_decode_ctx *context);
@@ -717,22 +683,15 @@ ctoken_decode_exit_map(struct ctoken_decode_ctx *context);
  * \param[in] context  The decoding context to decode from.
  * \param[out] issuer  Place to put pointer and length of the issuer claim.
  *
- * \retval CTOKEN_ERR_CBOR_STRUCTURE
- *         General structure of the token is incorrect, for example
- *         the top level is not a map or some map wasn't closed.
- *
- * \retval CTOKEN_ERR_CBOR_NOT_WELL_FORMED
- *         CBOR syntax is wrong and it is not decodable.
- *
- * \retval CTOKEN_ERR_CBOR_TYPE
- *         Returned if the claim is not a text string.
- *
- * \retval CTOKEN_ERR_NOT_FOUND
- *         Data item for \c label was not found in token.
- *
  *  The principle that created the token. It is a text string or a URI as described in
  *  [RFC 8392](https://tools.ietf.org/html/rfc8392#section-3.1.1)
  * and [RFC 7519] (https://tools.ietf.org/html/rfc7519#section-4.1.1).
+ *
+ * The error result is saved in the @ref ctoken_decode_ctx and can be
+ * obtained by calling ctoken_decode_get_error(). The error must
+ * be checked before the claim's value is used, but that check can be
+ * after decoding other claims.  See
+ * [Token Decode Error Overview](#Token-Decode-Errors-Overview).
  */
 static inline void
 ctoken_decode_issuer(struct ctoken_decode_ctx *context,
@@ -745,22 +704,15 @@ ctoken_decode_issuer(struct ctoken_decode_ctx *context,
  * \param[in] context   The decoding context to decode from.
  * \param[out] subject  Place to put pointer and length of the subject claim.
  *
- * \retval CTOKEN_ERR_CBOR_STRUCTURE
- *         General structure of the token is incorrect, for example
- *         the top level is not a map or some map wasn't closed.
- *
- * \retval CTOKEN_ERR_CBOR_NOT_WELL_FORMED
- *         CBOR syntax is wrong and it is not decodable.
- *
- * \retval CTOKEN_ERR_CBOR_TYPE
- *         Returned if the claim is not a text string.
- *
- * \retval CTOKEN_ERR_NOT_FOUND
- *         Data item for \c label was not found in token.
- *
  * Identifies the subject of the token. It is a text string or URI as described in
  * [RFC 8392](https://tools.ietf.org/html/rfc8392#section-3.1.2)
  * and [RFC 7519] (https://tools.ietf.org/html/rfc7519#section-4.1.2).
+ *
+ * The error result is saved in the @ref ctoken_decode_ctx and can be
+ * obtained by calling ctoken_decode_get_error(). The error must
+ * be checked before the claim's value is used, but that check can be
+ * after decoding other claims.  See
+ * [Token Decode Error Overview](#Token-Decode-Errors-Overview).
  */
 static inline void
 ctoken_decode_subject(struct ctoken_decode_ctx *context,
@@ -773,23 +725,16 @@ ctoken_decode_subject(struct ctoken_decode_ctx *context,
  * \param[in] context    The decoding context to decode from.
  * \param[out] audience  Place to put pointer and length of the audience claim.
  *
- * \retval CTOKEN_ERR_CBOR_STRUCTURE
- *         General structure of the token is incorrect, for example
- *         the top level is not a map or some map wasn't closed.
- *
- * \retval CTOKEN_ERR_CBOR_NOT_WELL_FORMED
- *         CBOR syntax is wrong and it is not decodable.
- *
- * \retval CTOKEN_ERR_CBOR_TYPE
- *         Returned if the claim is not a text string.
- *
- * \retval CTOKEN_ERR_NOT_FOUND
- *         Data item for \c label was not found in token.
- *
  * This identifies the recipient for which the token is intended. It is
  * a text string or URI as
  * described in [RFC 8392](https://tools.ietf.org/html/rfc8392#section-3.1.3)
  * and [RFC 7519] (https://tools.ietf.org/html/rfc7519#section-4.1.3).
+ *
+ * The error result is saved in the @ref ctoken_decode_ctx and can be
+ * obtained by calling ctoken_decode_get_error(). The error must
+ * be checked before the claim's value is used, but that check can be
+ * after decoding other claims.  See
+ * [Token Decode Error Overview](#Token-Decode-Errors-Overview).
  */
 static inline void
 ctoken_decode_audience(struct ctoken_decode_ctx *context,
@@ -802,19 +747,6 @@ ctoken_decode_audience(struct ctoken_decode_ctx *context,
  * \param[in] context      The decoding context to decode from.
  * \param[out] expiration  Place to return expiration claim.
  *
- * \retval CTOKEN_ERR_CBOR_STRUCTURE
- *         General structure of the token is incorrect, for example
- *         the top level is not a map or some map wasn't closed.
- *
- * \retval CTOKEN_ERR_CBOR_NOT_WELL_FORMED
- *         CBOR syntax is wrong and it is not decodable.
- *
- * \retval CTOKEN_ERR_CBOR_TYPE
- *         Returned if the claim is not an integer.
- *
- * \retval CTOKEN_ERR_NOT_FOUND
- *         Data item for \c label was not found in token.
- *
  * The time format is that described as Epoch Time in CBOR, RFC 7049, the
  * number of seconds since Jan 1, 1970.
  *
@@ -824,6 +756,12 @@ ctoken_decode_audience(struct ctoken_decode_ctx *context,
  * Details are described in
  * [RFC 8392](https://tools.ietf.org/html/rfc8392#section-3.1.4)
  * and [RFC 7519] (https://tools.ietf.org/html/rfc7519#section-4.1.4).
+ *
+ * The error result is saved in the @ref ctoken_decode_ctx and can be
+ * obtained by calling ctoken_decode_get_error(). The error must
+ * be checked before the claim's value is used, but that check can be
+ * after decoding other claims.  See
+ * [Token Decode Error Overview](#Token-Decode-Errors-Overview).
  */
 static inline void
 ctoken_decode_expiration(struct ctoken_decode_ctx *context,
@@ -836,19 +774,6 @@ ctoken_decode_expiration(struct ctoken_decode_ctx *context,
  * \param[in] context      The decoding context to decode from.
  * \param[out] not_before  Place to return the not-before claim.
  *
- * \retval CTOKEN_ERR_CBOR_STRUCTURE
- *         General structure of the token is incorrect, for example
- *         the top level is not a map or some map wasn't closed.
- *
- * \retval CTOKEN_ERR_CBOR_NOT_WELL_FORMED
- *         CBOR syntax is wrong and it is not decodable.
- *
- * \retval CTOKEN_ERR_CBOR_TYPE
- *         Returned if the claim is not an integer.
- *
- * \retval CTOKEN_ERR_NOT_FOUND
- *         Data item for \c label was not found in token.
- *
  * The time format is that described as Epoch Time in CBOR, RFC 7049, the
  * number of seconds since Jan 1, 1970.
  *
@@ -858,6 +783,12 @@ ctoken_decode_expiration(struct ctoken_decode_ctx *context,
  * Details are described in
  * [RFC 8392](https://tools.ietf.org/html/rfc8392#section-3.1.5)
  * and [RFC 7519] (https://tools.ietf.org/html/rfc7519#section-4.1.5).
+ *
+ * The error result is saved in the @ref ctoken_decode_ctx and can be
+ * obtained by calling ctoken_decode_get_error(). The error must
+ * be checked before the claim's value is used, but that check can be
+ * after decoding other claims.  See
+ * [Token Decode Error Overview](#Token-Decode-Errors-Overview).
  */
 static inline void
 ctoken_decode_not_before(struct ctoken_decode_ctx *context,
@@ -869,19 +800,6 @@ ctoken_decode_not_before(struct ctoken_decode_ctx *context,
  *
  * \param[in] context  The decoding context to decode from.
  * \param[out] iat     Place to put pointer and length of the issued-at claim.
- *
- * \retval CTOKEN_ERR_CBOR_STRUCTURE
- *         General structure of the token is incorrect, for example
- *         the top level is not a map or some map wasn't closed.
- *
- * \retval CTOKEN_ERR_CBOR_NOT_WELL_FORMED
- *         CBOR syntax is wrong and it is not decodable.
- *
- * \retval CTOKEN_ERR_CBOR_TYPE
- *         Returned if the claim is not a byte string.
- *
- * \retval CTOKEN_ERR_NOT_FOUND
- *         Data item for \c label was not an integer.
  *
  * The time at which the token was issued at.
  *
@@ -895,6 +813,12 @@ ctoken_decode_not_before(struct ctoken_decode_ctx *context,
  * [RFC 8392](https://tools.ietf.org/html/rfc8392#section-3.1.6)
  * and [RFC 7519] (https://tools.ietf.org/html/rfc7519#section-4.1.6).
  * This claim is also used by (EAT)[https://tools.ietf.org/html/draft-ietf-rats-eat-04].
+ *
+ * The error result is saved in the @ref ctoken_decode_ctx and can be
+ * obtained by calling ctoken_decode_get_error(). The error must
+ * be checked before the claim's value is used, but that check can be
+ * after decoding other claims.  See
+ * [Token Decode Error Overview](#Token-Decode-Errors-Overview).
  */
 static inline void
 ctoken_decode_iat(struct ctoken_decode_ctx *context,
@@ -907,24 +831,17 @@ ctoken_decode_iat(struct ctoken_decode_ctx *context,
  * \param[in] context  The decoding context to decode from.
  * \param[out] cti     Place to put pointer and length of the CWT ID claim.
  *
- * \retval CTOKEN_ERR_CBOR_STRUCTURE
- *         General structure of the token is incorrect, for example
- *         the top level is not a map or some map wasn't closed.
- *
- * \retval CTOKEN_ERR_CBOR_NOT_WELL_FORMED
- *         CBOR syntax is wrong and it is not decodable.
- *
- * \retval CTOKEN_ERR_CBOR_TYPE
- *         Returned if the claim is not a byte string.
- *
- * \retval CTOKEN_ERR_NOT_FOUND
- *         Data item for \c label was not found in token.
- *
  * This is a byte string that uniquely identifies the token.
  *
  * [RFC 8392](https://tools.ietf.org/html/rfc8392#section-3.1.7)
  * and [RFC 7519] (https://tools.ietf.org/html/rfc7519#section-4.1.7).
  * This claim is also used by (EAT)[https://tools.ietf.org/html/draft-ietf-rats-eat-04].
+ *
+ * The error result is saved in the @ref ctoken_decode_ctx and can be
+ * obtained by calling ctoken_decode_get_error(). The error must
+ * be checked before the claim's value is used, but that check can be
+ * after decoding other claims.  See
+ * [Token Decode Error Overview](#Token-Decode-Errors-Overview).
  */
 static inline void
 ctoken_decode_cti(struct ctoken_decode_ctx *context,
@@ -937,20 +854,13 @@ ctoken_decode_cti(struct ctoken_decode_ctx *context,
  * \param[in] context   The decoding context to decode from.
  * \param[out] nonce    Place to put pointer and length of nonce.
  *
- * \retval CTOKEN_ERR_CBOR_STRUCTURE
- *         General structure of the token is incorrect, for example
- *         the top level is not a map or some map wasn't closed.
- *
- * \retval CTOKEN_ERR_CBOR_NOT_WELL_FORMED
- *         CBOR syntax is wrong and it is not decodable.
- *
- * \retval CTOKEN_ERR_CBOR_TYPE
- *         Returned if the claim is not a byte string.
- *
- * \retval CTOKEN_ERR_NOT_FOUND
- *         Data item for \c label was not found in token.
- *
  * This gets the nonce claim out of the token.
+ *
+ * The error result is saved in the @ref ctoken_decode_ctx and can be
+ * obtained by calling ctoken_decode_get_error(). The error must
+ * be checked before the claim's value is used, but that check can be
+ * after decoding other claims.  See
+ * [Token Decode Error Overview](#Token-Decode-Errors-Overview).
  */
 static inline void
 ctoken_decode_nonce(struct ctoken_decode_ctx *context,
@@ -963,23 +873,16 @@ ctoken_decode_nonce(struct ctoken_decode_ctx *context,
  * \param[in] context  The decoding context to decode from.
  * \param[out] ueid    Place to put pointer and length of the UEID.
  *
- * \retval CTOKEN_ERR_CBOR_STRUCTURE
- *         General structure of the token is incorrect, for example
- *         the top level is not a map or some map wasn't closed.
- *
- * \retval CTOKEN_ERR_CBOR_NOT_WELL_FORMED
- *         CBOR syntax is wrong and it is not decodable.
- *
- * \retval CTOKEN_ERR_CBOR_TYPE
- *         Returned if the claim is not a byte string.
- *
- * \retval CTOKEN_ERR_NOT_FOUND
- *         Data item for \c label was not found in token.
- *
  * This gets the UEID claim out of the token.
  *
  * The UEID is the Universal Entity ID, an opaque binary blob that uniquely
  * identifies the device.
+ *
+ * The error result is saved in the @ref ctoken_decode_ctx and can be
+ * obtained by calling ctoken_decode_get_error(). The error must
+ * be checked before the claim's value is used, but that check can be
+ * after decoding other claims.  See
+ * [Token Decode Error Overview](#Token-Decode-Errors-Overview).
  */
 static inline void
 ctoken_decode_ueid(struct ctoken_decode_ctx *context,
@@ -992,22 +895,15 @@ ctoken_decode_ueid(struct ctoken_decode_ctx *context,
  * \param[in] context  The decoding context to decode from.
  * \param[out] oemid   Place to put pointer and length of the OEMID.
  *
- * \retval CTOKEN_ERR_CBOR_STRUCTURE
- *         General structure of the token is incorrect, for example
- *         the top level is not a map or some map wasn't closed.
- *
- * \retval CTOKEN_ERR_CBOR_NOT_WELL_FORMED
- *         CBOR syntax is wrong and it is not decodable.
- *
- * \retval CTOKEN_ERR_CBOR_TYPE
- *         Returned if the claim is not a byte string.
- *
- * \retval CTOKEN_ERR_NOT_FOUND
- *         Data item for \c label was not found in token.
- *
  * This gets the OEMID claim out of the token.
  *
  * The OEMID is an opaque binary blob that identifies the manufacturer.
+ *
+ * The error result is saved in the @ref ctoken_decode_ctx and can be
+ * obtained by calling ctoken_decode_get_error(). The error must
+ * be checked before the claim's value is used, but that check can be
+ * after decoding other claims.  See
+ * [Token Decode Error Overview](#Token-Decode-Errors-Overview).
  */
 static inline void
 ctoken_decode_oemid(struct ctoken_decode_ctx *context,
@@ -1020,23 +916,16 @@ ctoken_decode_oemid(struct ctoken_decode_ctx *context,
  * \param[in] context       The decoding context to decode from.
  * \param[out] origination  Place to put pointer and length of the origination.
  *
- * \retval CTOKEN_ERR_CBOR_STRUCTURE
- *         General structure of the token is incorrect, for example
- *         the top level is not a map or some map wasn't closed.
- *
- * \retval CTOKEN_ERR_CBOR_NOT_WELL_FORMED
- *         CBOR syntax is wrong and it is not decodable.
- *
- * \retval CTOKEN_ERR_CBOR_TYPE
- *         Returned if the claim is not a byte string.
- *
- * \retval CTOKEN_ERR_NOT_FOUND
- *         Data item for \c label was not found in token.
- *
  * This gets the origination claim out of the token.
  *
  * This describes the part of the device that created the token. It
  * is a text string or a URI.
+ *
+ * The error result is saved in the @ref ctoken_decode_ctx and can be
+ * obtained by calling ctoken_decode_get_error(). The error must
+ * be checked before the claim's value is used, but that check can be
+ * after decoding other claims.  See
+ * [Token Decode Error Overview](#Token-Decode-Errors-Overview).
  */
 static inline void
 ctoken_decode_origination(struct ctoken_decode_ctx *context,
@@ -1048,24 +937,17 @@ ctoken_decode_origination(struct ctoken_decode_ctx *context,
  *
  * \param[in] context          The decoding context to decode from.
  * \param[out] security_level  Place to put security level.
-
- * \retval CTOKEN_ERR_CBOR_STRUCTURE
- *         General structure of the token is incorrect, for example
- *         the top level is not a map or some map wasn't closed.
- *
- * \retval CTOKEN_ERR_CBOR_NOT_WELL_FORMED
- *         CBOR syntax is wrong and it is not decodable.
- *
- * \retval CTOKEN_ERR_CBOR_TYPE
- *         Returned if the claim is not a byte string.
- *
- * \retval CTOKEN_ERR_NOT_FOUND
- *         Data item for \c label was not found in token.
  *
  * This gets the security level claim out of the token.
  *
  * The security level gives a rough indication of how security
  * the HW and SW are.  See \ref ctoken_security_level_t.
+ *
+ * The error result is saved in the @ref ctoken_decode_ctx and can be
+ * obtained by calling ctoken_decode_get_error(). The error must
+ * be checked before the claim's value is used, but that check can be
+ * after decoding other claims.  See
+ * [Token Decode Error Overview](#Token-Decode-Errors-Overview).
  */
 static void
 ctoken_decode_security_level(struct ctoken_decode_ctx         *context,
@@ -1079,23 +961,16 @@ ctoken_decode_security_level(struct ctoken_decode_ctx         *context,
  * \param[out] secure_boot_enabled  This is \c true if secure boot
  *                                  is enabled or \c false it no.
  *
- * \retval CTOKEN_ERR_CBOR_STRUCTURE
- *         General structure of the token is incorrect, for example
- *         the top level is not a map or some map wasn't closed.
- *
- * \retval CTOKEN_ERR_CBOR_NOT_WELL_FORMED
- *         CBOR syntax is wrong and it is not decodable.
- *
- * \retval CTOKEN_ERR_CBOR_TYPE
- *         Returned if the claim is not a byte string.
- *
- * \retval CTOKEN_ERR_NOT_FOUND
- *         Data item for \c label was not found in token.
- *
  * This gets the boot and debug state out of the token.
  *
  * The security level gives a rough indication of how security
  * the HW and SW are.  See \ref ctoken_security_level_t.
+ *
+ * The error result is saved in the @ref ctoken_decode_ctx and can be
+ * obtained by calling ctoken_decode_get_error(). The error must
+ * be checked before the claim's value is used, but that check can be
+ * after decoding other claims.  See
+ * [Token Decode Error Overview](#Token-Decode-Errors-Overview).
  */
 static void
 ctoken_decode_secure_boot(struct ctoken_decode_ctx *context,
@@ -1109,23 +984,16 @@ ctoken_decode_secure_boot(struct ctoken_decode_ctx *context,
  * \param[out] debug_state          See \ref ctoken_debug_level_t for
  *                                  the different debug states.
  *
- * \retval CTOKEN_ERR_CBOR_STRUCTURE
- *         General structure of the token is incorrect, for example
- *         the top level is not a map or some map wasn't closed.
- *
- * \retval CTOKEN_ERR_CBOR_NOT_WELL_FORMED
- *         CBOR syntax is wrong and it is not decodable.
- *
- * \retval CTOKEN_ERR_CBOR_TYPE
- *         Returned if the claim is not a byte string.
- *
- * \retval CTOKEN_ERR_NOT_FOUND
- *         Data item for \c label was not found in token.
- *
  * This gets the boot and debug state out of the token.
  *
  * The security level gives a rough indication of how security
  * the HW and SW are.  See \ref ctoken_security_level_t.
+ *
+ * The error result is saved in the @ref ctoken_decode_ctx and can be
+ * obtained by calling ctoken_decode_get_error(). The error must
+ * be checked before the claim's value is used, but that check can be
+ * after decoding other claims.  See
+ * [Token Decode Error Overview](#Token-Decode-Errors-Overview).
  */
 static void
 ctoken_decode_debug_state(struct ctoken_decode_ctx  *context,
@@ -1138,15 +1006,17 @@ ctoken_decode_debug_state(struct ctoken_decode_ctx  *context,
  * \param[in] context   The decoding context to decode from.
  * \param[out] location The returned location
  *
- * \retval CTOKEN_ERR_NOT_FOUND             No location claims exists.
- * \retval CTOKEN_ERR_CBOR_NOT_WELL_FORMED  CBOR is not well formed.
- * \retval CTOKEN_ERR_CLAIM_FORMAT          The location claim format is bad.
- *
  * This finds the location claim in the token and returns its
  * contents.
  *
  * Only some of the values in the location claim may be present. See
  * \ref ctoken_location_t for how the data is returned.
+ *
+ * The error result is saved in the @ref ctoken_decode_ctx and can be
+ * obtained by calling ctoken_decode_get_error(). The error must
+ * be checked before the claim's value is used, but that check can be
+ * after decoding other claims.  See
+ * [Token Decode Error Overview](#Token-Decode-Errors-Overview).
  */
 void
 ctoken_decode_location(struct ctoken_decode_ctx     *context,
@@ -1163,9 +1033,11 @@ ctoken_decode_location(struct ctoken_decode_ctx     *context,
  *
  * This is the time in seconds since the device booted or started.
  *
- * If there is an error like insufficient space in the output buffer,
- * the error state is entered. It is returned later when
- * ctoken_encode_finish() is called.
+ * The error result is saved in the @ref ctoken_decode_ctx and can be
+ * obtained by calling ctoken_decode_get_error(). The error must
+ * be checked before the claim's value is used, but that check can be
+ * after decoding other claims.  See
+ * [Token Decode Error Overview](#Token-Decode-Errors-Overview).
  */
 static void
 ctoken_decode_uptime(struct ctoken_decode_ctx *context,
@@ -1178,11 +1050,11 @@ ctoken_decode_uptime(struct ctoken_decode_ctx *context,
  * \param[in] context  The decoding context.
  * \param[in] use      See \ref ctoken_intended_use_t for meaning of values.
  *
- * This decodes the uptime claim.
- *
- * If there is an error like insufficient space in the output buffer,
- * the error state is entered. It is returned later when
- * ctoken_encode_finish() is called.
+ * The error result is saved in the @ref ctoken_decode_ctx and can be
+ * obtained by calling ctoken_decode_get_error(). The error must
+ * be checked before the claim's value is used, but that check can be
+ * after decoding other claims.  See
+ * [Token Decode Error Overview](#Token-Decode-Errors-Overview).
  */
 static void
 ctoken_decode_intended_use(struct ctoken_decode_ctx   *context,
@@ -1195,9 +1067,13 @@ ctoken_decode_intended_use(struct ctoken_decode_ctx   *context,
  * \param[in] context  The decoding context.
  * \param[out] uri     The decoded URI.
  *
- * See \ref decode-errors for description of error handling.
- *
  * See also ctoken_decode_profile_uri() and ctoken_decode_profile().
+ *
+ * The error result is saved in the @ref ctoken_decode_ctx and can be
+ * obtained by calling ctoken_decode_get_error(). The error must
+ * be checked before the claim's value is used, but that check can be
+ * after decoding other claims.  See
+ * [Token Decode Error Overview](#Token-Decode-Errors-Overview).
  */
 static inline void
 ctoken_decode_profile_oid(struct ctoken_decode_ctx *context,
@@ -1210,9 +1086,13 @@ ctoken_decode_profile_oid(struct ctoken_decode_ctx *context,
  * \param[in] context  The decoding context.
  * \param[out] uri     The decoded URI.
  *
- * See \ref decode-errors for description of error handling.
- *
  * See also ctoken_decode_profile_oid() and ctoken_decode_profile().
+ *
+ * The error result is saved in the @ref ctoken_decode_ctx and can be
+ * obtained by calling ctoken_decode_get_error(). The error must
+ * be checked before the claim's value is used, but that check can be
+ * after decoding other claims.  See
+ * [Token Decode Error Overview](#Token-Decode-Errors-Overview).
  */
 static inline void
 ctoken_decode_profile_uri(struct ctoken_decode_ctx *context,
@@ -1227,13 +1107,17 @@ ctoken_decode_profile_uri(struct ctoken_decode_ctx *context,
  *                            false is uri format.
  * \param[out] profile   The decoded profile.
  *
- * See \ref decode-errors for description of error handling.
- *
  * This decodes either the oid or uri format profile claim,
  * returning \c is_oid_format to indicate which format.
 
  * See also ctoken_decode_profile_oid() and
  * ctoken_decode_profile_uri().
+ *
+ * The error result is saved in the @ref ctoken_decode_ctx and can be
+ * obtained by calling ctoken_decode_get_error(). The error must
+ * be checked before the claim's value is used, but that check can be
+ * after decoding other claims.  See
+ * [Token Decode Error Overview](#Token-Decode-Errors-Overview).
  */
 static inline void
 ctoken_decode_profile(struct ctoken_decode_ctx *context,
@@ -1248,7 +1132,7 @@ ctoken_decode_profile(struct ctoken_decode_ctx *context,
  * \param[out] claim      The decoded claim.
  *
  * All the claims in a token or submodule can be iterated over by
- * calling this until the end is indicated.  This will not decsend in
+ * calling this until the end is indicated.  This will not descend in
  * to submodules. The various submodule-related tunctions must be
  * called to enter the submodule. Once a submodule is entered this can
  * be used to iterate over all the claims in it.
@@ -1271,7 +1155,7 @@ ctoken_decode_profile(struct ctoken_decode_ctx *context,
  *
  * When the claim is an aggregate type, and array or map, the data
  * type will indicate an array or map however iteration will not
- * desened into the array or mpa. Instead the whole content of the
+ * descend into the array or map. Instead the whole content of the
  * array or map will be skipped over with the iteration going on to
  * the next claim. This is the main difference between this function
  * and QCBORDecode_GetNext().
@@ -1279,6 +1163,12 @@ ctoken_decode_profile(struct ctoken_decode_ctx *context,
  * Note that this maintains its own iteration cursor indepdent of the
  * other functions for getting claims so calls to this can be
  * intermixed with the other calls.
+ *
+ * The error result is saved in the @ref ctoken_decode_ctx and can be
+ * obtained by calling ctoken_decode_get_error(). The error result
+ * must be checked to know the claim returned is valid and that all
+ * the claims have not been consumed.  See
+ * [Token Decode Error Overview](#Token-Decode-Errors-Overview).
 */
 void
 ctoken_decode_next_claim(struct ctoken_decode_ctx   *context,
@@ -1299,22 +1189,17 @@ ctoken_decode_rewind(struct ctoken_decode_ctx   *context);
  * \param[in] context        The decoding context.
  * \param[out] num_submods   The returned number of submodules.
  *
- * \retval CTOKEN_ERR_SUCCESS           The submodule section exists and its
- *                                      content was counted.
- *
- * \retval CTOKEN_ERR_NESTING_TOO_DEEP  The submodule and claim nesting
- *                                      is deeper than either QCBOR or
- *                                      ctoken can handle.
- *
- * \retval CTOKEN_ERR_XXX               Other errors usually indicate
- *                                      the submodule or submodules
- *                                      sections are malformed or
- *                                      invalid.
- *
  * This returns the number of submodules at the current submodule
  * nesting level. If there is no submodules section or it is
  * empty the error code returned is CTOKEN_ERR_SUCCESS and the
  * num_submods returned is 0.
+ *
+ *  * The error result is saved in the @ref ctoken_decode_ctx and can be
+ * obtained by calling ctoken_decode_get_error(). The error result
+ * must be checked to know the claim value returned is valid.  See
+ * [Token Decode Error Overview](#Token-Decode-Errors-Overview).
+ *
+ * TODO: error strategy
  */
 void
 ctoken_decode_get_num_submods(struct ctoken_decode_ctx *context,
@@ -1327,35 +1212,6 @@ ctoken_decode_get_num_submods(struct ctoken_decode_ctx *context,
  * \param[in] context        The decoding context.
  * \param[in] submod_index   Index of the submodule to enter.
  * \param[out] submod_name   The returned string name of the submodule.
- *
- * \retval CTOKEN_ERR_SUCCESS           The submodule exists and was entered.
- *
- * \retval CTOKEN_ERR_SUBMOD_NOT_FOUND  The submodule does not exist
- *                                      because there is no submodule
- *                                      section, the submodule section
- *                                      is empty, or the index was too
- *                                      large.
- *
- * \retval CTOKEN_ERR_SUBMOD_IS_A_TOKEN The submodule exists, but it
- *                                      is a nested token.
- *
- * \retval CTOKEN_ERR_SUBMOD_NAME_NOT_A_TEXT_STRING  The submodule
- *                                                   exists, is a map
- *                                                   but the name is
- *                                                   not a text
- *                                                   string.
- *
- * \retval CTOKEN_ERR_NESTING_TOO_DEEP  The submodule and claim nesting
- *                                      is deeper than either QCBOR or
- *                                      ctoken can handle.
- *
- * \retval CTOKEN_ERR_SUBMOD_TYPE       The CBOR type of the submodule
- *                                      is not a map.
- *
- * \retval CTOKEN_ERR_XXX               Other errors usually indicate
- *                                      the submodule or submodules
- *                                      sections are malformed or
- *                                      invalid.
  *
  * After this call, all claims fetched will be from the submodule that
  * was entered.  This, and the other functions to enter submodules,
@@ -1382,29 +1238,6 @@ ctoken_decode_enter_nth_submod(struct ctoken_decode_ctx *context,
  * \param[in] context      The decoding context.
  * \param[in] submod_name  The name of the submodule to enter.
  *
- * \retval CTOKEN_ERR_SUCCESS           The submodule exists and was entered.
- *
- * \retval CTOKEN_ERR_DUPLICATE_LABEL   Either there are two submodule sections
- *                                      or two submodules with the same name.
- *
- * \retval CTOKEN_ERR_SUBMOD_NOT_FOUND  The submodule does not exist because
- *                                      there is no submodule section or no
- *                                      submod with the given name was found.
- *
- * \retval CTOKEN_ERR_SUBMOD_IS_A_TOKEN The submodule exists, but it is a
- *                                      nested token.
- *
- * \retval CTOKEN_ERR_NESTING_TOO_DEEP  The submodule and claim nesting is deeper
- *                                      than either QCBOR or ctoken can handle.
- *
- * \retval CTOKEN_ERR_SUBMOD_TYPE       The CBOR type of the submodule
- *                                      is not a map.
- *
- * \retval CTOKEN_ERR_XXX               Other errors usually indicate
- *                                      the submodule or submodules
- *                                      sections are malformed or
- *                                      invalid.
- *
  * After this call, all claims fetched will be from the submodule that
  * was entered.  This, and the other functions to enter submodules,
  * may be called multiple times to enter nested submodules.
@@ -1422,7 +1255,6 @@ ctoken_decode_enter_named_submod(struct ctoken_decode_ctx *context,
  *
  * \param[in] context   The decoding context.
  *
- * \returns A ctoken error code
  *
  * Pop up one level of submodule nesting.
  */
@@ -1438,31 +1270,6 @@ ctoken_decode_exit_submod(struct ctoken_decode_ctx *context);
  * \param[out] type          The type of the nested token returned.
  * \param[out] submod_name   The name of the submodule.
  * \param[out] token         Pointer and length of the token returned.
- *
- * \retval CTOKEN_ERR_SUCCESS           The nested token was returned.
- *
- * \retval CTOKEN_ERR_SUBMOD_NOT_FOUND  The nested token does not exist
- *                                      because there is no submodule
- *                                      section, the submodule section
- *                                      is empty, or the index was too
- *                                      large.
- *
- * \retval CTOKEN_ERR_SUBMOD_NAME_NOT_A_TEXT_STRING  The submodule
- *                                                   exists, but the
- *                                                   name is not a text
- *                                                   string.
- *
- * \retval CTOKEN_ERR_NESTING_TOO_DEEP  The submodule and claim nesting
- *                                      is deeper than either QCBOR or
- *                                      ctoken can handle.
- *
- * \retval CTOKEN_ERR_SUBMOD_TYPE       The CBOR type of the nested token
- *                                      is not a string.
- *
- * \retval CTOKEN_ERR_XXX               Other errors usually indicate
- *                                      the nested token or submodules
- *                                      sections are malformed or
- *                                      invalid.
  *
  * A submodule may be a signed and secured token. Such submodules are
  * returned as a byte or text string. To process these that are in CWT
@@ -1486,26 +1293,6 @@ ctoken_decode_get_nth_nested_token(struct ctoken_decode_ctx *context,
  * \param[out] type        The type of the nested token returned.
  * \param[out] token       Pointer and length of the token returned.
  *
- * \retval CTOKEN_ERR_SUCCESS           The submodule exists and was entered.
- *
- * \retval CTOKEN_ERR_DUPLICATE_LABEL   Either there are two submodule sections
- *                                      or two nested token with the same name.
- *
- * \retval CTOKEN_ERR_SUBMOD_NOT_FOUND  The nested token does not exist because
- *                                      there is no nested token section or no
- *                                      submod with the given name was found.
- *
- * \retval CTOKEN_ERR_NESTING_TOO_DEEP  The submodule and claim nesting is deeper
- *                                      than either QCBOR or ctoken can handle.
- *
- * \retval CTOKEN_ERR_SUBMOD_TYPE       The CBOR type of the nested token
- *                                      is not a string.
- *
- * \retval CTOKEN_ERR_XXX               Other errors usually indicate
- *                                      the nested token or submodules
- *                                      sections are malformed or
- *                                      invalid.
- * *
  * See ctoken_decode_get_nth_nested_token() for discussion on the
  * token returned.
  */
@@ -1674,18 +1461,18 @@ ctoken_decode_security_level(struct ctoken_decode_ctx         *me,
                              enum ctoken_security_level_t *security_level)
 {
     ctoken_decode_int_constrained(me,
-                                             CTOKEN_EAT_LABEL_SECURITY_LEVEL,
-                                             EAT_SL_UNRESTRICTED,
-                                             EAT_SL_HARDWARE,
-                                             (int64_t *)security_level);
+                                  CTOKEN_EAT_LABEL_SECURITY_LEVEL,
+                                  EAT_SL_UNRESTRICTED,
+                                  EAT_SL_HARDWARE,
+                                  (int64_t *)security_level);
 
 #ifndef CTOKEN_DISABLE_TEMP_LABELS
     if(ctoken_decode_get_and_reset_error(me) == CTOKEN_ERR_CLAIM_NOT_PRESENT) {
         ctoken_decode_int_constrained(me,
-                                             CTOKEN_TEMP_EAT_LABEL_SECURITY_LEVEL,
-                                             EAT_SL_UNRESTRICTED,
-                                             EAT_SL_HARDWARE,
-                                             (int64_t *)security_level);
+                                      CTOKEN_TEMP_EAT_LABEL_SECURITY_LEVEL,
+                                      EAT_SL_UNRESTRICTED,
+                                      EAT_SL_HARDWARE,
+                                      (int64_t *)security_level);
     }
 #endif
 }
@@ -1710,8 +1497,8 @@ ctoken_decode_secure_boot(struct ctoken_decode_ctx *me,
         // TODO: fix all the other occurances of this construct
         (void)ctoken_decode_get_and_reset_error(me);
         ctoken_decode_bool(me,
-                                          CTOKEN_TEMP_EAT_LABEL_SECURE_BOOT,
-                                          secure_boot_enabled);
+                           CTOKEN_TEMP_EAT_LABEL_SECURE_BOOT,
+                           secure_boot_enabled);
     }
 #endif
 }
@@ -1722,17 +1509,17 @@ ctoken_decode_debug_state(struct ctoken_decode_ctx  *me,
                           enum ctoken_debug_level_t *debug_level)
 {
     ctoken_decode_int_constrained(me,
-                                             CTOKEN_EAT_LABEL_DEBUG_STATE,
-                                             CTOKEN_DEBUG_ENABLED,
-                                             CTOKEN_DEBUG_DISABLED_FULL_PERMANENT,
-                                             (int64_t *)debug_level);
+                                  CTOKEN_EAT_LABEL_DEBUG_STATE,
+                                  CTOKEN_DEBUG_ENABLED,
+                                  CTOKEN_DEBUG_DISABLED_FULL_PERMANENT,
+                                  (int64_t *)debug_level);
 #ifndef CTOKEN_DISABLE_TEMP_LABELS
     if(ctoken_decode_get_and_reset_error(me) == CTOKEN_ERR_CLAIM_NOT_PRESENT) {
         ctoken_decode_int_constrained(me,
-                                             CTOKEN_TEMP_EAT_LABEL_DEBUG_STATE,
-                                             CTOKEN_DEBUG_ENABLED,
-                                             CTOKEN_DEBUG_DISABLED_FULL_PERMANENT,
-                                             (int64_t *)debug_level);
+                                      CTOKEN_TEMP_EAT_LABEL_DEBUG_STATE,
+                                      CTOKEN_DEBUG_ENABLED,
+                                      CTOKEN_DEBUG_DISABLED_FULL_PERMANENT,
+                                      (int64_t *)debug_level);
     }
 #endif
 }
@@ -1743,10 +1530,10 @@ ctoken_decode_intended_use(struct ctoken_decode_ctx    *me,
                            enum ctoken_intended_use_t  *use)
 {
     ctoken_decode_int_constrained(me,
-                                         CTOKEN_EAT_LABEL_INTENDED_USE,
-                                         CTOKEN_USE_GENERAL,
-                                         CTOKEN_USE_PROOF_OF_POSSSION,
-                                         (int64_t *)use);
+                                  CTOKEN_EAT_LABEL_INTENDED_USE,
+                                  CTOKEN_USE_GENERAL,
+                                  CTOKEN_USE_PROOF_OF_POSSSION,
+                                  (int64_t *)use);
 }
 
 
@@ -1789,7 +1576,9 @@ ctoken_decode_rewind(struct ctoken_decode_ctx   *me)
 
 /* Function not for public use, but shared between implementation files.
  This is the only one so it is stuck in here rather than making a new
- header */
+ header
+
+ TODO: rename this */
 enum ctoken_err_t get_and_reset_error(QCBORDecodeContext *decode_context);
 
 
