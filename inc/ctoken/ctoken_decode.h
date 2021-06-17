@@ -391,7 +391,7 @@ ctoken_decode_get_payload(struct ctoken_decode_ctx *context,
                           struct q_useful_buf_c    *payload);
 
 
-/*
+/**
  * \brief Get the QCBOR decoder context.
  *
  * \param[in]  context    The token decoder context.
@@ -410,8 +410,8 @@ ctoken_decode_get_payload(struct ctoken_decode_ctx *context,
  *
  * See also ctoken_decode_enter_array() and
  * ctoken_decode_enter_map()
-
- // TODO: what about error state?
+ *
+ * If the decoder is in the error state, this will return NULL.
  */
 static QCBORDecodeContext *
 ctoken_decode_borrow_context(struct ctoken_decode_ctx *context);
@@ -1194,12 +1194,10 @@ ctoken_decode_rewind(struct ctoken_decode_ctx   *context);
  * empty the error code returned is CTOKEN_ERR_SUCCESS and the
  * num_submods returned is 0.
  *
- *  * The error result is saved in the @ref ctoken_decode_ctx and can be
- * obtained by calling ctoken_decode_get_error(). The error result
- * must be checked to know the claim value returned is valid.  See
+ * The error result is saved in the @ref ctoken_decode_ctx and can be
+ * obtained by calling ctoken_decode_get_error(). The error must
+ * be checked before use is made of the number of submodules returned.  See
  * [Token Decode Error Overview](#Token-Decode-Errors-Overview).
- *
- * TODO: error strategy
  */
 void
 ctoken_decode_get_num_submods(struct ctoken_decode_ctx *context,
@@ -1225,6 +1223,11 @@ ctoken_decode_get_num_submods(struct ctoken_decode_ctx *context,
  *
  * The \c name parameter may be NULL if the submodule name is not of
  * interest.
+ *
+ * The error result is saved in the @ref ctoken_decode_ctx and can be
+ * obtained by calling ctoken_decode_get_error(). The error must
+ * be checked before use is made of the submodule's name or of decoded claims from the submodule.  See
+ * [Token Decode Error Overview](#Token-Decode-Errors-Overview).
  */
 void
 ctoken_decode_enter_nth_submod(struct ctoken_decode_ctx *context,
@@ -1244,6 +1247,11 @@ ctoken_decode_enter_nth_submod(struct ctoken_decode_ctx *context,
  *
  * If the submodule with the given name is a nested token, then it is
  * not entered and \ref CTOKEN_ERR_SUBMOD_IS_A_TOKEN is returned.
+ *
+ * The error result is saved in the @ref ctoken_decode_ctx and can be
+ * obtained by calling ctoken_decode_get_error(). The error must
+ * be checked before use is made of decoded claims from the submodule.  See
+ * [Token Decode Error Overview](#Token-Decode-Errors-Overview).
  */
 void
 ctoken_decode_enter_named_submod(struct ctoken_decode_ctx *context,
@@ -1255,8 +1263,16 @@ ctoken_decode_enter_named_submod(struct ctoken_decode_ctx *context,
  *
  * \param[in] context   The decoding context.
  *
- *
  * Pop up one level of submodule nesting.
+ *
+ * This may result in an error as the end of the submodule must
+ * be found, but usually any such error will show up earlier when
+ * decoding claims in the submodule.
+ *
+ * The error result is saved in the @ref ctoken_decode_ctx and can be
+ * obtained by calling ctoken_decode_get_error(). The error can
+ * be checked to be sure the submodule was fully valid .  See
+ * [Token Decode Error Overview](#Token-Decode-Errors-Overview).
  */
 void
 ctoken_decode_exit_submod(struct ctoken_decode_ctx *context);
@@ -1276,6 +1292,11 @@ ctoken_decode_exit_submod(struct ctoken_decode_ctx *context);
  * format, create a new instance of the ctoken decoder, set up the
  * verification keys and process it like the superior token it came
  * from. JWT format tokens must be processed by a JWT token decoder.
+ *
+ * The error result is saved in the @ref ctoken_decode_ctx and can be
+ * obtained by calling ctoken_decode_get_error(). Also, on error
+ * \c NULL_Q_USEFUL_BUF_C will be returned for @c token.  See
+ * [Token Decode Error Overview](#Token-Decode-Errors-Overview).
  */
 void
 ctoken_decode_get_nth_nested_token(struct ctoken_decode_ctx *context,
@@ -1295,6 +1316,11 @@ ctoken_decode_get_nth_nested_token(struct ctoken_decode_ctx *context,
  *
  * See ctoken_decode_get_nth_nested_token() for discussion on the
  * token returned.
+ *
+ * The error result is saved in the @ref ctoken_decode_ctx and can be
+ * obtained by calling ctoken_decode_get_error(). Also, on error
+ * \c NULL_Q_USEFUL_BUF_C will be returned for @c token.  See
+ * [Token Decode Error Overview](#Token-Decode-Errors-Overview).
  */
 void
 ctoken_decode_get_named_nested_token(struct ctoken_decode_ctx *context,
@@ -1344,7 +1370,11 @@ ctoken_decode_get_protection_type(const struct ctoken_decode_ctx *me)
 static inline QCBORDecodeContext *
 ctoken_decode_borrow_context(struct ctoken_decode_ctx *me)
 {
-    return &me->qcbor_decode_context;
+    if(me->last_error) {
+        return NULL;
+    } else {
+        return &me->qcbor_decode_context;
+    }
 }
 
 

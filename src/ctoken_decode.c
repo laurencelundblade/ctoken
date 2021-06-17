@@ -981,6 +981,8 @@ ctoken_decode_nested_token(struct ctoken_decode_ctx  *me,
 {
     enum ctoken_err_t return_value;
 
+    *token = NULL_Q_USEFUL_BUF_C;
+
     return_value = get_and_reset_error(&(me->qcbor_decode_context));
 
     if(return_value == CTOKEN_ERR_CLAIM_NOT_PRESENT ||
