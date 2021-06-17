@@ -189,7 +189,7 @@ get_no_sw_component_indicator(struct ctoken_decode_ctx *me, bool *no_sw_componen
                               QCBOR_TYPE_INT64,
                              &item);
 
-    return_value = get_and_reset_error(&(me->qcbor_decode_context));
+    return_value = ctoken_get_and_reset_cbor_error(&(me->qcbor_decode_context));
 
     if(return_value == CTOKEN_ERR_SUCCESS) {
         if(item.val.int64 == NO_SW_COMPONENT_FIXED_VALUE) {
@@ -266,7 +266,7 @@ ctoken_decode_psa_num_sw_components(struct ctoken_decode_ctx *me,
     }
 
     QCBORDecode_EnterArrayFromMapN(&(me->qcbor_decode_context), CTOKEN_PSA_LABEL_SW_COMPONENTS);
-    return_value = get_and_reset_error(&(me->qcbor_decode_context));
+    return_value = ctoken_get_and_reset_cbor_error(&(me->qcbor_decode_context));
 
     if(return_value == CTOKEN_ERR_CLAIM_NOT_PRESENT) {
         /* There is no SW components claim. */
@@ -291,7 +291,7 @@ ctoken_decode_psa_num_sw_components(struct ctoken_decode_ctx *me,
     }
 
     CountItems(&(me->qcbor_decode_context), num_sw_components);
-    return_value = get_and_reset_error(&(me->qcbor_decode_context));
+    return_value = ctoken_get_and_reset_cbor_error(&(me->qcbor_decode_context));
 
     if(*num_sw_components == 0) {
          /* Empty SW component not allowed */
@@ -324,7 +324,7 @@ decode_psa_sw_component(QCBORDecodeContext               *decode_context,
     QCBORItem          list[CTOKEN_PSA_SW_NUMBER_OF_ITEMS+1];
 
     QCBORDecode_EnterMap(decode_context, NULL);
-    return_value = get_and_reset_error(decode_context);
+    return_value = ctoken_get_and_reset_cbor_error(decode_context);
     if(return_value != CTOKEN_ERR_SUCCESS) {
         goto Done2;
     }
@@ -356,7 +356,7 @@ decode_psa_sw_component(QCBORDecodeContext               *decode_context,
     list[CTOKEN_PSA_SW_MEASUREMENT_DESC_FLAG+1].uLabelType  = QCBOR_TYPE_NONE;
 
     QCBORDecode_GetItemsInMap(decode_context, list);
-    return_value = get_and_reset_error(decode_context);
+    return_value = ctoken_get_and_reset_cbor_error(decode_context);
     if(return_value != CTOKEN_ERR_SUCCESS) {
         goto Done;
     }

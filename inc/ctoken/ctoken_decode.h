@@ -290,7 +290,7 @@ ctoken_decode_get_kid(struct ctoken_decode_ctx *context,
  * \param[in] token             The CBOR-encoded token to validate and decode.
  *
  * The signature on the token is validated. If it is successful the
- * token and its payload is remembered in the \ref
+ * token and its payload are remembered in the \ref
  * ctoken_decode_ctx \c context so the \c
  * ctoken_decode_get_xxx() functions can be called to get the
  * various claims out of it.
@@ -299,18 +299,15 @@ ctoken_decode_get_kid(struct ctoken_decode_ctx *context,
  * can however validate short-circuit signatures even if one is not
  * set.
  *
- * The code for any error that occurs during validation is remembered
- * in decode context. The \c ctoken_decode_get_xxx() functions
- * can be called and they will just return this error. The \c
- * ctoken_decode_get_xxx() functions will generally return 0 or
- * \c NULL if the token is in error.
- * TODO: rewrite error handling
+ * This may result in many different errors, including signature
+ * verification errors.  The error result is saved in the @ref
+ * ctoken_decode_ctx and can be obtained by calling
+ * ctoken_decode_get_error(). It is OK to follow this call with calls
+ * to decode many claims as long as none of the values of the claims
+ * are used until the error result is checked. The calls to fetch
+ * claims will do nothing if the token validation failed.  See [Token
+ * Decode Error Overview](#Token-Decode-Errors-Overview).
  *
- * It is thus possible to call ctoken_decode_validate_token()
- * and all the \c ctoken_decode_get_xxx() functions to parse the
- * token and ignore the error codes as long as
- * ctoken_decode_get_error() is called before any of the claim
- * data returned is used.
  *
  * TODO: this may need an option to be able to decode fields in the
  * token without signature verification because the info to look
@@ -336,7 +333,7 @@ ctoken_decode_get_protection_type(const struct ctoken_decode_ctx *context);
 
 
 /**
- * \brief Get the last decode error.
+ * \brief Get the decode error.
  *
  * \param[in] context The token decoder context.
  *
@@ -346,10 +343,21 @@ static enum ctoken_err_t
 ctoken_decode_get_error(struct ctoken_decode_ctx *context);
 
 
-
-// TODO: document this
+/**
+ * \brief Get and reset the decode error.
+ *
+ * \param[in] context The token decoder context.
+ *
+ * \return An error from \ref CTOKEN_ERR_t.
+ *
+ * In addition to returning the decode error, this resets it to \ref
+ * CTOKEN_ERR_SUCCESS so the last error can be ignored and decoding
+ * can proceed. This is useful to decode further claims if one is
+ * invalid. Note however, it is usually not possible to decode other
+ * claims if one claim is not well-formed.
+ */
 static inline enum ctoken_err_t
-ctoken_decode_get_and_reset_error(struct ctoken_decode_ctx *me);
+ctoken_decode_get_and_reset_error(struct ctoken_decode_ctx *context);
 
 /**
  * \brief Return unprocessed tags from most recent token validation
@@ -1195,9 +1203,9 @@ ctoken_decode_rewind(struct ctoken_decode_ctx   *context);
  * num_submods returned is 0.
  *
  * The error result is saved in the @ref ctoken_decode_ctx and can be
- * obtained by calling ctoken_decode_get_error(). The error must
- * be checked before use is made of the number of submodules returned.  See
- * [Token Decode Error Overview](#Token-Decode-Errors-Overview).
+ * obtained by calling ctoken_decode_get_error(). The error must be
+ * checked before use is made of the number of submodules returned.
+ * See [Token Decode Error Overview](#Token-Decode-Errors-Overview).
  */
 void
 ctoken_decode_get_num_submods(struct ctoken_decode_ctx *context,
@@ -1225,8 +1233,9 @@ ctoken_decode_get_num_submods(struct ctoken_decode_ctx *context,
  * interest.
  *
  * The error result is saved in the @ref ctoken_decode_ctx and can be
- * obtained by calling ctoken_decode_get_error(). The error must
- * be checked before use is made of the submodule's name or of decoded claims from the submodule.  See
+ * obtained by calling ctoken_decode_get_error(). The error must be
+ * checked before use is made of the submodule's name or of decoded
+ * claims from the submodule.  See
  * [Token Decode Error Overview](#Token-Decode-Errors-Overview).
  */
 void
@@ -1249,9 +1258,9 @@ ctoken_decode_enter_nth_submod(struct ctoken_decode_ctx *context,
  * not entered and \ref CTOKEN_ERR_SUBMOD_IS_A_TOKEN is returned.
  *
  * The error result is saved in the @ref ctoken_decode_ctx and can be
- * obtained by calling ctoken_decode_get_error(). The error must
- * be checked before use is made of decoded claims from the submodule.  See
- * [Token Decode Error Overview](#Token-Decode-Errors-Overview).
+ * obtained by calling ctoken_decode_get_error(). The error must be
+ * checked before use is made of decoded claims from the submodule.
+ * See [Token Decode Error Overview](#Token-Decode-Errors-Overview).
  */
 void
 ctoken_decode_enter_named_submod(struct ctoken_decode_ctx *context,
@@ -1270,8 +1279,8 @@ ctoken_decode_enter_named_submod(struct ctoken_decode_ctx *context,
  * decoding claims in the submodule.
  *
  * The error result is saved in the @ref ctoken_decode_ctx and can be
- * obtained by calling ctoken_decode_get_error(). The error can
- * be checked to be sure the submodule was fully valid .  See
+ * obtained by calling ctoken_decode_get_error(). The error can be
+ * checked to be sure the submodule was fully valid .  See
  * [Token Decode Error Overview](#Token-Decode-Errors-Overview).
  */
 void
@@ -1294,8 +1303,8 @@ ctoken_decode_exit_submod(struct ctoken_decode_ctx *context);
  * from. JWT format tokens must be processed by a JWT token decoder.
  *
  * The error result is saved in the @ref ctoken_decode_ctx and can be
- * obtained by calling ctoken_decode_get_error(). Also, on error
- * \c NULL_Q_USEFUL_BUF_C will be returned for @c token.  See
+ * obtained by calling ctoken_decode_get_error(). Also, on error \c
+ * NULL_Q_USEFUL_BUF_C will be returned for @c token.  See 
  * [Token Decode Error Overview](#Token-Decode-Errors-Overview).
  */
 void
@@ -1318,8 +1327,8 @@ ctoken_decode_get_nth_nested_token(struct ctoken_decode_ctx *context,
  * token returned.
  *
  * The error result is saved in the @ref ctoken_decode_ctx and can be
- * obtained by calling ctoken_decode_get_error(). Also, on error
- * \c NULL_Q_USEFUL_BUF_C will be returned for @c token.  See
+ * obtained by calling ctoken_decode_get_error(). Also, on error \c
+ * NULL_Q_USEFUL_BUF_C will be returned for @c token.  See 
  * [Token Decode Error Overview](#Token-Decode-Errors-Overview).
  */
 void
@@ -1497,7 +1506,8 @@ ctoken_decode_security_level(struct ctoken_decode_ctx         *me,
                                   (int64_t *)security_level);
 
 #ifndef CTOKEN_DISABLE_TEMP_LABELS
-    if(ctoken_decode_get_and_reset_error(me) == CTOKEN_ERR_CLAIM_NOT_PRESENT) {
+    if(ctoken_decode_get_error(me) == CTOKEN_ERR_CLAIM_NOT_PRESENT) {
+        ctoken_decode_get_and_reset_error(me);
         ctoken_decode_int_constrained(me,
                                       CTOKEN_TEMP_EAT_LABEL_SECURITY_LEVEL,
                                       EAT_SL_UNRESTRICTED,
@@ -1524,7 +1534,6 @@ ctoken_decode_secure_boot(struct ctoken_decode_ctx *me,
 
 #ifndef CTOKEN_DISABLE_TEMP_LABELS
     if(ctoken_decode_get_error(me) == CTOKEN_ERR_CLAIM_NOT_PRESENT) {
-        // TODO: fix all the other occurances of this construct
         (void)ctoken_decode_get_and_reset_error(me);
         ctoken_decode_bool(me,
                            CTOKEN_TEMP_EAT_LABEL_SECURE_BOOT,
@@ -1544,7 +1553,8 @@ ctoken_decode_debug_state(struct ctoken_decode_ctx  *me,
                                   CTOKEN_DEBUG_DISABLED_FULL_PERMANENT,
                                   (int64_t *)debug_level);
 #ifndef CTOKEN_DISABLE_TEMP_LABELS
-    if(ctoken_decode_get_and_reset_error(me) == CTOKEN_ERR_CLAIM_NOT_PRESENT) {
+    if(ctoken_decode_get_error(me) == CTOKEN_ERR_CLAIM_NOT_PRESENT) {
+        ctoken_decode_get_and_reset_error(me);
         ctoken_decode_int_constrained(me,
                                       CTOKEN_TEMP_EAT_LABEL_DEBUG_STATE,
                                       CTOKEN_DEBUG_ENABLED,
@@ -1605,11 +1615,10 @@ ctoken_decode_rewind(struct ctoken_decode_ctx   *me)
 
 
 /* Function not for public use, but shared between implementation files.
- This is the only one so it is stuck in here rather than making a new
- header
-
- TODO: rename this */
-enum ctoken_err_t get_and_reset_error(QCBORDecodeContext *decode_context);
+ * This is the only one so it is stuck in here rather than making a new
+ * header
+ */
+enum ctoken_err_t ctoken_get_and_reset_cbor_error(QCBORDecodeContext *decode_context);
 
 
 #ifdef __cplusplus
