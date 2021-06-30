@@ -350,7 +350,6 @@ int32_t eat_decode(struct t_cose_key     verification_key,
                    struct q_useful_buf_c token,
                    struct q_useful_buf_c *nonce)
 {
-    int return_value;
     struct ctoken_decode_ctx decode_context;
 
     /* Initialize the decoding context. No options are given.
@@ -369,16 +368,13 @@ int32_t eat_decode(struct t_cose_key     verification_key,
     ctoken_decode_set_verification_key(&decode_context, verification_key);
 
     /* Validate the signature on the token */
-    return_value = ctoken_decode_validate_token(&decode_context, token);
-    if(return_value) {
-        goto Done;
-    }
+    ctoken_decode_validate_token(&decode_context, token);
 
     /* Parse the nonce out of the token */
-    return_value = ctoken_decode_nonce(&decode_context, nonce);
+    ctoken_decode_nonce(&decode_context, nonce);
 
 Done:
-    return return_value;
+    return ctoken_decode_get_and_reset_error(&decode_context);
 }
 
 
@@ -469,7 +465,4 @@ int main(int argc, const char * argv[])
 
     eat_example();
 }
-
-
-// ((uint8_t *)completed_token.ptr)[59]++;
 

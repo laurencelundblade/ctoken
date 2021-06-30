@@ -64,11 +64,15 @@ ctoken_decode_psa_simple_claims(struct ctoken_decode_ctx          *context,
  * \param[in]  context         The token decoder context.
  * \param[out] boot_seed  Returned pointer and length of boot_seed.
  *
- * \return An error from \ref CTOKEN_ERR_t.
- *
  * The boot seed is a byte string.
+ *
+ * The error result is saved in the @ref ctoken_decode_ctx and can be
+ * obtained by calling ctoken_decode_get_error(). The error must
+ * be checked before the claim's value is used, but that check can be
+ * after decoding other claims.  See
+ * [Token Decode Error Overview](#Token-Decode-Errors-Overview).
  */
-static enum ctoken_err_t
+static void
 ctoken_decode_psa_boot_seed(struct ctoken_decode_ctx *context,
                             struct q_useful_buf_c    *boot_seed);
 
@@ -80,14 +84,18 @@ ctoken_decode_psa_boot_seed(struct ctoken_decode_ctx *context,
  * \param[out] hw_version  Returned pointer and length of
  *                         \c hw_version.
  *
- * \return An error from \ref CTOKEN_ERR_t.
- *
  * This is also known as the HW ID.
  *
  * The HW Version is a UTF-8 text string. It is returned as a pointer
  * and length. It is NOT \c NULL terminated.
+ *
+ * The error result is saved in the @ref ctoken_decode_ctx and can be
+ * obtained by calling ctoken_decode_get_error(). The error must
+ * be checked before the claim's value is used, but that check can be
+ * after decoding other claims.  See
+ * [Token Decode Error Overview](#Token-Decode-Errors-Overview).
  */
-static enum ctoken_err_t
+static void
 ctoken_decode_psa_hw_version(struct ctoken_decode_ctx *context,
                              struct q_useful_buf_c    *hw_version);
 
@@ -99,11 +107,15 @@ ctoken_decode_psa_hw_version(struct ctoken_decode_ctx *context,
  * \param[out] implementation_id  Returned pointer and length of
  *                                implementation_id.
  *
- * \return An error from \ref CTOKEN_ERR_t.
- *
  * The implementation ID is a byte string.
+ *
+ * The error result is saved in the @ref ctoken_decode_ctx and can be
+ * obtained by calling ctoken_decode_get_error(). The error must
+ * be checked before the claim's value is used, but that check can be
+ * after decoding other claims.  See
+ * [Token Decode Error Overview](#Token-Decode-Errors-Overview).
  */
-static enum ctoken_err_t
+static void
 ctoken_decode_psa_implementation_id(struct ctoken_decode_ctx *context,
                                     struct q_useful_buf_c    *implementation_id);
 
@@ -114,14 +126,18 @@ ctoken_decode_psa_implementation_id(struct ctoken_decode_ctx *context,
  * \param[in]  context           The token decoder context.
  * \param[out] origination  Returned pointer and length of origination.
  *
- * \return An error from \ref CTOKEN_ERR_t.
- *
  * This is also known as the Verification Service Indicator.
  *
  * The \c origination is a UTF-8 text string. It is returned as a
  * pointer and length. It is NOT \c NULL terminated.
+ *
+ * The error result is saved in the @ref ctoken_decode_ctx and can be
+ * obtained by calling ctoken_decode_get_error(). The error must
+ * be checked before the claim's value is used, but that check can be
+ * after decoding other claims.  See
+ * [Token Decode Error Overview](#Token-Decode-Errors-Overview).
  */
-static enum ctoken_err_t
+static void
 ctoken_decode_psa_origination(struct ctoken_decode_ctx *context,
                               struct q_useful_buf_c    *origination);
 
@@ -133,12 +149,16 @@ ctoken_decode_psa_origination(struct ctoken_decode_ctx *context,
  * \param[out] profile_definition  Returned pointer and length of
  *                                 profile_definition.
  *
- * \return An error from \ref CTOKEN_ERR_t.
- *
  * The profile definition is a UTF-8 text string. It is returned as a
  * pointer and length. It is NOT \c NULL terminated.
+ *
+ * The error result is saved in the @ref ctoken_decode_ctx and can be
+ * obtained by calling ctoken_decode_get_error(). The error must
+ * be checked before the claim's value is used, but that check can be
+ * after decoding other claims.  See
+ * [Token Decode Error Overview](#Token-Decode-Errors-Overview).
  */
-static enum ctoken_err_t
+static void
 ctoken_decode_psa_profile_definition(struct ctoken_decode_ctx *context,
                                      struct q_useful_buf_c    *profile_definition);
 
@@ -149,15 +169,19 @@ ctoken_decode_psa_profile_definition(struct ctoken_decode_ctx *context,
  * \param[in]  context         The token decoder context.
  * \param[out] client_id  Returned pointer and length of client_id.
  *
- * \return An error from \ref CTOKEN_ERR_t.
- *
  * \retval CTOKEN_ERR_INTEGER_VALUE
  *         If integer is larger or smaller than will fit
  *         in an \c int32_t.
  *
  * Also called the caller ID.
+ *
+ * The error result is saved in the @ref ctoken_decode_ctx and can be
+ * obtained by calling ctoken_decode_get_error(). The error must
+ * be checked before the claim's value is used, but that check can be
+ * after decoding other claims.  See
+ * [Token Decode Error Overview](#Token-Decode-Errors-Overview).
  */
-static enum ctoken_err_t
+static void
 ctoken_decode_psa_client_id(struct ctoken_decode_ctx *context,
                             int32_t                  *client_id);
 
@@ -168,13 +192,17 @@ ctoken_decode_psa_client_id(struct ctoken_decode_ctx *context,
  * \param[in]  context         The token decoder context.
  * \param[out] lifecycle  Returned pointer and length of lifecycle.
  *
- * \return An error from \ref CTOKEN_ERR_t.
- *
  * \retval CTOKEN_ERR_INTEGER_VALUE
  *         If integer is larger
  *         or smaller than will fit in a \c uint32_t.
+ *
+ * The error result is saved in the @ref ctoken_decode_ctx and can be
+ * obtained by calling ctoken_decode_get_error(). The error must
+ * be checked before the claim's value is used, but that check can be
+ * after decoding other claims.  See
+ * [Token Decode Error Overview](#Token-Decode-Errors-Overview).
  */
-static enum ctoken_err_t
+static void
 ctoken_decode_psa_security_lifecycle(struct ctoken_decode_ctx *context,
                                      uint32_t                 *lifecycle);
 
@@ -269,87 +297,82 @@ ctoken_decode_psa_sw_component(struct ctoken_decode_ctx         *context,
  * --------------------------------------------------------------------------*/
 
 
-static inline enum ctoken_err_t
+static inline void
 ctoken_decode_psa_boot_seed(struct ctoken_decode_ctx *me,
                             struct q_useful_buf_c    *boot_seed)
 {
-    return ctoken_decode_bstr(me, CTOKEN_PSA_LABEL_BOOT_SEED, boot_seed);
+    ctoken_decode_bstr(me, CTOKEN_PSA_LABEL_BOOT_SEED, boot_seed);
 }
 
 
-static inline enum ctoken_err_t
+static inline void
 ctoken_decode_psa_hw_version(struct ctoken_decode_ctx *me,
                              struct q_useful_buf_c    *hw_version)
 {
-    return ctoken_decode_tstr(me, CTOKEN_PSA_LABEL_HW_VERSION, hw_version);
+    ctoken_decode_tstr(me, CTOKEN_PSA_LABEL_HW_VERSION, hw_version);
 }
 
 
-static inline enum ctoken_err_t
+static inline void
 ctoken_decode_psa_implementation_id(struct ctoken_decode_ctx *me,
                                     struct q_useful_buf_c    *implementation_id)
 {
-    return ctoken_decode_bstr(me, CTOKEN_PSA_LABEL_IMPLEMENTATION_ID, implementation_id);
+    ctoken_decode_bstr(me, CTOKEN_PSA_LABEL_IMPLEMENTATION_ID, implementation_id);
 }
 
 
-static inline enum ctoken_err_t
+static inline void
 ctoken_decode_psa_client_id(struct ctoken_decode_ctx *me,
                             int32_t                  *caller_id)
 {
-    enum ctoken_err_t return_value;
     int64_t caller_id_64;
 
-    return_value = ctoken_decode_int(me, CTOKEN_PSA_LABEL_CLIENT_ID, &caller_id_64);
-    if(return_value != CTOKEN_ERR_SUCCESS) {
-        goto Done;
+    ctoken_decode_int(me, CTOKEN_PSA_LABEL_CLIENT_ID, &caller_id_64);
+    if(me->last_error != CTOKEN_ERR_SUCCESS) {
+        return;
     }
     if(caller_id_64 > INT32_MAX || caller_id_64 < INT32_MIN) {
-        return_value = CTOKEN_ERR_INTEGER_VALUE;
-        goto Done;
+        me->last_error = CTOKEN_ERR_INTEGER_VALUE;
+        return;
     }
     *caller_id = (int32_t)caller_id_64;
-
-Done:
-    return return_value;
 }
 
 
-static inline enum ctoken_err_t
+static inline void
 ctoken_decode_psa_security_lifecycle(struct ctoken_decode_ctx *me,
                                      uint32_t                 *security_lifecycle)
 {
-    enum ctoken_err_t return_value;
     uint64_t security_lifecycle_64;
 
-    return_value = ctoken_decode_uint(me,
+    ctoken_decode_uint(me,
                                       CTOKEN_PSA_LABEL_SECURITY_LIFECYCLE,
                                       &security_lifecycle_64);
+    if(me->last_error != CTOKEN_ERR_SUCCESS) {
+        return;
+    }
     if(security_lifecycle_64 > UINT32_MAX) {
-        return_value = CTOKEN_ERR_INTEGER_VALUE;
-        goto Done;
+        me->last_error = CTOKEN_ERR_INTEGER_VALUE;
+        return;
     }
 
     *security_lifecycle = (uint32_t)security_lifecycle_64;
-
-Done:
-    return return_value;
 }
 
 
-static inline enum ctoken_err_t
+static inline void
 ctoken_decode_psa_profile_definition(struct ctoken_decode_ctx *me,
                                      struct q_useful_buf_c    *profile_definition)
 {
-    return ctoken_decode_tstr(me, CTOKEN_PSA_LABEL_PROFILE_DEFINITION, profile_definition);
+    ctoken_decode_tstr(me, CTOKEN_PSA_LABEL_PROFILE_DEFINITION, profile_definition);
 }
 
 
-static inline enum ctoken_err_t
+static inline void
 ctoken_decode_psa_origination(struct ctoken_decode_ctx *me,
                               struct q_useful_buf_c    *origination)
 {
-    return ctoken_decode_origination(me, origination);
+    ctoken_decode_origination(me, origination);
 }
 
 #ifdef __cplusplus

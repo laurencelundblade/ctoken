@@ -101,7 +101,8 @@ int32_t psa_basic_test()
     /* Pass in the token and have it validated. If the token was corrupt
      * or the signature check failed, it will be returned here
      */
-    result = ctoken_decode_validate_token(&decode_context, completed_token);
+    ctoken_decode_validate_token(&decode_context, completed_token);
+    result = ctoken_decode_get_and_reset_error(&decode_context);
     if(result) {
         return 300 + (int32_t)result;
     }
@@ -297,7 +298,8 @@ static int32_t one_swc_decode_test_case(const struct decode_swc_test_config *t)
                        0,
                        CTOKEN_PROTECTION_NONE);
 
-    ctoken_result = ctoken_decode_validate_token(&decode_context, t->token);
+    ctoken_decode_validate_token(&decode_context, t->token);
+    ctoken_result = ctoken_decode_get_and_reset_error(&decode_context);
     if(ctoken_result) {
         return test_result_code(1, t->test_number, ctoken_result);
     }
