@@ -279,3 +279,6 @@ void PrintSizesCToken(OutputStringCB pfOutput, void *pOutCtx)
               pfOutput, pOutCtx);
     (*pfOutput)("", pOutCtx, 1);
 }
+
+
+const uint8_t foo[3] = { 0, 0};

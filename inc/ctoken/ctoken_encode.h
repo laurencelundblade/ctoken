@@ -731,18 +731,11 @@ ctoken_encode_profile_uri(struct ctoken_encode_ctx   *context,
  * \param[in] context  The encoding context to output to.
  * \param[in] version  The URI to encode.
  */
-static void
-ctoken_encode_hw_version(struct ctoken_encode_ctx   *context,
-                         enum ctoken_hw_type_t  hw_type,
-                         int32_t version_scheme,
-                         struct q_useful_buf_c       version);
-
-
-static void
-ctoken_encode_hw_ean_version(struct ctoken_encode_ctx   *context,
-                             enum ctoken_hw_type_t       hw_type,
-                             struct q_useful_buf_c       version);
-
+void
+ctoken_encode_hw_version(struct ctoken_encode_ctx *context,
+                         enum ctoken_hw_type_t     hw_type,
+                         int32_t                   version_scheme,
+                         struct q_useful_buf_c     version);
 
 
 /**
@@ -1211,24 +1204,6 @@ ctoken_encode_profile_uri(struct ctoken_encode_ctx   *me,
 }
 
 
-static inline void
-ctoken_encode_hw_version(struct ctoken_encode_ctx  *me,
-                         enum ctoken_hw_type_t      hw_type,
-                         int32_t                    version_scheme,
-                         struct q_useful_buf_c      version)
-{
-    ctoken_encode_tstr(me, CTOKEN_EAT_LABEL_CHIP_VERSION + (int64_t)hw_type, version);
-    ctoken_encode_int(me, CTOKEN_EAT_LABEL_CHIP_VERSION_SCHEME + (int64_t)hw_type, version_scheme);
-}
-
-
-static inline void
-ctoken_encode_hw_ean_version(struct ctoken_encode_ctx  *me,
-                             enum ctoken_hw_type_t      hw_type,
-                             struct q_useful_buf_c      version)
-{
-    ctoken_encode_tstr(me, CTOKEN_EAT_LABEL_EAN_CHIP_VERSION + hw_type, version);
-}
 
 #ifdef __cplusplus
 }

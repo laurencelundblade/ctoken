@@ -152,7 +152,7 @@ struct decode_swc_test_config {
 static const struct decode_swc_test_config swc_test_inputs[] = {
     {
         1,
-        TEST2UB(psa_swcomponents_invalid_measurement_value),
+        EAT_TEST_USEFUL_BUF(eat_test_psa_swcomponents_invalid_measurement_value),
         CTOKEN_ERR_SUCCESS,          /* expected_call_num_swc */
         1,                           /* num_swc */
         CTOKEN_ERR_CBOR_TYPE,        /* expected_call_get_swc0 */
@@ -160,7 +160,7 @@ static const struct decode_swc_test_config swc_test_inputs[] = {
     },
     {
         2,
-        TEST2UB(psa_swcomponents_invalid_missing_array),
+        EAT_TEST_USEFUL_BUF(eat_test_psa_swcomponents_invalid_missing_array),
         CTOKEN_ERR_CBOR_TYPE,   /* expected_call_num_swc */
         0,                      /* num_swc */
         CTOKEN_ERR_CBOR_TYPE,   /* expected_call_get_swc0 */
@@ -168,7 +168,7 @@ static const struct decode_swc_test_config swc_test_inputs[] = {
     },
     {
         3,
-        TEST2UB(psa_swcomponents_invalid_no_measurement),
+        EAT_TEST_USEFUL_BUF(eat_test_psa_swcomponents_invalid_no_measurement),
         CTOKEN_ERR_SUCCESS,          /* expected_call_num_swc */
         1,                           /* num_swc */
         CTOKEN_ERROR_MISSING_REQUIRED_CLAIM,  /* expected_call_get_swc0 */
@@ -177,7 +177,7 @@ static const struct decode_swc_test_config swc_test_inputs[] = {
 
     {
         4,
-        TEST2UB(psa_swcomponents_invalid_measurement_value),
+        EAT_TEST_USEFUL_BUF(eat_test_psa_swcomponents_invalid_measurement_value),
         CTOKEN_ERR_SUCCESS,        /* expected_call_num_swc */
         1,                         /* num_swc */
         CTOKEN_ERR_CBOR_TYPE,      /* expected_call_get_swc0 */
@@ -186,7 +186,7 @@ static const struct decode_swc_test_config swc_test_inputs[] = {
 
     {
         5,
-        TEST2UB(psa_swcomponents_invalid_no_signer_id),
+        EAT_TEST_USEFUL_BUF(eat_test_psa_swcomponents_invalid_no_signer_id),
         CTOKEN_ERR_SUCCESS,          /* expected_call_num_swc */
         1,                           /* num_swc */
         CTOKEN_ERROR_MISSING_REQUIRED_CLAIM,   /* expected_call_get_swc0 */
@@ -195,7 +195,7 @@ static const struct decode_swc_test_config swc_test_inputs[] = {
 
     {
         6,
-         TEST2UB(psa_swcomponents_invalid_nwf_signer_id),
+         EAT_TEST_USEFUL_BUF(eat_test_psa_swcomponents_invalid_nwf_signer_id),
          CTOKEN_ERR_SUCCESS,          /* expected_call_num_swc */
          1,                           /* num_swc */
          CTOKEN_ERR_CBOR_TYPE,        /* expected_call_get_swc0 */
@@ -204,7 +204,7 @@ static const struct decode_swc_test_config swc_test_inputs[] = {
 
     {
         7,
-         TEST2UB(psa_swcomponents_invalid_nwf_swc),
+         EAT_TEST_USEFUL_BUF(eat_test_psa_swcomponents_invalid_nwf_swc),
          CTOKEN_ERR_CBOR_NOT_WELL_FORMED, /* expected_call_num_swc */
          1,                               /* num_swc */
          CTOKEN_ERR_CBOR_NOT_WELL_FORMED, /* expected_call_get_swc0 */
@@ -213,7 +213,7 @@ static const struct decode_swc_test_config swc_test_inputs[] = {
 
     {
         8,
-        TEST2UB(psa_swcomponents_invalid_signer_id),
+        EAT_TEST_USEFUL_BUF(eat_test_psa_swcomponents_invalid_signer_id),
         CTOKEN_ERR_SUCCESS,         /* expected_call_num_swc */
         1,                          /* num_swc */
         CTOKEN_ERR_CBOR_TYPE,       /* expected_call_get_swc0 */
@@ -222,7 +222,7 @@ static const struct decode_swc_test_config swc_test_inputs[] = {
 
     {
         9,
-        TEST2UB(psa_swcomponents_valid_basic),
+        EAT_TEST_USEFUL_BUF(eat_test_psa_swcomponents_valid_basic),
         CTOKEN_ERR_SUCCESS,          /* expected_call_num_swc */
         2,                           /* num_swc */
         CTOKEN_ERR_SUCCESS,          /* expected_call_get_swc0 */
@@ -230,7 +230,7 @@ static const struct decode_swc_test_config swc_test_inputs[] = {
     },
     {
         10,
-        TEST2UB(psa_swcomponents_invalid_no_and_claim),
+        EAT_TEST_USEFUL_BUF(eat_test_psa_swcomponents_invalid_no_and_claim),
         CTOKEN_ERR_SW_COMPONENTS_PRESENCE,  /* expected_call_num_swc */
         2,                                  /* num_swc */
         CTOKEN_ERR_SW_COMPONENTS_PRESENCE,  /* expected_call_get_swc0 */
@@ -239,7 +239,7 @@ static const struct decode_swc_test_config swc_test_inputs[] = {
 
     {
         11,
-        TEST2UB(psa_swcomponents_invalid_no_nor_claim),
+        EAT_TEST_USEFUL_BUF(eat_test_psa_swcomponents_invalid_no_nor_claim),
         CTOKEN_ERR_SW_COMPONENTS_PRESENCE,  /* expected_call_num_swc */
         2,                                  /* num_swc */
         CTOKEN_ERR_SW_COMPONENTS_PRESENCE,  /* expected_call_get_swc0 */
@@ -248,7 +248,7 @@ static const struct decode_swc_test_config swc_test_inputs[] = {
 
     {
         12,
-        TEST2UB(psa_swcomponents_invalid_no_type),
+        EAT_TEST_USEFUL_BUF(eat_test_psa_swcomponents_invalid_no_type),
         CTOKEN_ERR_CBOR_TYPE,  /* expected_call_num_swc */
         2,                     /* num_swc */
         CTOKEN_ERR_CBOR_TYPE,  /* expected_call_get_swc0 */
@@ -257,7 +257,7 @@ static const struct decode_swc_test_config swc_test_inputs[] = {
 
     {
         13,
-        TEST2UB(psa_swcomponents_invalid_no_value),
+        EAT_TEST_USEFUL_BUF(eat_test_psa_swcomponents_invalid_no_value),
         CTOKEN_ERR_CBOR_STRUCTURE,  /* expected_call_num_swc */
         2,                          /* num_swc */
         CTOKEN_ERR_CBOR_STRUCTURE,  /* expected_call_get_swc0 */
@@ -266,7 +266,7 @@ static const struct decode_swc_test_config swc_test_inputs[] = {
 
     {
         14,
-        TEST2UB(psa_swcomponents_valid_no),
+        EAT_TEST_USEFUL_BUF(eat_test_psa_swcomponents_valid_no),
         CTOKEN_ERR_SUCCESS,  /* expected_call_num_swc */
         0,                          /* num_swc */
         CTOKEN_ERR_NO_MORE_CLAIMS,  /* expected_call_get_swc0 */

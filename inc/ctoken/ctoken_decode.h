@@ -1187,17 +1187,26 @@ ctoken_decode_profile(struct ctoken_decode_ctx *context,
 
 
 // TODO: document these
+/**
+ * \brief  Decode the HW version claim.
+ *
+ * \param[in] context  The decoding context.
+ * \param[in] hw_type  Indicates device, board or chip HW.
+ * \param[out] version_scheme   The version numbering scheme.
+ * \param[out] version   The text version number.
+ *
+ * The version and version scheme indicator is decoded. The
+ * version schemes are as defined in CoSWID. If no version scheme
+ * is given then the version scheme is returned as INT32_MAX.
+ *
+ * See also ctoken_decode_hw_ean_version().
+ */
 enum ctoken_err_t
-ctoken_decode_hw_version(struct ctoken_decode_ctx  *me,
+ctoken_decode_hw_version(struct ctoken_decode_ctx  *context,
                          enum ctoken_hw_type_t      hw_type,
-                         int32_t                    *version_scheme,
-                         struct q_useful_buf_c      *version);
+                         int32_t                   *version_scheme,
+                         struct q_useful_buf_c     *version);
 
-
-static enum ctoken_err_t
-ctoken_decode_hw_ean_version(struct ctoken_decode_ctx  *me,
-                             enum ctoken_hw_type_t      hw_type,
-                             struct q_useful_buf_c      *version);
 
 /**
  * \brief Decode next claim in token or submodule
@@ -1752,15 +1761,6 @@ static inline void
 ctoken_decode_rewind(struct ctoken_decode_ctx   *me)
 {
     QCBORDecode_Rewind(&(me->qcbor_decode_context));
-}
-
-
-static inline enum ctoken_err_t
-ctoken_decode_hw_ean_version(struct ctoken_decode_ctx  *me,
-                             enum ctoken_hw_type_t      hw_type,
-                             struct q_useful_buf_c      *version)
-{
-    return ctoken_decode_tstr(me, CTOKEN_EAT_LABEL_EAN_CHIP_VERSION + (int64_t)hw_type, version);
 }
 
 

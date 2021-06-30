@@ -221,6 +221,7 @@ enum ctoken_intended_use_t {
 };
 
 
+/** Selects which type of HW for the HW Version claims. */
 enum ctoken_hw_type_t {
     /* Don't renumber these as the labels are derived from them. */
     CTOKEN_HW_TYPE_CHIP   = 0,
