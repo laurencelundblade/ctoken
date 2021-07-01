@@ -24,6 +24,9 @@ extern const unsigned char eat_test_hw_version_invalid_device_version[12];
 extern const unsigned char eat_test_hw_version_invalid_ean_board_version[16];
 
 
+extern const unsigned char eat_test_hw_version_invalid_missing_scheme[13];
+
+
 extern const unsigned char eat_test_hw_version_invalid_version_scheme[15];
 
 

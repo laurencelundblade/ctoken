@@ -79,7 +79,3 @@ void PrintSizesCToken(OutputStringCB pfOutput, void *pOutCtx);
 #ifdef __cplusplus
 }
 #endif
-
-
-#include <stdint.h>
-extern const uint8_t foo[3];
