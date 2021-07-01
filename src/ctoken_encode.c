@@ -343,7 +343,6 @@ ctoken_encode_hw_version(struct ctoken_encode_ctx  *me,
     QCBOREncode_AddInt64(encoder_context, version_scheme);
     QCBOREncode_AddText(encoder_context, version);
     ctoken_encode_close_array(me);
-    // TODO: is the error handling here enough?
 }
 
 

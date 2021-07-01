@@ -1644,6 +1644,7 @@ ctoken_decode_rewind(struct ctoken_decode_ctx   *me)
  */
 enum ctoken_err_t ctoken_get_and_reset_cbor_error(QCBORDecodeContext *decode_context);
 
+
 #ifdef __cplusplus
 }
 #endif

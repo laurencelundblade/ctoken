@@ -726,23 +726,26 @@ ctoken_encode_profile_uri(struct ctoken_encode_ctx   *context,
 
 
 /**
- * \brief  Encode the HW version
+ * \brief  Encode the hardware version claim.
  *
  * \param[in] context  The encoding context to output to.
  * \param[in] hw_type   Indicates device, board or chip HW.
  * \param[in] version_scheme The version numbering scheme.
  * \param[in] version The actual version number.
  *
- * It is allowed to have all three types of HW versions, device, board and chip,
- * but only one of each. See @ref ctoken_hw_type_t.
+ * It is allowed to have all three types of HW versions, device, board
+ * and chip, but only one of each. See @ref ctoken_hw_type_t.
  *
  * The version scheme comes from the IANA registry for CoSWID version
- * schemes (see draft-ietf-sacm-coswid-17 and draft-ietf-rats-eat if the
- * registry is not yet created). The version scheme determines the format
- * of the version text string.
+ * schemes (see draft-ietf-sacm-coswid-17 and draft-ietf-rats-eat if
+ * the registry is not yet created). The version scheme determines the
+ * format of the version text string. To mention a two common schemes,
+ * version scheme 1 is the common dotted numeriic like "1.2.4" and
+ * version scheme 3 is alphanumeric, sorted in alphanumeric order.
  *
- * Version scheme 1 is the common dotted numeriic like "1.2.4". Version
- * scheme 3 is alphanumeric, sorted in alphanumeric order.
+ * There is no validity checking on \c hw_type or on \c
+ * version_scheme.  If they are incorrect, an incorrect hard version
+ * claim will be generated.
  *
  * See also ctoken_decode_hw_version()..
  */
