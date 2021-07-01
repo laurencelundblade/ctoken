@@ -541,6 +541,45 @@ ctoken_decode_location(struct ctoken_decode_ctx   *me,
 }
 
 
+/*
+ * Public function. See ctoken_eat_encode.h
+ */
+void
+ctoken_decode_hw_version(struct ctoken_decode_ctx  *me,
+                         enum ctoken_hw_type_t      hw_type,
+                         int32_t                   *version_scheme,
+                         struct q_useful_buf_c     *version)
+{
+    int64_t             version_scheme_64;
+    QCBORDecodeContext *decode_context = &(me->qcbor_decode_context);
+    const int64_t       versions_label = CTOKEN_EAT_LABEL_CHIP_VERSION + (int64_t)hw_type;
+
+    if(me->last_error) {
+        return;
+    }
+
+    QCBORDecode_EnterArrayFromMapN(decode_context, versions_label);
+    QCBORDecode_GetInt64(decode_context, &version_scheme_64);
+    QCBORDecode_GetTextString(decode_context, version);
+    QCBORDecode_ExitArray(decode_context);
+
+    me->last_error = ctoken_get_and_reset_cbor_error(decode_context);
+
+    if(me->last_error) {
+        return;
+    }
+
+    /* The valid range comes from the CoSWID specification */
+    if(version_scheme_64 > 65535  || version_scheme_64 < -256) {
+        me->last_error = CTOKEN_ERR_CLAIM_RANGE;
+        return;
+    }
+
+    /* Check above makes this cast OK */
+    *version_scheme = (int32_t)version_scheme_64;
+}
+
+
 static bool is_submod_section(const QCBORItem *claim)
 {
     if(claim->uLabelType != QCBOR_TYPE_INT64) {

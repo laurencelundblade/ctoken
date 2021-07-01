@@ -57,6 +57,12 @@ int32_t basic_types_decode_test(void);
 int32_t basic_types_encode_test(void);
 
 
+int32_t hw_version_encode_test(void);
+
+
+int32_t hw_version_decode_test(void);
+
+
 #ifdef __cplusplus
 }
 #endif

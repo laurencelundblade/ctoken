@@ -1134,6 +1134,30 @@ ctoken_decode_profile(struct ctoken_decode_ctx *context,
 
 
 /**
+ * \brief  Decode the HW version claim.
+ *
+ * \param[in] context  The decoding context.
+ * \param[in] hw_type  Indicates device, board or chip HW.
+ * \param[out] version_scheme   The version numbering scheme.
+ * \param[out] version   The text version number.
+ *
+ * The version and version scheme indicator is decoded. The
+ * version schemes are as defined in CoSWID's IANA registry.
+ * (This registry hasn't been created yet, until it is see
+ * draft-ietf-sacm-coswid-17 and draft-ietf-rats-eat) The
+ * version scheme indicates the format of the text string,
+ * particularly its sorting order.
+ *
+ * See also ctoken_encode_hw_version().
+ */
+void
+ctoken_decode_hw_version(struct ctoken_decode_ctx  *context,
+                         enum ctoken_hw_type_t      hw_type,
+                         int32_t                   *version_scheme,
+                         struct q_useful_buf_c     *version);
+
+
+/**
  * \brief Decode next claim in token or submodule
  *
  * \param[in] context  The decoding context.

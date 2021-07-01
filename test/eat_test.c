@@ -672,7 +672,7 @@ struct decode_submod_test_config {
 static const struct decode_submod_test_config submod_test_inputs[] = {
     {
         1,
-        TEST2UB(completely_empty),
+        EAT_TEST_USEFUL_BUF(eat_test_completely_empty),
         CTOKEN_ERR_SUCCESS,          /* expected_call_num_submods */
         CTOKEN_ERR_SUBMOD_NOT_FOUND, /* expected_enter_0th */
         0, /* expected_decode_nonce */
@@ -690,7 +690,7 @@ static const struct decode_submod_test_config submod_test_inputs[] = {
     },
     {
         2,
-        TEST2UB(submods_invalid_nwf_section),
+        EAT_TEST_USEFUL_BUF(eat_test_submods_invalid_nwf_section),
         CTOKEN_ERR_CBOR_NOT_WELL_FORMED, /* expected_call_num_submods */
         CTOKEN_ERR_CBOR_NOT_WELL_FORMED, /* expected_enter_0th */
         0, /* expected_decode_nonce */
@@ -709,7 +709,7 @@ static const struct decode_submod_test_config submod_test_inputs[] = {
 
     {
         3,
-        TEST2UB(submods_valid_minimal),
+        EAT_TEST_USEFUL_BUF(eat_test_submods_valid_minimal),
         CTOKEN_ERR_SUCCESS,          /* expected_call_num_submods */
         CTOKEN_ERR_SUCCESS, /* expected_enter_0th */
         CTOKEN_ERR_SUCCESS, /* expected_decode_nonce */
@@ -728,7 +728,7 @@ static const struct decode_submod_test_config submod_test_inputs[] = {
 
     {
         4,
-        TEST2UB(submods_invalid_non_string_label),
+        EAT_TEST_USEFUL_BUF(eat_test_submods_invalid_non_string_label),
         CTOKEN_ERR_SUCCESS,          /* expected_call_num_submods */
         CTOKEN_ERR_SUBMOD_NAME_NOT_A_TEXT_STRING, /* expected_enter_0th */
         0, /* expected_decode_nonce */
@@ -747,7 +747,7 @@ static const struct decode_submod_test_config submod_test_inputs[] = {
 
     {
         5,
-        TEST2UB(submods_valid_empty),
+        EAT_TEST_USEFUL_BUF(eat_test_submods_valid_empty),
         CTOKEN_ERR_SUCCESS,          /* expected_call_num_submods */
         CTOKEN_ERR_SUCCESS, /* expected_enter_0th */
         CTOKEN_ERR_CLAIM_NOT_PRESENT, /* expected_decode_nonce */
@@ -766,7 +766,7 @@ static const struct decode_submod_test_config submod_test_inputs[] = {
 
     {
         6,
-        TEST2UB(submods_invalid_is_array),
+        EAT_TEST_USEFUL_BUF(eat_test_submods_invalid_is_array),
         CTOKEN_ERR_SUCCESS,          /* expected_call_num_submods */
         CTOKEN_ERR_SUBMOD_TYPE, /* expected_enter_0th */
         0, /* expected_decode_nonce */
@@ -785,7 +785,7 @@ static const struct decode_submod_test_config submod_test_inputs[] = {
 
     {
         7,
-        TEST2UB(submods_invalid_duplicate),
+        EAT_TEST_USEFUL_BUF(eat_test_submods_invalid_duplicate),
         CTOKEN_ERR_SUCCESS,     /* expected_call_num_submods */
         CTOKEN_ERR_SUCCESS, /* expected_enter_0th */
         CTOKEN_ERR_SUCCESS, /* expected_decode_nonce */
@@ -804,7 +804,7 @@ static const struct decode_submod_test_config submod_test_inputs[] = {
 
     {
         8,
-        TEST2UB(submods_invalid_nwf_sumbod),
+        EAT_TEST_USEFUL_BUF(eat_test_submods_invalid_nwf_sumbod),
         CTOKEN_ERR_CBOR_NOT_WELL_FORMED,     /* expected_call_num_submods */
         CTOKEN_ERR_CBOR_DECODE, /* expected_enter_0th */
         CTOKEN_ERR_SUCCESS, /* expected_decode_nonce */
@@ -1002,7 +1002,7 @@ int32_t submod_decode_errors_test()
                        0,
                        CTOKEN_PROTECTION_NONE);
 
-    ctoken_decode_validate_token(&decode_context, TEST2UB(submods_valid_deeply_nested));
+    ctoken_decode_validate_token(&decode_context, EAT_TEST_USEFUL_BUF(eat_test_submods_valid_deeply_nested));
     ctoken_result = ctoken_decode_get_and_reset_error(&decode_context);
     if(ctoken_result) {
         return test_result_code(20, 0, ctoken_result);
@@ -1040,7 +1040,7 @@ int32_t submod_decode_errors_test()
 
 
     /* Try calling exit without entering */
-    ctoken_decode_validate_token(&decode_context, TEST2UB(submods_valid_deeply_nested));
+    ctoken_decode_validate_token(&decode_context, EAT_TEST_USEFUL_BUF(eat_test_submods_valid_deeply_nested));
     ctoken_result = ctoken_decode_get_and_reset_error(&decode_context);
     if(ctoken_result) {
         return test_result_code(25, 0, ctoken_result);
@@ -1053,7 +1053,7 @@ int32_t submod_decode_errors_test()
 
 
     /* Trigger an unusual error ctoken_decode_exit_submod */
-    ctoken_decode_validate_token(&decode_context, TEST2UB(submods_valid_deeply_nested));
+    ctoken_decode_validate_token(&decode_context, EAT_TEST_USEFUL_BUF(eat_test_submods_valid_deeply_nested));
     ctoken_result = ctoken_decode_get_and_reset_error(&decode_context);
     if(ctoken_result) {
         return test_result_code(25, 0, ctoken_result);
@@ -1729,7 +1729,7 @@ int32_t secboot_test(void)
                        0,
                        CTOKEN_PROTECTION_NONE);
 
-    ctoken_decode_validate_token(&decode_context, TEST2UB(secboot_valid1));
+    ctoken_decode_validate_token(&decode_context, EAT_TEST_USEFUL_BUF(eat_test_secboot_valid1));
     result = ctoken_decode_get_and_reset_error(&decode_context);
     if(result) {
         return test_result_code(1, 0, result);;
@@ -1741,8 +1741,7 @@ int32_t secboot_test(void)
         return test_result_code(1, 1, result);
     }
 
-
-    ctoken_decode_validate_token(&decode_context, TEST2UB(secboot_valid2));
+    ctoken_decode_validate_token(&decode_context, EAT_TEST_USEFUL_BUF(eat_test_secboot_valid2));
     result = ctoken_decode_get_and_reset_error(&decode_context);
     if(result) {
         return test_result_code(1, 0, result);;
@@ -1754,8 +1753,7 @@ int32_t secboot_test(void)
         return test_result_code(2, 1, result);
     }
 
-
-    ctoken_decode_validate_token(&decode_context, TEST2UB(secboot_invalid1));
+    ctoken_decode_validate_token(&decode_context, EAT_TEST_USEFUL_BUF(eat_test_secboot_invalid1));
     result = ctoken_decode_get_and_reset_error(&decode_context);
     if(result) {
         return test_result_code(3, 0, result);;
@@ -1767,8 +1765,7 @@ int32_t secboot_test(void)
         return test_result_code(2, 1, result);
     }
 
-
-    ctoken_decode_validate_token(&decode_context, TEST2UB(secboot_invalid2));
+    ctoken_decode_validate_token(&decode_context, EAT_TEST_USEFUL_BUF(eat_test_secboot_invalid2));
     result = ctoken_decode_get_and_reset_error(&decode_context);
     if(result) {
         return test_result_code(3, 0, result);;
@@ -1780,7 +1777,7 @@ int32_t secboot_test(void)
         return test_result_code(2, 1, result);
     }
 
-    ctoken_decode_validate_token(&decode_context, TEST2UB(secboot_invalid3));
+    ctoken_decode_validate_token(&decode_context, EAT_TEST_USEFUL_BUF(eat_test_secboot_invalid3));
     result = ctoken_decode_get_and_reset_error(&decode_context);
     if(result) {
         return test_result_code(3, 0, result);;
@@ -1792,8 +1789,7 @@ int32_t secboot_test(void)
         return test_result_code(2, 1, result);
     }
 
-
-    ctoken_decode_validate_token(&decode_context, TEST2UB(secboot_invalid4));
+    ctoken_decode_validate_token(&decode_context, EAT_TEST_USEFUL_BUF(eat_test_secboot_invalid4));
     result = ctoken_decode_get_and_reset_error(&decode_context);
     if(result) {
         return test_result_code(3, 0, result);;
@@ -1805,7 +1801,7 @@ int32_t secboot_test(void)
         return test_result_code(2, 1, result);
     }
 
-    ctoken_decode_validate_token(&decode_context, TEST2UB(secboot_invalid5));
+    ctoken_decode_validate_token(&decode_context, EAT_TEST_USEFUL_BUF(eat_test_secboot_invalid5));
     result = ctoken_decode_get_and_reset_error(&decode_context);
     if(result) {
         return test_result_code(3, 0, result);;
@@ -2004,7 +2000,7 @@ int32_t profile_decode_test(void)
                        0,
                        CTOKEN_PROTECTION_NONE);
 
-    ctoken_decode_validate_token(&decode_context, TEST2UB(profile_valid_uri));
+    ctoken_decode_validate_token(&decode_context, EAT_TEST_USEFUL_BUF(eat_test_profile_valid_uri));
     result = ctoken_decode_get_and_reset_error(&decode_context);
     if(result) {
         return test_result_code(1, 0, result);;
@@ -2021,7 +2017,7 @@ int32_t profile_decode_test(void)
         return test_result_code(1, 2, result);
     }
 
-    ctoken_decode_validate_token(&decode_context, TEST2UB(profile_valid_oid));
+    ctoken_decode_validate_token(&decode_context, EAT_TEST_USEFUL_BUF(eat_test_profile_valid_oid));
     result = ctoken_decode_get_and_reset_error(&decode_context);
     if(result) {
         return test_result_code(2, 1, result);;
@@ -2038,8 +2034,7 @@ int32_t profile_decode_test(void)
         return test_result_code(2, 3, result);
     }
 
-
-    ctoken_decode_validate_token(&decode_context, TEST2UB(profile_invalid_type));
+    ctoken_decode_validate_token(&decode_context, EAT_TEST_USEFUL_BUF(eat_test_profile_invalid_type));
     result = ctoken_decode_get_and_reset_error(&decode_context);
     if(result != CTOKEN_ERR_SUCCESS) {
         return test_result_code(3, 0, result);;
@@ -2057,8 +2052,7 @@ int32_t profile_decode_test(void)
         return test_result_code(3, 2, result);
     }
 
-
-    ctoken_decode_validate_token(&decode_context, TEST2UB(profile_invalid_nwf));
+    ctoken_decode_validate_token(&decode_context, EAT_TEST_USEFUL_BUF(eat_test_profile_invalid_nwf));
     result = ctoken_decode_get_and_reset_error(&decode_context);
     if(result != CTOKEN_ERR_SUCCESS) {
         return test_result_code(4, 0, result);;
@@ -2077,8 +2071,7 @@ int32_t profile_decode_test(void)
     }
 
 
-
-    ctoken_decode_validate_token(&decode_context, TEST2UB(profile_invalid_dup));
+    ctoken_decode_validate_token(&decode_context, EAT_TEST_USEFUL_BUF(eat_test_profile_invalid_dup));
     result = ctoken_decode_get_and_reset_error(&decode_context);
     if(result != CTOKEN_ERR_SUCCESS) {
         return test_result_code(5, 0, result);;
@@ -2126,7 +2119,7 @@ int32_t profile_encode_test(void)
         return test_result_code(1, 2, result);
     }
 
-    if(q_useful_buf_compare(token, TEST2UB(profile_valid_uri))) {
+    if(q_useful_buf_compare(token, EAT_TEST_USEFUL_BUF(eat_test_profile_valid_uri))) {
         return test_result_code(1, 3, 0);
     }
 
@@ -2140,7 +2133,7 @@ int32_t profile_encode_test(void)
         return test_result_code(2, 2, result);
     }
 
-    if(q_useful_buf_compare(token, TEST2UB(profile_valid_oid))) {
+    if(q_useful_buf_compare(token, EAT_TEST_USEFUL_BUF(eat_test_profile_valid_oid))) {
         return test_result_code(2, 3, 0);
     }
     return 0;
@@ -2244,6 +2237,269 @@ int32_t basic_types_encode_test(void)
     }
 
     // TODO: add the other basic types
+
+    return 0;
+}
+
+
+
+
+struct hw_version_test_t {
+    uint32_t               test_number;
+    struct q_useful_buf_c  token;
+    enum ctoken_err_t      expected_result;
+    enum ctoken_hw_type_t  type;
+    int32_t                expected_version_scheme;
+
+};
+
+
+static const struct hw_version_test_t hw_version_test_inputs[] = {
+    {
+        1,                      /* test_number */
+        EAT_TEST_USEFUL_BUF(eat_test_hw_version_valid_chip_version),
+        CTOKEN_ERR_SUCCESS,     /* expected_result */
+        CTOKEN_HW_TYPE_CHIP,    /* type */
+        1,                      /* expected_version_scheme */
+    },
+    {
+        2,                      /* test_number */
+        EAT_TEST_USEFUL_BUF(eat_test_hw_version_valid_board_version),
+        CTOKEN_ERR_SUCCESS,     /* expected_result */
+        CTOKEN_HW_TYPE_BOARD,    /* type */
+        3,                      /* expected_version_scheme */
+    },
+    {
+        3,                      /* test_number */
+        EAT_TEST_USEFUL_BUF(eat_test_hw_version_valid_device_version),
+        CTOKEN_ERR_SUCCESS,     /* expected_result */
+        CTOKEN_HW_TYPE_DEVICE,    /* type */
+        2,                      /* expected_version_scheme */
+    },
+    {
+        4,                      /* test_number */
+        EAT_TEST_USEFUL_BUF(eat_test_hw_version_valid_ean_chip_version),
+        CTOKEN_ERR_SUCCESS,     /* expected_result */
+        CTOKEN_HW_TYPE_CHIP,    /* type */
+        5,                      /* expected_version_scheme */
+    },
+    {
+        5,                      /* test_number */
+        EAT_TEST_USEFUL_BUF(eat_test_hw_version_valid_ean_board_version),
+        CTOKEN_ERR_SUCCESS,     /* expected_result */
+        CTOKEN_HW_TYPE_BOARD,   /* type */
+        5,                      /* expected_version_scheme */
+    },
+    {
+        6,                      /* test_number */
+        EAT_TEST_USEFUL_BUF(eat_test_hw_version_valid_ean_device_version),
+        CTOKEN_ERR_SUCCESS,     /* expected_result */
+        CTOKEN_HW_TYPE_DEVICE,  /* type */
+        5,                      /* expected_version_scheme */
+    },
+    {
+        7,                      /* test_number */
+        EAT_TEST_USEFUL_BUF(eat_test_hw_version_invalid_board_version),
+        CTOKEN_ERR_CBOR_TYPE,   /* expected_result */
+        CTOKEN_HW_TYPE_BOARD,   /* type */
+        1,                      /* expected_version_scheme */
+    },
+    {
+        8,                      /* test_number */
+        EAT_TEST_USEFUL_BUF(eat_test_hw_version_invalid_chip_version),
+        CTOKEN_ERR_CBOR_TYPE,   /* expected_result */
+        CTOKEN_HW_TYPE_CHIP,    /* type */
+        1,                      /* expected_version_scheme */
+    },
+    {
+        9,                      /* test_number */
+        EAT_TEST_USEFUL_BUF(eat_test_hw_version_invalid_device_version),
+        CTOKEN_ERR_CBOR_TYPE,   /* expected_result */
+        CTOKEN_HW_TYPE_DEVICE,  /* type */
+        1,                      /* expected_version_scheme */
+    },
+    {
+        10,                      /* test_number */
+        EAT_TEST_USEFUL_BUF(eat_test_hw_version_invalid_ean_board_version),
+        CTOKEN_ERR_CLAIM_NOT_PRESENT, /* expected_result */
+        CTOKEN_HW_TYPE_BOARD,    /* type */
+        1,                       /* expected_version_scheme */
+    },
+    {
+        11,                      /* test_number */
+        EAT_TEST_USEFUL_BUF(eat_test_hw_version_invalid_nwf),
+        CTOKEN_ERR_CBOR_NOT_WELL_FORMED, /* expected_result */
+        CTOKEN_HW_TYPE_BOARD,    /* type */
+        1,                       /* expected_version_scheme */
+    },
+    {
+        12,                      /* test_number */
+        EAT_TEST_USEFUL_BUF(eat_test_hw_version_invalid_ean_board_version),
+        CTOKEN_ERR_CLAIM_NOT_PRESENT, /* expected_result */
+        CTOKEN_HW_TYPE_BOARD,    /* type */
+        1,                       /* expected_version_scheme */
+    },
+    {
+        13,                      /* test_number */
+        EAT_TEST_USEFUL_BUF(eat_test_hw_version_invalid_version_scheme),
+        CTOKEN_ERR_CLAIM_NOT_PRESENT, /* expected_result */
+        CTOKEN_HW_TYPE_DEVICE,   /* type */
+        1,                       /* expected_version_scheme */
+    },
+    {
+        14,                      /* test_number */
+        EAT_TEST_USEFUL_BUF(eat_test_hw_version_invalid_version_scheme_type),
+        CTOKEN_ERR_CLAIM_NOT_PRESENT, /* expected_result */
+        CTOKEN_HW_TYPE_DEVICE,   /* type */
+        1,                       /* expected_version_scheme */
+    },
+
+    {
+        15,                      /* test_number */
+        EAT_TEST_USEFUL_BUF(eat_test_hw_version_invalid_version_scheme_value),
+        CTOKEN_ERR_CLAIM_NOT_PRESENT, /* expected_result */
+        CTOKEN_HW_TYPE_DEVICE,   /* type */
+        1,                       /* expected_version_scheme */
+    },
+    {
+        16,                      /* test_number */
+        EAT_TEST_USEFUL_BUF(eat_test_hw_version_invalid_missing_scheme),
+        CTOKEN_ERR_CBOR_TYPE,    /* expected_result */
+        CTOKEN_HW_TYPE_CHIP,     /* type */
+        1,                       /* expected_version_scheme */
+    },
+    {
+        999,
+        NULL_Q_USEFUL_BUF_C, /* Indicates end of list */
+        0,
+        0,
+        0
+    }
+};
+
+
+static int32_t test_one_hw_version(const struct hw_version_test_t *t)
+{
+    struct q_useful_buf_c     version;
+    int32_t                   version_scheme;
+    enum ctoken_err_t         result;
+    struct ctoken_decode_ctx  decode_context;
+    enum ctoken_err_t         ctoken_result;
+
+    ctoken_decode_init(&decode_context,
+                       T_COSE_OPT_ALLOW_SHORT_CIRCUIT,
+                       0,
+                       CTOKEN_PROTECTION_NONE);
+
+    ctoken_decode_validate_token(&decode_context, t->token);
+    ctoken_result = ctoken_decode_get_and_reset_error(&decode_context);
+    if(ctoken_result != CTOKEN_ERR_SUCCESS) {
+        return test_result_code(1, t->test_number, ctoken_result);
+    }
+
+    ctoken_decode_hw_version(&decode_context, t->type, &version_scheme, &version);
+    result = ctoken_decode_get_and_reset_error(&decode_context);
+    if(result != t->expected_result) {
+        return test_result_code(2, t->test_number, result);
+    }
+
+    if(t->expected_result == CTOKEN_ERR_SUCCESS) {
+        if(version_scheme != t->expected_version_scheme) {
+            return test_result_code(3, t->test_number, version_scheme);
+        }
+    }
+
+    return 0;
+}
+
+
+int32_t hw_version_decode_test(void)
+{
+    int32_t                         test_result;
+    const struct hw_version_test_t *test_case;
+
+    /* Iterate over the test inputs */
+    for(test_case = hw_version_test_inputs;
+        !q_useful_buf_c_is_null(test_case->token);
+        test_case++) {
+        if(test_case->test_number == 16) {
+            test_result = 99; /* Used only to set break points for debugging */
+        }
+        test_result = test_one_hw_version(test_case);
+        if(test_result) {
+            return test_result;
+        }
+    }
+
+    return 0;
+}
+
+
+
+
+int32_t hw_version_encode_test(void)
+{
+    struct ctoken_encode_ctx ctoken_encode;
+    MakeUsefulBufOnStack(    buf, 100);
+    struct q_useful_buf_c    finish_token;
+
+    ctoken_encode_init(&ctoken_encode,
+                       0,
+                       CTOKEN_OPT_TOP_LEVEL_NOT_TAG,
+                       CTOKEN_PROTECTION_NONE,
+                       0);
+
+    ctoken_encode_start(&ctoken_encode, buf);
+
+    ctoken_encode_hw_version(&ctoken_encode,
+                             CTOKEN_HW_TYPE_CHIP,
+                             1,
+                             Q_USEFUL_BUF_FROM_SZ_LITERAL("1.4.5"));
+
+    ctoken_encode_finish(&ctoken_encode, &finish_token);
+
+    if(q_useful_buf_compare(EAT_TEST_USEFUL_BUF(eat_test_hw_version_valid_chip_version), finish_token)) {
+        return test_result_code(2, 1, 0);
+    }
+
+
+    ctoken_encode_init(&ctoken_encode,
+                       0,
+                       CTOKEN_OPT_TOP_LEVEL_NOT_TAG,
+                       CTOKEN_PROTECTION_NONE,
+                       0);
+
+    ctoken_encode_start(&ctoken_encode, buf);
+
+    ctoken_encode_hw_version(&ctoken_encode,
+                             CTOKEN_HW_TYPE_BOARD,
+                             3,
+                             Q_USEFUL_BUF_FROM_SZ_LITERAL("153uX"));
+
+    ctoken_encode_finish(&ctoken_encode, &finish_token);
+
+    if(q_useful_buf_compare(EAT_TEST_USEFUL_BUF(eat_test_hw_version_valid_board_version), finish_token)) {
+        return test_result_code(2, 2, 0);
+    }
+
+    ctoken_encode_init(&ctoken_encode,
+                       0,
+                       CTOKEN_OPT_TOP_LEVEL_NOT_TAG,
+                       CTOKEN_PROTECTION_NONE,
+                       0);
+
+    ctoken_encode_start(&ctoken_encode, buf);
+
+    ctoken_encode_hw_version(&ctoken_encode,
+                             CTOKEN_HW_TYPE_DEVICE,
+                             2,
+                             Q_USEFUL_BUF_FROM_SZ_LITERAL("1.4.5b"));
+
+    ctoken_encode_finish(&ctoken_encode, &finish_token);
+
+    if(q_useful_buf_compare(EAT_TEST_USEFUL_BUF(eat_test_hw_version_valid_device_version), finish_token)) {
+        return test_result_code(2, 3, 0);
+    }
 
     return 0;
 }

@@ -111,15 +111,14 @@ extern "C" {
 #define CTOKEN_EAT_LABEL_ORIGINATION                 -75010
 
 #define CTOKEN_EAT_LABEL_UPTIME                      -76006
-#define CTOKEN_EAT_LABEL_CHIP_VERSION                -76032
+
+/* These are order-reversed so that the enum ctoken_hw_type_t offset can be
+ * __added__, that will be preferred when they are
+ * the standardized and positive values. */
+#define CTOKEN_EAT_LABEL_CHIP_VERSION                -76034
 #define CTOKEN_EAT_LABEL_BOARD_VERSION               -76033
-#define CTOKEN_EAT_LABEL_DEVICE_VERSION              -76034
-#define CTOKEN_EAT_LABEL_CHIP_VERSION_SCHEME         -76035
-#define CTOKEN_EAT_LABEL_BOARD_VERSION_SCHEME        -76036
-#define CTOKEN_EAT_LABEL_DEVICE_VERSION_SCHEME       -76037
-#define CTOKEN_EAT_LABEL_EAN_CHIP_VERSION            -76038
-#define CTOKEN_EAT_LABEL_EAN_BOARD_VERSION           -76039
-#define CTOKEN_EAT_LABEL_EAN_DEVICE_VERSION          -76040
+#define CTOKEN_EAT_LABEL_DEVICE_VERSION              -76032
+
 #define CTOKEN_EAT_LABEL_INTENDED_USE                -76041
 
 
@@ -211,6 +210,15 @@ enum ctoken_intended_use_t {
     /** Used to prove the device has possesion of a key. */
     CTOKEN_USE_PROOF_OF_POSSSION = 5
 };
+
+
+/** Selects which type of HW for the HW Version claims. */
+enum ctoken_hw_type_t {
+    /* Don't renumber these as the labels are derived from them. */
+    CTOKEN_HW_TYPE_CHIP   = 0,
+    CTOKEN_HW_TYPE_BOARD  = 1,
+    CTOKEN_HW_TYPE_DEVICE = 2};
+
 
 
 #ifdef __cplusplus

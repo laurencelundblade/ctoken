@@ -332,6 +332,24 @@ Done:
  * Public function. See ctoken_eat_encode.h
  */
 void
+ctoken_encode_hw_version(struct ctoken_encode_ctx  *me,
+                         enum ctoken_hw_type_t      hw_type,
+                         int32_t                    version_scheme,
+                         struct q_useful_buf_c      version)
+{
+    QCBOREncodeContext *encoder_context;
+    
+    ctoken_encode_open_array(me, CTOKEN_EAT_LABEL_CHIP_VERSION + (int64_t)hw_type, &encoder_context);
+    QCBOREncode_AddInt64(encoder_context, version_scheme);
+    QCBOREncode_AddText(encoder_context, version);
+    ctoken_encode_close_array(me);
+}
+
+
+/*
+ * Public function. See ctoken_eat_encode.h
+ */
+void
 ctoken_encode_location(struct ctoken_encode_ctx       *me,
                        const struct ctoken_location_t *location)
 {
