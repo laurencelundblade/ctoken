@@ -2303,7 +2303,6 @@ static const struct hw_version_test_t hw_version_test_inputs[] = {
         5,                      /* expected_version_scheme */
         CTOKEN_ERR_SUCCESS
     },
-#if TODODONE
     {
         7,                      /* test_number */
         EAT_TEST_USEFUL_BUF(eat_test_hw_version_invalid_board_version),
@@ -2320,7 +2319,6 @@ static const struct hw_version_test_t hw_version_test_inputs[] = {
         1,                      /* expected_version_scheme */
         CTOKEN_ERR_CLAIM_NOT_PRESENT
     },
-
     {
         9,                      /* test_number */
         EAT_TEST_USEFUL_BUF(eat_test_hw_version_invalid_device_version),
@@ -2378,7 +2376,6 @@ static const struct hw_version_test_t hw_version_test_inputs[] = {
         1,                       /* expected_version_scheme */
         CTOKEN_ERR_CLAIM_NOT_PRESENT
     },
-#endif
 
 
     // TODO: test with version scheme absent

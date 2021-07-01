@@ -544,31 +544,39 @@ ctoken_decode_location(struct ctoken_decode_ctx   *me,
 /*
  * Public function. See ctoken_eat_encode.h
  */
-enum ctoken_err_t
+void
 ctoken_decode_hw_version(struct ctoken_decode_ctx  *me,
                          enum ctoken_hw_type_t      hw_type,
                          int32_t                   *version_scheme,
                          struct q_useful_buf_c     *version)
 {
     int64_t             version_scheme_64;
-    QCBORDecodeContext *decode_context;
+    QCBORDecodeContext *decode_context = &(me->qcbor_decode_context);
+    const int64_t       versions_label = CTOKEN_EAT_LABEL_CHIP_VERSION + (int64_t)hw_type;
 
-    const int64_t vers_label = CTOKEN_EAT_LABEL_CHIP_VERSION + (int64_t)hw_type;
+    if(me->last_error) {
+        return;
+    }
 
-    ctoken_decode_enter_array(me, vers_label, &decode_context);
-
+    QCBORDecode_EnterArrayFromMapN(decode_context, versions_label);
     QCBORDecode_GetInt64(decode_context, &version_scheme_64);
     QCBORDecode_GetTextString(decode_context, version);
-    // TODO: revamp error after merge with new token decode error handler
+    QCBORDecode_ExitArray(decode_context);
 
-    ctoken_decode_exit_array(me);
+    me->last_error = ctoken_get_and_reset_cbor_error(decode_context);
 
+    if(me->last_error) {
+        return;
+    }
+
+    if(version_scheme_64 > 65535  || version_scheme_64 < -256) {
+        me->last_error = CTOKEN_ERR_CLAIM_RANGE;
+        return;
+    }
+
+    /* Check above makes this cast OK */
     *version_scheme = (int32_t)version_scheme_64;
-
-    return 0;
 }
-
-
 
 
 static bool is_submod_section(const QCBORItem *claim)

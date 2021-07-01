@@ -1133,7 +1133,6 @@ ctoken_decode_profile(struct ctoken_decode_ctx *context,
                       struct q_useful_buf_c    *profile);
 
 
-// TODO: document these
 /**
  * \brief  Decode the HW version claim.
  *
@@ -1143,12 +1142,13 @@ ctoken_decode_profile(struct ctoken_decode_ctx *context,
  * \param[out] version   The text version number.
  *
  * The version and version scheme indicator is decoded. The
- * version schemes are as defined in CoSWID. If no version scheme
- * is given then the version scheme is returned as INT32_MAX.
- *
- * See also ctoken_decode_hw_ean_version().
+ * version schemes are as defined in CoSWID's IANA registry.
+ * (This registry hasn't been created yet, until it is see
+ * draft-ietf-sacm-coswid-17 and draft-ietf-rats-eat) The
+ * version scheme indicates the format of the text string,
+ * particularly its sorting order.
  */
-enum ctoken_err_t
+void
 ctoken_decode_hw_version(struct ctoken_decode_ctx  *context,
                          enum ctoken_hw_type_t      hw_type,
                          int32_t                   *version_scheme,
