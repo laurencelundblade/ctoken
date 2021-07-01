@@ -2462,7 +2462,44 @@ int32_t hw_version_encode_test(void)
         return test_result_code(2, 1, 0);
     }
 
-    // TODO: test some error condistions here
+
+    ctoken_encode_init(&ctoken_encode,
+                       0,
+                       CTOKEN_OPT_TOP_LEVEL_NOT_TAG,
+                       CTOKEN_PROTECTION_NONE,
+                       0);
+
+    ctoken_encode_start(&ctoken_encode, buf);
+
+    ctoken_encode_hw_version(&ctoken_encode,
+                             CTOKEN_HW_TYPE_BOARD,
+                             3,
+                             Q_USEFUL_BUF_FROM_SZ_LITERAL("153uX"));
+
+    ctoken_encode_finish(&ctoken_encode, &finish_token);
+
+    if(q_useful_buf_compare(EAT_TEST_USEFUL_BUF(eat_test_hw_version_valid_board_version), finish_token)) {
+        return test_result_code(2, 2, 0);
+    }
+
+    ctoken_encode_init(&ctoken_encode,
+                       0,
+                       CTOKEN_OPT_TOP_LEVEL_NOT_TAG,
+                       CTOKEN_PROTECTION_NONE,
+                       0);
+
+    ctoken_encode_start(&ctoken_encode, buf);
+
+    ctoken_encode_hw_version(&ctoken_encode,
+                             CTOKEN_HW_TYPE_DEVICE,
+                             2,
+                             Q_USEFUL_BUF_FROM_SZ_LITERAL("1.4.5b"));
+
+    ctoken_encode_finish(&ctoken_encode, &finish_token);
+
+    if(q_useful_buf_compare(EAT_TEST_USEFUL_BUF(eat_test_hw_version_valid_device_version), finish_token)) {
+        return test_result_code(2, 3, 0);
+    }
 
     return 0;
 }
