@@ -569,6 +569,7 @@ ctoken_decode_hw_version(struct ctoken_decode_ctx  *me,
         return;
     }
 
+    /* The valid range comes from the CoSWID specification */
     if(version_scheme_64 > 65535  || version_scheme_64 < -256) {
         me->last_error = CTOKEN_ERR_CLAIM_RANGE;
         return;
