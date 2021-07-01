@@ -110,7 +110,6 @@ extern "C" {
 // Expect this to be removed
 #define CTOKEN_EAT_LABEL_ORIGINATION                 -75010
 
-
 #define CTOKEN_EAT_LABEL_UPTIME                      -76006
 
 /* These are order-reversed so that the enum ctoken_hw_type_t offset can be

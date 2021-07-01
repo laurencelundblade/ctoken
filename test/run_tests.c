@@ -279,4 +279,3 @@ void PrintSizesCToken(OutputStringCB pfOutput, void *pOutCtx)
               pfOutput, pOutCtx);
     (*pfOutput)("", pOutCtx, 1);
 }
-

@@ -1219,7 +1219,6 @@ ctoken_encode_profile_uri(struct ctoken_encode_ctx   *me,
 }
 
 
-
 #ifdef __cplusplus
 }
 #endif
