@@ -2462,5 +2462,7 @@ int32_t hw_version_encode_test(void)
         return test_result_code(2, 1, 0);
     }
 
+    // TODO: test some error condistions here
+
     return 0;
 }

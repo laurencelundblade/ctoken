@@ -1147,6 +1147,8 @@ ctoken_decode_profile(struct ctoken_decode_ctx *context,
  * draft-ietf-sacm-coswid-17 and draft-ietf-rats-eat) The
  * version scheme indicates the format of the text string,
  * particularly its sorting order.
+ *
+ * See also ctoken_encode_hw_version().
  */
 void
 ctoken_decode_hw_version(struct ctoken_decode_ctx  *context,
