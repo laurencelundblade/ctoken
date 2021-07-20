@@ -30,35 +30,38 @@ created for authentication, not attestation, so some of the CWT claims don't
 apply directly for attestation.
 
 ### CWT Claims
-* Issuer -- Who issued the token
-* Subject -- 
-* Audience --
-* IAT -- Time stamp for when the token was created
-* CTI --
-* Expiration-- Time stamp after which this token is not valid
-* Not before -- Time stamp before which this token is not valid
+The descriptions of these are in JWT. CWT is a CBOR version of JWT. 
+Detailed descriptions of these claims are in [RFC7915](https://tools.ietf.org/html/rfc7915).
+
+* Issuer — Principle that issued the token (authentication)
+* Subject — The subject to which the claims apply (authentication)
+* Audience — The intended recipients (authentication)
+* IAT — Time stamp for when the token was created (attestation and authentication)
+* CTI — Unique ID for token. Like a token serial number (attestation and authentication)
+* Expiration — Time stamp after which this token is not valid (attestation and authentication)
+* Not before — Time stamp before which this token is not valid (attestation and authentication)
 
 ### EAT Claims
-* Nonce -- Unique value from server to guarantee freshness
-* UEID -- a unique device identifier (similar to a serial number)
-* OEM ID -- Identifier of the manufacturer of the device
-* HW Version -- A string giving the version number of chip, circuit board or device hardware
-* secboot -- indicates if device booted securely
-* debugstat -- Whether or not debug facilities are enabled or not
-* uptime -- Number of seconds since the device started
-* seclevel -- A rough characteriziation of the type of security implemented (SW, TEE, HW)
-* Submodules -- Not a claim per-se, a way to group claims
-* Profile -- Reference to a document that narrows the definition of a token for a specific use case
-* Itended Use -- A rough characterization of the intended use of the token
+* Nonce — Unique value from server to guarantee freshness
+* UEID — a unique device identifier (similar to a serial number)
+* OEM ID — Identifier of the manufacturer of the device
+* HW Version — A string giving the version number of chip, circuit board or device hardware
+* secboot — indicates if device booted securely
+* debugstat — Whether or not debug facilities are enabled or not
+* uptime — Number of seconds since the device started
+* seclevel — A rough characteriziation of the type of security implemented (SW, TEE, HW)
+* Submodules — Not a claim per-se, a way to group claims
+* Profile — Reference to a document that narrows the definition of a token for a specific use case
+* Itended Use — A rough characterization of the intended use of the token
 
 Other claims are defined or in the process of being defined, but not yet implemented.
 
 ### PSA Token Claims
-* Client ID --
-* Implementation ID --
-* Lifecycle --
-* Certification Reference --
-* Measurement --
+* Client ID —
+* Implementation ID —
+* Lifecycle —
+* Certification Reference —
+* Measurement —
 
 ### Generic data types for claims
 The ctoken library has some general functions for general data types. The values
@@ -71,8 +74,8 @@ beyond calling this is the label / key that identifies the particular claim.
 * Byte strings
 * Booleans
 * Double floating-point
-* Maps -- primarily opening / closing
-* Arrays -- primarily opening / closing
+* Maps — primarily opening / closing
+* Arrays — primarily opening / closing
 
 ## Code Size
 
