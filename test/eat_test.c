@@ -2143,7 +2143,7 @@ int32_t profile_encode_test(void)
 
 
 static const uint8_t valid_bstr[]     = {0xA1, 0x16, 0x43, 0xf7, 0xe7, 0xd7};
-static const uint8_t valid_text[]     = "\xA1\x16\x65" "claim";
+static const uint8_t valid_text[]     = {0xA1, 0x16, 0x65, 'c', 'l', 'a', 'i', 'm'};
 static const uint8_t valid_int[]      = {0xA1, 0x16, 0x38, 0x29};
 static const uint8_t valid_uint[]     = {0xA1, 0x16, 0x19, 0x06, 0xC1};
 static const uint8_t valid_bool[]     = {0xA1, 0x16, 0xF5};
@@ -2186,82 +2186,121 @@ int32_t basic_types_decode_test(void)
     ctoken_decode_validate_token(&decode_context, Q_USEFUL_BUF_FROM_BYTE_ARRAY_LITERAL(valid_text));
     result = ctoken_decode_get_and_reset_error(&decode_context);
     if(result) {
-        return test_result_code(1, 0, result);;
+        return test_result_code(2, 0, result);;
     }
 
     ctoken_decode_tstr(&decode_context, 22, &ub);
     result = ctoken_decode_get_and_reset_error(&decode_context);
     if(result != CTOKEN_ERR_SUCCESS) {
-        return test_result_code(1, 1, result);
+        return test_result_code(2, 1, result);
     }
     if(q_useful_buf_compare(ub, Q_USEFUL_BUF_FROM_SZ_LITERAL("claim"))) {
-        return test_result_code(1, 2, 0);
+        return test_result_code(2, 2, 0);
     }
 
 
     ctoken_decode_validate_token(&decode_context, Q_USEFUL_BUF_FROM_BYTE_ARRAY_LITERAL(valid_uint));
     result = ctoken_decode_get_and_reset_error(&decode_context);
     if(result) {
-        return test_result_code(1, 0, result);;
+        return test_result_code(3, 0, result);;
     }
 
     ctoken_decode_uint(&decode_context, 22, &u);
     result = ctoken_decode_get_and_reset_error(&decode_context);
     if(result != CTOKEN_ERR_SUCCESS) {
-        return test_result_code(1, 1, result);
+        return test_result_code(3, 1, result);
     }
     if(u != 1729) {
-        return test_result_code(1, 2, 0);
+        return test_result_code(3, 2, 0);
     }
 
 
     ctoken_decode_validate_token(&decode_context, Q_USEFUL_BUF_FROM_BYTE_ARRAY_LITERAL(valid_int));
     result = ctoken_decode_get_and_reset_error(&decode_context);
     if(result) {
-        return test_result_code(1, 0, result);;
+        return test_result_code(4, 0, result);;
     }
 
     ctoken_decode_int(&decode_context, 22, &n);
     result = ctoken_decode_get_and_reset_error(&decode_context);
     if(result != CTOKEN_ERR_SUCCESS) {
-        return test_result_code(1, 1, result);
+        return test_result_code(4, 1, result);
     }
     if(n != -42) {
-        return test_result_code(1, 2, 0);
+        return test_result_code(4, 2, 0);
     }
 
 
     ctoken_decode_validate_token(&decode_context, Q_USEFUL_BUF_FROM_BYTE_ARRAY_LITERAL(valid_bool));
     result = ctoken_decode_get_and_reset_error(&decode_context);
     if(result) {
-        return test_result_code(1, 0, result);;
+        return test_result_code(5, 0, result);;
     }
 
     ctoken_decode_bool(&decode_context, 22, &b);
     result = ctoken_decode_get_and_reset_error(&decode_context);
     if(result != CTOKEN_ERR_SUCCESS) {
-        return test_result_code(1, 1, result);
+        return test_result_code(5, 1, result);
     }
     if(b != true) {
-        return test_result_code(1, 2, 0);
+        return test_result_code(5, 2, 0);
     }
 
     ctoken_decode_validate_token(&decode_context, Q_USEFUL_BUF_FROM_BYTE_ARRAY_LITERAL(valid_double));
     result = ctoken_decode_get_and_reset_error(&decode_context);
     if(result) {
-        return test_result_code(2, 0, result);;
+        return test_result_code(6, 0, result);;
     }
 
     ctoken_decode_double(&decode_context, 22, &d);
     result = ctoken_decode_get_and_reset_error(&decode_context);
     if(result != CTOKEN_ERR_SUCCESS) {
-        return test_result_code(2, 1, result);
+        return test_result_code(6, 1, result);
     }
     if(d != 3.14159) {
-        return test_result_code(2, 2, 0);
+        return test_result_code(6, 2, 0);
     }
 
-    // TODO: decode int constrained
+
+    ctoken_decode_validate_token(&decode_context, Q_USEFUL_BUF_FROM_BYTE_ARRAY_LITERAL(valid_uint));
+    result = ctoken_decode_get_and_reset_error(&decode_context);
+    if(result) {
+        return test_result_code(7, 0, result);;
+    }
+
+    ctoken_decode_int_constrained(&decode_context, 22, 1730, 3000, &n);
+    result = ctoken_decode_get_and_reset_error(&decode_context);
+    if(result != CTOKEN_ERR_CLAIM_RANGE) {
+        return test_result_code(7, 1, result);
+    }
+
+
+    ctoken_decode_validate_token(&decode_context, Q_USEFUL_BUF_FROM_BYTE_ARRAY_LITERAL(valid_uint));
+    result = ctoken_decode_get_and_reset_error(&decode_context);
+    if(result) {
+        return test_result_code(8, 0, result);;
+    }
+
+    ctoken_decode_int_constrained(&decode_context, 22, -1000, 1728, &n);
+    result = ctoken_decode_get_and_reset_error(&decode_context);
+    if(result != CTOKEN_ERR_CLAIM_RANGE) {
+        return test_result_code(8, 1, result);
+    }
+
+    ctoken_decode_validate_token(&decode_context, Q_USEFUL_BUF_FROM_BYTE_ARRAY_LITERAL(valid_int));
+    result = ctoken_decode_get_and_reset_error(&decode_context);
+    if(result) {
+        return test_result_code(9, 0, result);;
+    }
+
+    ctoken_decode_int_constrained(&decode_context, 22, -43, -41, &n);
+    result = ctoken_decode_get_and_reset_error(&decode_context);
+    if(result != CTOKEN_ERR_SUCCESS) {
+        return test_result_code(9, 1, result);
+    }
+    if(n != -42) {
+        return test_result_code(9, 2, 0);
+    }
 
     return 0;
 }
@@ -2311,7 +2350,90 @@ int32_t basic_types_encode_test(void)
         return test_result_code(2, 3, 0);
     }
 
-    // TODO: add the other basic types
+
+    result = ctoken_encode_start(&encode_ctx, buf);
+    if(result != CTOKEN_ERR_SUCCESS) {
+        return test_result_code(3, 1, result);
+    }
+
+    ctoken_encode_int(&encode_ctx, 22, -42);
+
+    result = ctoken_encode_finish(&encode_ctx, &token);
+    if(result != CTOKEN_ERR_SUCCESS) {
+        return test_result_code(3, 2, result);
+    }
+
+    if(q_useful_buf_compare(token, UsefulBuf_FROM_BYTE_ARRAY_LITERAL(valid_int))) {
+        return test_result_code(3, 3, 0);
+    }
+
+
+    result = ctoken_encode_start(&encode_ctx, buf);
+    if(result != CTOKEN_ERR_SUCCESS) {
+        return test_result_code(4, 1, result);
+    }
+
+    ctoken_encode_int(&encode_ctx, 22, 1729);
+
+    result = ctoken_encode_finish(&encode_ctx, &token);
+    if(result != CTOKEN_ERR_SUCCESS) {
+        return test_result_code(4, 2, result);
+    }
+
+    if(q_useful_buf_compare(token, UsefulBuf_FROM_BYTE_ARRAY_LITERAL(valid_uint))) {
+        return test_result_code(4, 3, 0);
+    }
+
+
+    result = ctoken_encode_start(&encode_ctx, buf);
+    if(result != CTOKEN_ERR_SUCCESS) {
+        return test_result_code(5, 1, result);
+    }
+
+    ctoken_encode_tstr(&encode_ctx, 22, Q_USEFUL_BUF_FROM_SZ_LITERAL("claim"));
+
+    result = ctoken_encode_finish(&encode_ctx, &token);
+    if(result != CTOKEN_ERR_SUCCESS) {
+        return test_result_code(5, 2, result);
+    }
+
+    if(q_useful_buf_compare(token, UsefulBuf_FROM_BYTE_ARRAY_LITERAL(valid_text))) {
+        return test_result_code(5, 3, 0);
+    }
+
+
+    result = ctoken_encode_start(&encode_ctx, buf);
+    if(result != CTOKEN_ERR_SUCCESS) {
+        return test_result_code(6, 1, result);
+    }
+
+    ctoken_encode_bstr(&encode_ctx, 22, Q_USEFUL_BUF_FROM_SZ_LITERAL("\xf7\xe7\xd7"));
+
+    result = ctoken_encode_finish(&encode_ctx, &token);
+    if(result != CTOKEN_ERR_SUCCESS) {
+        return test_result_code(6, 2, result);
+    }
+
+    if(q_useful_buf_compare(token, UsefulBuf_FROM_BYTE_ARRAY_LITERAL(valid_bstr))) {
+        return test_result_code(6, 3, 0);
+    }
+
+
+    result = ctoken_encode_start(&encode_ctx, buf);
+    if(result != CTOKEN_ERR_SUCCESS) {
+        return test_result_code(7, 1, result);
+    }
+
+    ctoken_encode_null(&encode_ctx, 22);
+
+    result = ctoken_encode_finish(&encode_ctx, &token);
+    if(result != CTOKEN_ERR_SUCCESS) {
+        return test_result_code(7, 2, result);
+    }
+
+    if(q_useful_buf_compare(token, UsefulBuf_FROM_BYTE_ARRAY_LITERAL(valid_null))) {
+        return test_result_code(7, 3, 0);
+    }
 
     return 0;
 }
