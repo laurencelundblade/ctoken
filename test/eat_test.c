@@ -2140,9 +2140,16 @@ int32_t profile_encode_test(void)
 }
 
 
-static const uint8_t valid_bool[] = {0xA1, 0x16, 0xF5};
-static const uint8_t valid_double[] = {0xA1, 0x16, 0xFB, 0x40, 0x09, 0x21, 0xF9,
-                                       0xF0, 0x1B, 0x86, 0x6E};
+
+
+static const uint8_t valid_bstr[]     = {0xA1, 0x16, 0x43, 0xf7, 0xe7, 0xd7};
+static const uint8_t valid_text[]     = "\xA1\x16\x65" "claim";
+static const uint8_t valid_int[]      = {0xA1, 0x16, 0x38, 0x29};
+static const uint8_t valid_uint[]     = {0xA1, 0x16, 0x19, 0x06, 0xC1};
+static const uint8_t valid_bool[]     = {0xA1, 0x16, 0xF5};
+static const uint8_t valid_double[]   = {0xA1, 0x16, 0xFB, 0x40, 0x09, 0x21,
+                                         0xF9, 0xF0, 0x1B, 0x86, 0x6E};
+static const uint8_t valid_null[]     = {0xA1, 0x16, 0xF6};
 
 
 int32_t basic_types_decode_test(void)
@@ -2151,11 +2158,78 @@ int32_t basic_types_decode_test(void)
     enum ctoken_err_t         result;
     bool                      b;
     double                    d;
+    uint64_t                  u;
+    int64_t                   n;
+    struct q_useful_buf_c     ub;
 
     ctoken_decode_init(&decode_context,
                        0,
                        0,
                        CTOKEN_PROTECTION_NONE);
+
+    ctoken_decode_validate_token(&decode_context, Q_USEFUL_BUF_FROM_BYTE_ARRAY_LITERAL(valid_bstr));
+    result = ctoken_decode_get_and_reset_error(&decode_context);
+    if(result) {
+        return test_result_code(1, 0, result);;
+    }
+
+    ctoken_decode_bstr(&decode_context, 22, &ub);
+    result = ctoken_decode_get_and_reset_error(&decode_context);
+    if(result != CTOKEN_ERR_SUCCESS) {
+        return test_result_code(1, 1, result);
+    }
+    if(q_useful_buf_compare(ub, Q_USEFUL_BUF_FROM_SZ_LITERAL("\xf7\xe7\xd7"))) {
+        return test_result_code(1, 2, 0);
+    }
+
+
+    ctoken_decode_validate_token(&decode_context, Q_USEFUL_BUF_FROM_BYTE_ARRAY_LITERAL(valid_text));
+    result = ctoken_decode_get_and_reset_error(&decode_context);
+    if(result) {
+        return test_result_code(1, 0, result);;
+    }
+
+    ctoken_decode_tstr(&decode_context, 22, &ub);
+    result = ctoken_decode_get_and_reset_error(&decode_context);
+    if(result != CTOKEN_ERR_SUCCESS) {
+        return test_result_code(1, 1, result);
+    }
+    if(q_useful_buf_compare(ub, Q_USEFUL_BUF_FROM_SZ_LITERAL("claim"))) {
+        return test_result_code(1, 2, 0);
+    }
+
+
+    ctoken_decode_validate_token(&decode_context, Q_USEFUL_BUF_FROM_BYTE_ARRAY_LITERAL(valid_uint));
+    result = ctoken_decode_get_and_reset_error(&decode_context);
+    if(result) {
+        return test_result_code(1, 0, result);;
+    }
+
+    ctoken_decode_uint(&decode_context, 22, &u);
+    result = ctoken_decode_get_and_reset_error(&decode_context);
+    if(result != CTOKEN_ERR_SUCCESS) {
+        return test_result_code(1, 1, result);
+    }
+    if(u != 1729) {
+        return test_result_code(1, 2, 0);
+    }
+
+
+    ctoken_decode_validate_token(&decode_context, Q_USEFUL_BUF_FROM_BYTE_ARRAY_LITERAL(valid_int));
+    result = ctoken_decode_get_and_reset_error(&decode_context);
+    if(result) {
+        return test_result_code(1, 0, result);;
+    }
+
+    ctoken_decode_int(&decode_context, 22, &n);
+    result = ctoken_decode_get_and_reset_error(&decode_context);
+    if(result != CTOKEN_ERR_SUCCESS) {
+        return test_result_code(1, 1, result);
+    }
+    if(n != -42) {
+        return test_result_code(1, 2, 0);
+    }
+
 
     ctoken_decode_validate_token(&decode_context, Q_USEFUL_BUF_FROM_BYTE_ARRAY_LITERAL(valid_bool));
     result = ctoken_decode_get_and_reset_error(&decode_context);
@@ -2187,10 +2261,11 @@ int32_t basic_types_decode_test(void)
         return test_result_code(2, 2, 0);
     }
 
-    // TODO: add the other basic types
+    // TODO: decode int constrained
 
     return 0;
 }
+
 
 
 
