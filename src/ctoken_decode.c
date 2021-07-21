@@ -596,6 +596,84 @@ static bool is_submod_section(const QCBORItem *claim)
     return false;
 }
 
+
+static enum ctoken_err_t
+ctoken_decode_to_nth_manifest(QCBORDecodeContext *decode_context,
+                            uint32_t                  submod_index,
+                            uint32_t                 *num_submods)
+{
+    /* Traverse submods map until nth one is found and stop */
+    QCBORItem           map_item;
+    uint32_t            submod_count;
+    enum ctoken_err_t   return_value;
+
+    /* Must have entered into submods map before calling this */
+    submod_count = 0;
+    return_value = CTOKEN_ERR_SUCCESS;
+
+    while(submod_index > 0) {
+        QCBORDecode_VGetNextConsume(decode_context, &map_item);
+        return_value = ctoken_get_and_reset_cbor_error(decode_context);
+        if(return_value != CTOKEN_ERR_SUCCESS) {
+            break;
+        }
+
+        submod_count++;
+        submod_index--;
+    }
+
+    if(return_value == CTOKEN_ERR_NO_MORE_CLAIMS) {
+        return_value = CTOKEN_ERR_SUCCESS;
+    }
+
+Done:
+    *num_submods = submod_count;
+    return return_value;
+}
+
+
+void
+ctoken_decode_get_num_manifests(struct ctoken_decode_ctx  *me,
+                                uint32_t                  *num_manifests)
+{
+    QCBORDecode_EnterArrayFromMapN(&(me->qcbor_decode_context), 88); // TODO:
+    ctoken_decode_to_nth_manifest(&(me->qcbor_decode_context), UINT32_MAX, num_manifests);
+    QCBORDecode_ExitArray(&(me->qcbor_decode_context));
+}
+
+
+void
+ctoken_decode_get_nth_manifest(struct ctoken_decode_ctx  *me,
+                               uint32_t                   index,
+                               uint64_t                  *tag,
+                               struct q_useful_buf_c     *manifest)
+{
+    uint32_t n;
+    QCBORItem DecodedItem;
+
+    QCBORDecode_EnterArrayFromMapN(&(me->qcbor_decode_context), 88); // TODO:
+    ctoken_decode_to_nth_manifest(&(me->qcbor_decode_context), index, &n);
+    QCBORDecode_PeekNext(&(me->qcbor_decode_context), &DecodedItem);
+    uint64_t t = QCBORDecode_GetNthTag(&(me->qcbor_decode_context), &DecodedItem, 0);
+    if(t == CBOR_TAG_INVALID64) {
+        // Format is CBOR and the tag is inside
+        QCBORDecode_EnterBstrWrapped(&(me->qcbor_decode_context),
+                                     QCBOR_TAG_REQUIREMENT_NOT_A_TAG,
+                                     manifest);
+        QCBORDecode_PeekNext(&(me->qcbor_decode_context), &DecodedItem);
+        uint64_t t = QCBORDecode_GetNthTag(&(me->qcbor_decode_context), &DecodedItem, 0);
+        *tag = t;
+    } else {
+        QCBORDecode_GetByteString(&(me->qcbor_decode_context), manifest);
+        *tag = t;
+    }
+
+    QCBORDecode_ExitArray(&(me->qcbor_decode_context));
+}
+
+
+
+
 /*
  * Public function. See ctoken_eat_encode.h
  */
@@ -725,7 +803,7 @@ leave_submod_section(struct ctoken_decode_ctx *me)
  * CBOR thoroughly. Improvement: check for duplicate labels.
  */
 static enum ctoken_err_t
-ctoken_decode_to_nth_submod(struct ctoken_decode_ctx *me,
+ctoken_decode_to_nth_submod(struct ctoken_decode_ctx *me, // TODO: make this CBORDecodeContext
                             uint32_t                  submod_index,
                             uint32_t                 *num_submods)
 {

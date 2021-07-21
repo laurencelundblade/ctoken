@@ -85,6 +85,7 @@ struct ctoken_encode_ctx {
     struct ctoken_submod_state_t  submod_state;
     QCBOREncodeContext            cbor_encode_context;
     struct t_cose_sign1_sign_ctx  signer_ctx;
+    bool                          in_manifests;
 };
 
 
@@ -755,6 +756,21 @@ ctoken_encode_hw_version(struct ctoken_encode_ctx *context,
                          int32_t                   version_scheme,
                          struct q_useful_buf_c     version);
 
+
+void
+ctoken_encode_start_manifests(struct ctoken_encode_ctx *context);
+
+void
+ctoken_encode_cbor_manifest(struct ctoken_encode_ctx *context,
+                            struct q_useful_buf_c cbor_manifest);
+
+void
+ctoken_encode_non_cbor_manifest(struct ctoken_encode_ctx *context,
+                                int64_t tag,
+                                struct q_useful_buf_c cbor_manifest);
+
+void
+ctoken_encode_end_manifests(struct ctoken_encode_ctx *context);
 
 /**
  * \brief  Start encoding EAT submodules.

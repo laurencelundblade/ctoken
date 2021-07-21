@@ -1157,6 +1157,18 @@ ctoken_decode_hw_version(struct ctoken_decode_ctx  *context,
                          struct q_useful_buf_c     *version);
 
 
+void
+ctoken_decode_get_num_manifests(struct ctoken_decode_ctx  *context,
+                                uint32_t                  *num_manifests);
+
+
+void
+ctoken_decode_get_nth_manifest(struct ctoken_decode_ctx  *context,
+                               uint32_t                   index,
+                               uint64_t                  *tag,
+                               struct q_useful_buf_c     *manifest);
+
+
 /**
  * \brief Decode next claim in token or submodule
  *

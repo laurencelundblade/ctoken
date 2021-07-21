@@ -390,6 +390,56 @@ ctoken_encode_location(struct ctoken_encode_ctx       *me,
     QCBOREncode_CloseMap(encode_cxt);
 }
 
+void
+ctoken_encode_start_manifests(struct ctoken_encode_ctx *me)
+{
+    if(me->in_manifests) {
+        me->error = 99; // TODO:
+        return;
+    }
+    QCBOREncode_OpenArrayInMapN(&(me->cbor_encode_context), 88); // TODO: label
+    me->in_manifests = true;
+
+}
+
+void
+ctoken_encode_cbor_manifest(struct ctoken_encode_ctx *me,
+                            struct q_useful_buf_c cbor_manifest)
+{
+    if(!me->in_manifests) {
+        me->error = 99; // TODO:
+        return;
+    }
+    /* Byte-string wrap the cbor that presumably has a tag */
+    QCBOREncode_AddBytes(&(me->cbor_encode_context), cbor_manifest);
+}
+
+void
+ctoken_encode_non_cbor_manifest(struct ctoken_encode_ctx *me,
+                                int64_t tag,
+                                struct q_useful_buf_c non_cbor_manifest)
+{
+    if(!me->in_manifests) {
+        me->error = 99; // TODO:
+        return;
+    }
+    /* Byte-string wrap the cbor that presumably has a tag */
+    QCBOREncode_AddTag(&(me->cbor_encode_context), tag);
+    QCBOREncode_AddBytes(&(me->cbor_encode_context), non_cbor_manifest);
+}
+
+void
+ctoken_encode_end_manifests(struct ctoken_encode_ctx *me)
+{
+    if(!me->in_manifests) {
+        me->error = 99; // TODO:
+        return;
+    }
+    QCBOREncode_CloseArray(&(me->cbor_encode_context));
+    me->in_manifests = false;
+}
+
+
 
 /*
  * Public function. See ctoken_encode.h
