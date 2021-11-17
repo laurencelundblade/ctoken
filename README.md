@@ -1,4 +1,4 @@
-[ctoken](https://github.com/laurencelundblade/ctoken/blob/master/ctoken-logo.png?raw=true)
+![ctoken](https://github.com/laurencelundblade/ctoken/blob/master/ctoken-logo.png?raw=true)
  
 *Ctoken* is a library that implementats CWT, EAT and UCCS:
 
