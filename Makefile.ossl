@@ -1,6 +1,6 @@
 # Makefile -- UNIX-style make for ctoken using OpenSSL crypto
 #
-# Copyright (c) 2019-2020, Laurence Lundblade. All rights reserved.
+# Copyright (c) 2019-2022, Laurence Lundblade. All rights reserved.
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
@@ -8,8 +8,8 @@
 #
 
 # ---- comment ----
-# This is for OpenSSL Crypto. Adjust CRYPTO_INC and CRYPTO_LIB for the location of
-# the openssl libraries on your build machine.
+# This is for OpenSSL Crypto. Adjust CRYPTO_INC and CRYPTO_LIB for the
+# location of the openssl libraries on your build machine.
 
 
 # ---- QCBOR location ----
@@ -28,14 +28,15 @@ QCBOR_LIB=-lqcbor
 
 
 # ---- t_cose location ----
-# Adjust this to the location of t_cose in your build environment
+# Adjust this to the location of t_cose in your build environment Be
+# sure t_cose was build for crypto lib included in the next section.
 #T_COSE_DIR=../../t_cose/master
 #T_COSE_INC= -I $(T_COSE_DIR)/inc
 #T_COSE_LIB=$(T_COSE_DIR)/libt_cose.a
 
-# This is for reference to QCBOR that has been installed in
+# This is for reference to t_cose that has been installed in
 # /usr/local/ or in some system location. This will typically
-# use dynamic linking if there is a libqcbor.so
+# use dynamic linking if there is a libt_cose.so
 T_COSE_INC=-I /usr/local/include
 T_COSE_LIB=-lt_cose
 
@@ -59,8 +60,8 @@ C_OPTS=-Os -fPIC
 
 # ---- T_COSE Config and test options ----
 TEST_CONFIG_OPTS=
-TEST_OBJ=test/eat_test.o test/cwt_test.o test/psa_test.o test/run_tests.o \
-            test/eat_test_tokens.o
+TEST_OBJ=test/eat_test.o test/cwt_test.o test/psa_test.o \
+         test/run_tests.o test/eat_test_tokens.o
 
 
 # ---- the main body that is invariant ----
@@ -68,7 +69,7 @@ INC=-I inc -I test  -I src
 ALL_INC=$(CRYPTO_INC) $(QCBOR_INC) $(T_COSE_INC) $(INC) 
 CFLAGS=$(ALL_INC) $(C_OPTS) $(TEST_CONFIG_OPTS) $(CRYPTO_CONFIG_OPTS)
 
-SRC_OBJ=src/ctoken_encode.o src/ctoken_decode.o src/ctoken_common.o\
+SRC_OBJ=src/ctoken_encode.o src/ctoken_decode.o src/ctoken_common.o \
         src/ctoken_encode_psa.o src/ctoken_decode_psa.o
 
 
@@ -87,25 +88,28 @@ eat_example_ossl:	examples/eat_example_ossl.o libctoken.a
 	cc -dead_strip -o $@ $^ $(QCBOR_LIB) $(CRYPTO_LIB) $(T_COSE_LIB)
 
 clean:
-	rm -f $(SRC_OBJ) $(TEST_OBJ) $(CRYPTO_OBJ) eat_example_ossl t_cose_test libctoken.a main.o examples/eat_example_ossl.o
+	rm -f $(SRC_OBJ) $(TEST_OBJ) $(CRYPTO_OBJ) eat_example_ossl t_cose_test libctoken.a main.o examples/eat_example_ossl.o ctoken_test
 
-
-# ---- public headers -----
-PUBLIC_INTERFACE=inc/ctoken/ctoken.h inc/ctoken/ctoken_encode.h inc/ctoken/ctoken_decode.h \
-                  inc/ctoken/ctoken_cwt_labels.h inc/ctoken/ctoken_eat_labels.h \
-                  inc/ctoken/ctoken_decode_psa.h inc/ctoken/ctoken_encode_psa.h inc/ctoken/ctoken_psa_labels.h
 
 # ---- source dependecies -----
-src/ctoken_encode.o:	inc/ctoken/ctoken_encode.h inc/ctoken/ctoken.h inc/ctoken/ctoken_cwt_labels.h inc/ctoken/ctoken_eat_labels.h src/ctoken_common.h
-src/ctoken_decode.o:	inc/ctoken/ctoken_decode.h inc/ctoken/ctoken.h inc/ctoken/ctoken_cwt_labels.h inc/ctoken/ctoken_eat_labels.h src/ctoken_common.h
-src/ctoken_encode_psa.o:	inc/ctoken/ctoken_encode_psa.h inc/ctoken/ctoken.h inc/ctoken/ctoken_psa_labels.h  inc/ctoken/ctoken_cwt_labels.h inc/ctoken/ctoken_eat_labels.h
-src/ctoken_decode_psa.o:	inc/ctoken/ctoken_decode_psa.h inc/ctoken/ctoken.h inc/ctoken/ctoken_psa_labels.h  inc/ctoken/ctoken_cwt_labels.h inc/ctoken/ctoken_eat_labels.h
+src/ctoken_encode.o:    inc/ctoken/ctoken_encode.h inc/ctoken/ctoken.h \
+                        inc/ctoken/ctoken_cwt_labels.h inc/ctoken/ctoken_eat_labels.h \
+                        src/ctoken_common.h
+src/ctoken_decode.o:    inc/ctoken/ctoken_decode.h inc/ctoken/ctoken.h \
+                        inc/ctoken/ctoken_cwt_labels.h inc/ctoken/ctoken_eat_labels.h \
+                        src/ctoken_common.h
+src/ctoken_encode_psa.o:    inc/ctoken/ctoken_encode_psa.h inc/ctoken/ctoken.h \
+                            inc/ctoken/ctoken_psa_labels.h  inc/ctoken/ctoken_cwt_labels.h \
+                            inc/ctoken/ctoken_eat_labels.h
+src/ctoken_decode_psa.o:    inc/ctoken/ctoken_decode_psa.h inc/ctoken/ctoken.h \
+                            inc/ctoken/ctoken_psa_labels.h  inc/ctoken/ctoken_cwt_labels.h \
+			    inc/ctoken/ctoken_eat_labels.h
 src/ctoken_common.o:	src/ctoken_common.h
 
 
 # ---- test dependencies -----
-test/cwt_test.o:	test/cwt_test.h $(PUBLIC_INTERFACE)
-test/eat_test.o:	test/eat_test.h $(PUBLIC_INTERFACE)
+test/cwt_test.o:        test/cwt_test.h $(PUBLIC_INTERFACE)
+test/eat_test.o:        test/eat_test.h $(PUBLIC_INTERFACE)
 
 # ---- example dependencies ----
 eat_example_ossl.o:	$(PUBLIC_INTERFACE)
