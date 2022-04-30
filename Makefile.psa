@@ -1,6 +1,6 @@
 # Makefile -- UNIX-style make for ctoken with MBed Crypto
 #
-# Copyright (c) 2019-2020, Laurence Lundblade. All rights reserved.
+# Copyright (c) 2019-2022, Laurence Lundblade. All rights reserved.
 #
 # SPDX-License-Identifier: BSD-3-Clause
 #
@@ -27,22 +27,30 @@ QCBOR_LIB=-lqcbor
 
 
 # ---- t_cose location ----
-# Adjust this to the location of t_cose in your build environment
-T_COSE_DIR=../../t_cose/master
-T_COSE_INC= -I $(T_COSE_DIR)/inc
-T_COSE_LIB=$(T_COSE_DIR)/libt_cose.a
+# Adjust this to the location of t_cose in your build environment Be
+# sure t_cose was build for crypto lib included in the next section.
+#T_COSE_DIR=../../t_cose/master
+#T_COSE_INC= -I $(T_COSE_DIR)/inc
+#T_COSE_LIB=$(T_COSE_DIR)/libt_cose.a
 
-# This is for reference to QCBOR that has been installed in
+# This is for reference to t_cose that has been installed in
 # /usr/local/ or in some system location. This will typically
-# use dynamic linking if there is a libqcbor.so
-#T_COSE_INC=-I /usr/local/include
-#T_COSE_LIB=-lt_cose
+# use dynamic linking if there is a libt_cose.so
+T_COSE_INC=-I /usr/local/include
+T_COSE_LIB=-lt_cose
 
 
 # ---- crypto configuration -----
+# These two are for direct reference to Mbed Crypto that is not installed
+# in /usr/local/ /usr/local or some system location. The path names
+# may need to be adjusted for your location of Mbed Crypto
+#CRYPTO_INC=-I ../../mbedtls/include/
+#CRYPTO_LIB=../../mbedtls/library/libmbedcrypto.a
+
 # The lib and inc directories may have to be adjusted for your build environment.
-CRYPTO_LIB=../../mbed-crypto/library/libmbedcrypto.a
-CRYPTO_INC= -I  ../../mbed-crypto/include/
+CRYPTO_LIB=-lmbedcrypto
+CRYPTO_INC= -I /usr/local/include
+
 
 # ---- compiler configuration -----
 # Optimize for size
@@ -53,9 +61,11 @@ C_OPTS=-Os -fPIC
 # all compilers support them so they are not turned on.
 #C_OPTS=-Os -fpic -Wall -pedantic-errors -Wextra -Wshadow -Wparentheses -Wconversion -xc -std=c99
 
+
 # ---- T_COSE Config and test options ----
 TEST_CONFIG_OPTS=
-TEST_OBJ=test/eat_test.o test/cwt_test.o test/psa_test.o test/run_tests.o
+TEST_OBJ=test/eat_test.o test/cwt_test.o test/psa_test.o \
+         test/run_tests.o test/eat_test_tokens.o
 
 
 # ---- the main body that is invariant ----
@@ -63,7 +73,7 @@ INC=-I inc -I test  -I src
 ALL_INC=$(CRYPTO_INC) $(QCBOR_INC) $(T_COSE_INC) $(INC) 
 CFLAGS=$(ALL_INC) $(C_OPTS) $(TEST_CONFIG_OPTS) $(CRYPTO_CONFIG_OPTS)
 
-SRC_OBJ=src/ctoken_encode.o src/ctoken_decode.o \
+SRC_OBJ=src/ctoken_encode.o src/ctoken_decode.o src/ctoken_common.o \
         src/ctoken_encode_psa.o src/ctoken_decode_psa.o
 
 
@@ -86,15 +96,25 @@ clean:
 
 
 # ---- public headers -----
-PUBLIC_INTERFACE=inc/ctoken/ctoken.h inc/ctoken/ctoken_encode.h inc/ctoken/ctoken_decode.h \
+PUBLIC_INTERFACE= inc/ctoken/ctoken.h inc/ctoken/ctoken_encode.h inc/ctoken/ctoken_decode.h \
                   inc/ctoken/ctoken_cwt_labels.h inc/ctoken/ctoken_eat_labels.h \
-                  inc/ctoken/ctoken_decode_psa.h inc/ctoken/ctoken_encode_psa.h inc/ctoken/ctoken_psa_labels.h
+                  inc/ctoken/ctoken_decode_psa.h inc/ctoken/ctoken_encode_psa.h \
+                  inc/ctoken/ctoken_psa_labels.h
 
 # ---- source dependecies -----
-src/ctoken_encode.o:    inc/ctoken/ctoken_encode.h inc/ctoken/ctoken.h inc/ctoken/ctoken_cwt_labels.h inc/ctoken/ctoken_eat_labels.h
-src/ctoken_decode.o:    inc/ctoken/ctoken_decode.h inc/ctoken/ctoken.h inc/ctoken/ctoken_cwt_labels.h inc/ctoken/ctoken_eat_labels.h
-src/ctoken_psa_encode.o:      inc/ctoken/ctoken_psa_encode.h inc/ctoken/ctoken.h inc/ctoken/ctoken_psa_labels.h  inc/ctoken/ctoken_cwt_labels.h inc/ctoken/ctoken_eat_labels.h
-src/ctoken_psa_decode.o:      inc/ctoken/ctoken_psa_decode.h inc/ctoken/ctoken.h inc/ctoken/ctoken_psa_labels.h  inc/ctoken/ctoken_cwt_labels.h inc/ctoken/ctoken_eat_labels.h
+src/ctoken_encode.o:    inc/ctoken/ctoken_encode.h inc/ctoken/ctoken.h \
+                        inc/ctoken/ctoken_cwt_labels.h inc/ctoken/ctoken_eat_labels.h \
+                        src/ctoken_common.h
+src/ctoken_decode.o:    inc/ctoken/ctoken_decode.h inc/ctoken/ctoken.h \
+                        inc/ctoken/ctoken_cwt_labels.h inc/ctoken/ctoken_eat_labels.h \
+                        src/ctoken_common.h
+src/ctoken_encode_psa.o:    inc/ctoken/ctoken_encode_psa.h inc/ctoken/ctoken.h \
+                            inc/ctoken/ctoken_psa_labels.h  inc/ctoken/ctoken_cwt_labels.h \
+                            inc/ctoken/ctoken_eat_labels.h
+src/ctoken_decode_psa.o:    inc/ctoken/ctoken_decode_psa.h inc/ctoken/ctoken.h \
+                            inc/ctoken/ctoken_psa_labels.h  inc/ctoken/ctoken_cwt_labels.h \
+			    inc/ctoken/ctoken_eat_labels.h
+src/ctoken_common.o:	src/ctoken_common.h
 
 
 # ---- test dependencies -----
@@ -102,4 +122,4 @@ test/cwt_test.o:        test/cwt_test.h $(PUBLIC_INTERFACE)
 test/eat_test.o:        test/eat_test.h $(PUBLIC_INTERFACE)
 
 # ---- example dependencies ----
-eat_example_ossl.o:     $(PUBLIC_INTERFACE)
+eat_example_psa.o:     $(PUBLIC_INTERFACE)
