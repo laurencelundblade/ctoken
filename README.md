@@ -1,6 +1,6 @@
 ![ctoken](https://github.com/laurencelundblade/ctoken/blob/master/ctoken-logo.png?raw=true)
  
-*Ctoken* is a library that implementats CWT, EAT and UCCS:
+*Ctoken* is a library that implements CWT, EAT and UCCS:
 
 * [RFC8932](https://tools.ietf.org/html/rfc8943) CBOR Web Token, the basis for tokens
 * [draft-ietf-rats-eat](https://datatracker.ietf.org/doc/html/draft-ietf-rats-eat) Entity Attestation Token, additions for attestation
